@@ -9,7 +9,11 @@ class Spp extends Model
     protected $table = 'spp';
    
     protected $fillable = [
-         'tahun', 'jenjang_pendidikan_id', 'nominal', 'tahun_berlaku'
+        'tahun', 
+        'jenis_pembayaran', 
+        'kelas',
+        'nominal', 
+        'paket'
     ];
    
     /**
@@ -22,8 +26,8 @@ class Spp extends Model
          return $this->belongsTo(User::class);
    }
 
-    public function jenjangPendidikan()
+    public function siswa()
     {
-        return $this->belongsTo(JenjangPendidikan::class);
+        return $this->hasMany(Siswa::class, 'id_spp');
     }
 }

@@ -25,7 +25,7 @@ class SppController extends Controller
     public function index()
     {
         $data = [
-            'spp' => Spp::orderBy('id', 'DESC')->paginate(10),
+            'spp' => Spp::orderBy('id', 'ASC')->paginate(10),
             'user' => User::find(auth()->user()->id)
         ];
       

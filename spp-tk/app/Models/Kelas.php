@@ -9,6 +9,20 @@ class Kelas extends Model
     protected $table = 'kelas';
    
     protected $fillable = [
-          'nama_kelas', 'kompetensi_keahlian'
+          'nama_kelas', 
+          'paket_infaq', 
+          'is_fullday'
     ];
+
+    // Relasi ke Siswa
+    public function siswa()
+    {
+        return $this->hasMany(Siswa::class, 'id_kelas');
+    }
+
+    // Helper method untuk cek kelas TK B Fullday
+    public function isTKBFullday()
+    {
+        return $this->nama_kelas === 'TK B' && $this->is_fullday;
+    }
 }
