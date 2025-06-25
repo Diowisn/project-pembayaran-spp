@@ -7,22 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class Kelas extends Model
 {
     protected $table = 'kelas';
-   
+    protected $primaryKey = 'id';
     protected $fillable = [
-          'nama_kelas', 
-          'paket_infaq', 
-          'is_fullday'
+        'nama_kelas', 'has_konsumsi', 'has_fullday'
     ];
 
-    // Relasi ke Siswa
     public function siswa()
     {
         return $this->hasMany(Siswa::class, 'id_kelas');
     }
 
-    // Helper method untuk cek kelas TK B Fullday
-    public function isTKBFullday()
+    public function spp()
     {
-        return $this->nama_kelas === 'TK B' && $this->is_fullday;
+        return $this->hasMany(Spp::class, 'id_kelas');
     }
 }

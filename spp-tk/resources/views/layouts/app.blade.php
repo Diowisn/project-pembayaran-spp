@@ -9,6 +9,9 @@
 
     <title>{{ config('app.name', 'Assakiinah - SPP') }}</title>
 
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/images/logo-amanah.png') }}">
+
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}" defer></script>
 

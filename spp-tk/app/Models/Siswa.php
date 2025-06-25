@@ -7,54 +7,41 @@ use Illuminate\Database\Eloquent\Model;
 class Siswa extends Model
 {
     protected $table = 'siswa';
-   
+    protected $primaryKey = 'id';
     protected $fillable = [
-         'nisn', 
-         'nis', 
-         'nama', 
-         'id_kelas', 
-         'nomor_telp', 
-         'alamat', 
-         'id_spp'
+        'nisn', 'nis', 'nama', 'id_kelas', 
+        'alamat', 'nomor_telp', 'id_infaq_gedung'
     ];
-   
-   /**
-   * Belongs To Siswa -> Spp
-   *
-   * @return void
-   */
-    public function spp()
-    {
-         return $this->belongsTo(Spp::class,'id_spp','id');
-    }
-   
-//    public function pembayaran(){
-//         return  $this->hasMany(Pembayaran::class,'id_spp');
-//    }
-   
+
     public function kelas()
     {
-        return  $this->belongsTo(Kelas::class,'id_kelas');
+        return $this->belongsTo(Kelas::class, 'id_kelas');
     }
 
-     public function tarifSpp()
+    public function infaqGedung()
     {
-        return $this->belongsTo(Spp::class, 'id_spp');
+        return $this->belongsTo(InfaqGedung::class, 'id_infaq_gedung');
     }
 
-    // Relasi ke Pembayaran
     public function pembayaran()
     {
         return $this->hasMany(Pembayaran::class, 'id_siswa');
     }
 
-    // Method untuk cek lunas/belum per bulan
-    public function isLunas($bulan, $tahun)
+    public function angsuranInfaq()
     {
-        return $this->pembayaran()
-            ->where('bulan', $bulan)
-            ->where('tahun', $tahun)
-            ->where('is_lunas', true)
-            ->exists();
+        return $this->hasMany(AngsuranInfaq::class, 'id_siswa');
+    }
+
+    public function spp()
+    {
+        return $this->hasOneThrough(
+            Spp::class,
+            Kelas::class,
+            'id',
+            'id_kelas',
+            'id_kelas',
+            'id'
+        );
     }
 }

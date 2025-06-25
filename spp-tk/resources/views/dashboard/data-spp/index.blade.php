@@ -12,59 +12,92 @@
                 <div class="card-body">
                     <div class="card-title">{{ __('Tambah Tarif Pembayaran') }}</div>
                     
-                    <form method="post" action="{{ url('/dashboard/data-spp') }}">
-                        @csrf
-                        
-                        <div class="form-group">
-                            <label>Tahun</label>
-                            <input type="number" class="form-control @error('tahun') is-invalid @enderror" name="tahun" value="{{ old('tahun') }}" min="2020" max="2030">
-                            <span class="text-danger">@error('tahun') {{ $message }} @enderror</span>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Jenis Pembayaran</label>
-                            <select class="form-control @error('jenis_pembayaran') is-invalid @enderror" name="jenis_pembayaran">
-                                <option value="">-- Pilih Jenis --</option>
-                                <option value="infaq_gedung" {{ old('jenis_pembayaran') == 'infaq_gedung' ? 'selected' : '' }}>Infaq Gedung</option>
-                                <option value="spp" {{ old('jenis_pembayaran') == 'spp' ? 'selected' : '' }}>SPP</option>
-                                <option value="konsumsi" {{ old('jenis_pembayaran') == 'konsumsi' ? 'selected' : '' }}>Konsumsi</option>
-                                <option value="fullday" {{ old('jenis_pembayaran') == 'fullday' ? 'selected' : '' }}>Fullday + Nutrisi</option>
-                            </select>
-                            <span class="text-danger">@error('jenis_pembayaran') {{ $message }} @enderror</span>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Kelas</label>
-                            <select class="form-control @error('kelas') is-invalid @enderror" name="kelas">
-                                <option value="">-- Pilih Kelas --</option>
-                                <option value="TPA" {{ old('kelas') == 'TPA' ? 'selected' : '' }}>TPA</option>
-                                <option value="KBT" {{ old('kelas') == 'KBT' ? 'selected' : '' }}>KBT</option>
-                                <option value="TK A" {{ old('kelas') == 'TK A' ? 'selected' : '' }}>TK A</option>
-                                <option value="TK B" {{ old('kelas') == 'TK B' ? 'selected' : '' }}>TK B</option>
-                                <option value="ALL" {{ old('kelas') == 'ALL' ? 'selected' : '' }}>Semua Kelas (Infaq Gedung)</option>
-                            </select>
-                            <span class="text-danger">@error('kelas') {{ $message }} @enderror</span>
-                        </div>
-                        
-                        <div class="form-group" id="paket-container" style="display: none;">
-                            <label>Paket Infaq</label>
-                            <select class="form-control" name="paket">
-                                <option value="A" {{ old('paket') == 'A' ? 'selected' : '' }}>Paket A (Rp 1.500.000)</option>
-                                <option value="B" {{ old('paket') == 'B' ? 'selected' : '' }}>Paket B (Rp 1.000.000)</option>
-                                <option value="C" {{ old('paket') == 'C' ? 'selected' : '' }}>Paket C (Rp 800.000)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Nominal (Rp)</label>
-                            <input type="text" class="form-control @error('nominal') is-invalid @enderror" name="nominal" value="{{ old('nominal') }}" id="nominal-input">
-                            <span class="text-danger">@error('nominal') {{ $message }} @enderror</span>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-success btn-rounded float-right">
-                            <i class="mdi mdi-check"></i> Simpan
-                        </button>
-                    </form>
+<form method="post" action="{{ url('/dashboard/data-spp') }}">
+    @csrf
+    
+    <div class="form-group">
+        <label>Tahun</label>
+        <input type="number" class="form-control @error('tahun') is-invalid @enderror" 
+               name="tahun" value="{{ old('tahun', date('Y')) }}" min="2020" max="2030" required>
+        <span class="text-danger">@error('tahun') {{ $message }} @enderror</span>
+    </div>
+    
+<div class="form-group">
+    <label>Kelas</label>
+    <select class="form-control @error('id_kelas') is-invalid @enderror" name="id_kelas" required>
+        <option value="">-- Pilih Kelas --</option>
+        @foreach($kelas as $k)
+            <option value="{{ $k->id }}" {{ old('id_kelas') == $k->id ? 'selected' : '' }}>
+                {{ $k->nama_kelas }}
+            </option>
+        @endforeach
+    </select>
+    <span class="text-danger">@error('id_kelas') {{ $message }} @enderror</span>
+</div>
+    
+    <div class="form-group">
+        <label>Nominal SPP (Rp)</label>
+        <input type="text" class="form-control @error('nominal_spp') is-invalid @enderror" 
+               name="nominal_spp" value="{{ old('nominal_spp') }}" id="nominal-spp" required>
+        <span class="text-danger">@error('nominal_spp') {{ $message }} @enderror</span>
+    </div>
+    
+    <div class="form-group">
+        <label>Nominal Konsumsi (Rp)</label>
+        <input type="text" class="form-control @error('nominal_konsumsi') is-invalid @enderror" 
+               name="nominal_konsumsi" value="{{ old('nominal_konsumsi') }}" id="nominal-konsumsi">
+        <span class="text-danger">@error('nominal_konsumsi') {{ $message }} @enderror</span>
+    </div>
+    
+    <div class="form-group">
+        <label>Nominal Fullday (Rp)</label>
+        <input type="text" class="form-control @error('nominal_fullday') is-invalid @enderror" 
+               name="nominal_fullday" value="{{ old('nominal_fullday') }}" id="nominal-fullday">
+        <span class="text-danger">@error('nominal_fullday') {{ $message }} @enderror</span>
+    </div>
+    
+    {{-- <div class="form-group" id="infaq-container">
+        <label>Infaq Gedung (Opsional)</label>
+        <select class="form-control @error('id_infaq_gedung') is-invalid @enderror" name="id_infaq_gedung">
+            <option value="">-- Pilih Paket Infaq --</option>
+            @foreach($infaqGedung as $infaq)
+                <option value="{{ $infaq->id }}" {{ old('id_infaq_gedung') == $infaq->id ? 'selected' : '' }}>
+                    Paket {{ $infaq->paket }} (Rp {{ number_format($infaq->nominal, 0, ',', '.') }})
+                </option>
+            @endforeach
+        </select>
+        <span class="text-danger">@error('id_infaq_gedung') {{ $message }} @enderror</span>
+    </div> --}}
+    
+    <button type="submit" class="btn btn-success btn-rounded float-right">
+        <i class="mdi mdi-check"></i> Simpan
+    </button>
+</form>
+
+@section('scripts')
+<script>
+    // Format input nominal
+    function formatRupiahInput(inputId) {
+        $(`#${inputId}`).on('keyup', function() {
+            let value = $(this).val().replace(/\D/g, '');
+            $(this).val(formatRupiah(value));
+        });
+    }
+
+    function formatRupiah(angka) {
+        if (!angka) return '';
+        return new Intl.NumberFormat('id-ID').format(angka);
+    }
+
+    // Format semua input nominal
+    formatRupiahInput('nominal-spp');
+    formatRupiahInput('nominal-konsumsi');
+    formatRupiahInput('nominal-fullday');
+
+    // Set nilai default untuk tahun
+    document.querySelector('input[name="tahun"]').value = new Date().getFullYear();
+</script>
+@endsection
                 </div>
             </div>     
         </div>
@@ -92,47 +125,60 @@
                             </thead>
                             <tbody>
                                 @php $i = 1; @endphp
-                                @foreach($spp as $value)
-                                    <tr>
-                                        <td>{{ $i }}</td>
-                                        <td>{{ $value->tahun }}</td>
-                                        <td>
-                                            @if($value->jenis_pembayaran == 'infaq_gedung')
-                                                Infaq Gedung
-                                            @elseif($value->jenis_pembayaran == 'spp')
-                                                SPP
-                                            @elseif($value->jenis_pembayaran == 'konsumsi')
-                                                Konsumsi
-                                            @else
-                                                Fullday + Nutrisi
-                                            @endif
-                                        </td>
-                                        <td>{{ $value->kelas }}</td>
-                                        <td>{{ $value->paket ?? '-' }}</td>
-                                        <td>Rp {{ number_format($value->nominal, 0, ',', '.') }}</td>
-                                        <td>{{ $value->created_at->format('d M Y') }}</td>
-                                        <td>
-                                            <div class="hide-menu">
-                                                <a href="javascript:void(0)" class="text-dark" id="actiondd" role="button" data-toggle="dropdown">
-                                                    <i class="mdi mdi-dots-vertical"></i>
-                                                </a>
-                                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="actiondd">
-                                                    <a class="dropdown-item" href="{{ url('dashboard/data-spp/'.$value->id.'/edit') }}">
-                                                        <i class="ti-pencil"></i> Edit
-                                                    </a>
-                                                    <form method="post" action="{{ url('dashboard/data-spp', $value->id) }}" id="delete{{ $value->id }}">
-                                                        @csrf
-                                                        @method('delete')
-                                                        <button type="button" class="dropdown-item" onclick="deleteData({{ $value->id }})">
-                                                            <i class="ti-trash"></i> Hapus
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    @php $i++; @endphp
-                                @endforeach
+@foreach($spp as $value)
+    <tr>
+        <td>{{ $loop->iteration }}</td>
+        <td>{{ $value->tahun }}</td>
+        <td>
+            <!-- Jenis Pembayaran -->
+            SPP
+            @if($value->nominal_konsumsi)
+                <br><small class="text-muted">+ Konsumsi</small>
+            @endif
+            @if($value->nominal_fullday)
+                <br><small class="text-muted">+ Fullday</small>
+            @endif
+        </td>
+        <td>{{ $value->kelas->nama_kelas }}</td>
+        <td>
+            @if($value->kelas->has_konsumsi)
+                <span class="badge badge-info">Konsumsi</span>
+            @endif
+            @if($value->kelas->has_fullday)
+                <span class="badge badge-primary">Fullday</span>
+            @endif
+        </td>
+        <td>
+            <strong>SPP:</strong> Rp {{ number_format($value->nominal_spp, 0, ',', '.') }}<br>
+            @if($value->nominal_konsumsi)
+                <strong>Konsumsi:</strong> Rp {{ number_format($value->nominal_konsumsi, 0, ',', '.') }}<br>
+            @endif
+            @if($value->nominal_fullday)
+                <strong>Fullday:</strong> Rp {{ number_format($value->nominal_fullday, 0, ',', '.') }}
+            @endif
+        </td>
+        <td>{{ $value->created_at->format('d M Y') }}</td>
+        <td>
+            <div class="hide-menu">
+                <a href="javascript:void(0)" class="text-dark" id="actiondd" role="button" data-toggle="dropdown">
+                    <i class="mdi mdi-dots-vertical"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="actiondd">
+                    <a class="dropdown-item" href="{{ url('dashboard/data-spp/'.$value->id.'/edit') }}">
+                        <i class="ti-pencil"></i> Edit
+                    </a>
+                    <form method="post" action="{{ url('dashboard/data-spp', $value->id) }}" id="delete{{ $value->id }}">
+                        @csrf
+                        @method('delete')
+                        <button type="button" class="dropdown-item" onclick="deleteData({{ $value->id }})">
+                            <i class="ti-trash"></i> Hapus
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </td>
+    </tr>
+@endforeach
                             </tbody>
                         </table>
                     </div>

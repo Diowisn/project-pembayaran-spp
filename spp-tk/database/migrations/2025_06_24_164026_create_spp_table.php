@@ -13,15 +13,16 @@ class CreateSppTable extends Migration
      */
     public function up()
     {
-        Schema::create('spp', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->integer('tahun');
-            $table->string('jenis_pembayaran');
-            $table->string('kelas');
-            $table->integer('nominal');
-            $table->string('paket')->nullable();
-            $table->timestamps();
-        });
+Schema::create('spp', function (Blueprint $table) {
+    $table->bigIncrements('id');
+    $table->bigInteger('id_kelas')->unsigned();
+    $table->foreign('id_kelas')->references('id')->on('kelas');
+    $table->integer('nominal_spp');
+    $table->integer('nominal_konsumsi')->nullable();
+    $table->integer('nominal_fullday')->nullable();
+    $table->integer('tahun');
+    $table->timestamps();
+});
     }
 
     /**

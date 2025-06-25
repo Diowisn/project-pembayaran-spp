@@ -7,27 +7,36 @@ use Illuminate\Database\Eloquent\Model;
 class Spp extends Model
 {
     protected $table = 'spp';
-   
+    protected $primaryKey = 'id';
     protected $fillable = [
         'tahun', 
-        'jenis_pembayaran', 
-        'kelas',
-        'nominal', 
-        'paket'
+        'id_kelas',
+        'nominal_spp',
+        'nominal_konsumsi',
+        'nominal_fullday',
+        // 'id_infaq_gedung'
     ];
-   
-    /**
-   * Belongs To Spp -> User
-   *
-   * @return void
-   */
-   public function user()
-   {
-         return $this->belongsTo(User::class);
-   }
+
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class, 'id_kelas');
+    }
 
     public function siswa()
     {
-        return $this->hasMany(Siswa::class, 'id_spp');
+        return $this->hasManyThrough(
+            Siswa::class,
+            Kelas::class,
+            'id',
+            'id_kelas',
+            'id_kelas',
+            'id'
+        );
     }
+
+    public function infaqGedung()
+    {
+        return $this->belongsTo(InfaqGedung::class, 'id_infaq_gedung');
+    }
+    
 }

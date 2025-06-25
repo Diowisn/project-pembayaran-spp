@@ -7,54 +7,29 @@ use Illuminate\Database\Eloquent\Model;
 class Pembayaran extends Model
 {
     protected $table = 'pembayaran';
-   
+    protected $primaryKey = 'id';
     protected $fillable = [
-          'id_petugas',
-          'id_siswa', 
-          'spp_bulan', 
-          'jumlah_bayar',
-          'jenis_pembayaran',
-          'bulan', 
-          'tahun',
-          'jumlah_bayar',
-          'tgl_bayar',
-          'is_lunas'
+        'id_petugas', 'id_siswa', 'jenis_pembayaran',
+        'bulan', 'tahun', 'jumlah_bayar', 'is_lunas', 'tgl_bayar'
     ];
-   
- /**
-   * Belongs To Pembayaran -> User (petugas)
-   *
-   * @return void
-   */
-    public function users()
+
+    protected $casts = [
+        'is_lunas' => 'boolean',
+        'tgl_bayar' => 'date'
+    ];
+
+    public function petugas()
     {
-         return $this->belongsTo(User::class,'id_petugas', 'id');
+        return $this->belongsTo(User::class, 'id_petugas');
     }
-   
- /**
-   * Has Many Pembayaran -> Siswa
-   *
-   * @return void
-   */
+
     public function siswa()
     {
-         return $this->belongsTo(Siswa::class,'id_siswa','id','nisn');
-    }
-   
-    // Format tanggal pembayaran (accessor)
-    public function getTglBayarFormattedAttribute()
-    {
-        return \Carbon\Carbon::parse($this->tgl_bayar)->format('d-m-Y');
+        return $this->belongsTo(Siswa::class, 'id_siswa');
     }
 
-    // Scope untuk filter bulan/tahun
-    public function scopeFilterByBulan($query, $bulan)
+    public function getJenisPembayaranAttribute($value)
     {
-        return $query->where('bulan', strtolower($bulan));
-    }
-
-    public function scopeFilterByTahun($query, $tahun)
-    {
-        return $query->where('tahun', $tahun);
+        return ucfirst(str_replace('_', ' ', $value));
     }
 }
