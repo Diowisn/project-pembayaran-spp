@@ -13,26 +13,33 @@
                   <div class="card-body">
                        <div class="card-title">{{ __('Tambah Kelas') }}</div>
                      
-                        <form method="post" action="{{ url('/dashboard/data-kelas') }}">
-                           @csrf
-                           
-                           <div class="form-group">
-                              <label>Nama Kelas</label>
-                              <input type="text" class="form-control @error('kelas') is-invalid @enderror" name="kelas" value="{{ old('kelas') }}">
-                              <span class="text-danger">@error('kelas') {{ $message }} @enderror</span>
-                           </div>
-                           
-                           <div class="form-group">
-                              <label>Kompeten Keahlian</label>
-                              <input type="text" class="form-control @error('keahlian') is-invalid @enderror" name="keahlian" value="{{ old('keahlian') }}">
-                              <span class="text-danger">@error('keahlian') {{ $message }} @enderror</span>
-                           </div>
-                           
-                           <button type="submit" class="btn btn-success btn-rounded">
-                                 <i class="mdi mdi-check"></i> Simpan
-                           </button>
-                        
-                        </form>
+<form method="post" action="{{ url('/dashboard/data-kelas') }}">
+    @csrf
+    
+    <div class="form-group">
+        <label>Nama Kelas</label>
+        <input type="text" class="form-control @error('nama_kelas') is-invalid @enderror" name="nama_kelas" value="{{ old('nama_kelas') }}">
+        <span class="text-danger">@error('nama_kelas') {{ $message }} @enderror</span>
+    </div>
+    
+    <div class="form-group">
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" name="has_konsumsi" id="has_konsumsi" value="1" {{ old('has_konsumsi') ? 'checked' : '' }}>
+            <label class="form-check-label" for="has_konsumsi">Menyediakan Konsumsi</label>
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" name="has_fullday" id="has_fullday" value="1" {{ old('has_fullday') ? 'checked' : '' }}>
+            <label class="form-check-label" for="has_fullday">Program Fullday</label>
+        </div>
+    </div>
+    
+    <button type="submit" class="btn btn-success btn-rounded">
+        <i class="mdi mdi-check"></i> Simpan
+    </button>
+</form>
                   </div>
               </div>     
             </div>
@@ -46,25 +53,25 @@
                               
 						<div class="table-responsive mb-3">
                                 <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">#</th>
-                                            <th scope="col">KELAS</th>
-								    <th scope="col">KEAHLIAN</th>
-                                            <th scope="col">DIBUAT</th>
-								    <th scope="col"></th>                                        
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-								@php 
-								$i=1;
-								@endphp
-								@foreach($kelas as $value)
-                                        <tr>					    
-                                            <th scope="row">{{ $i }}</th>
-                                            <td>{{ $value->nama_kelas }}</td>
-								    <td>{{ $value->kompetensi_keahlian }}</td>
-                                            <td>{{ $value->created_at->format('d M, Y') }}</td>
+   <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">KELAS</th>
+            <th scope="col">KONSUMSI</th>
+            <th scope="col">FULLDAY</th>
+            <th scope="col">DIBUAT</th>
+            <th scope="col"></th>                                        
+        </tr>
+   </thead>
+    <tbody>
+        @php $i=1; @endphp
+        @foreach($kelas as $value)
+        <tr>					    
+            <th scope="row">{{ $i }}</th>
+            <td>{{ $value->nama_kelas }}</td>
+            <td>{{ $value->has_konsumsi ? 'Ya' : 'Tidak' }}</td>
+            <td>{{ $value->has_fullday ? 'Ya' : 'Tidak' }}</td>
+            <td>{{ $value->created_at->format('d M, Y') }}</td>
 					
                                             <td>										                           
                                	 		  <div class="hide-menu">

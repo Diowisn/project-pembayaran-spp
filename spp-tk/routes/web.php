@@ -31,7 +31,15 @@ Auth::routes();
 Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
 
 // Resource Routes
-Route::resource('/dashboard/data-siswa', SiswaController::class);
+Route::resource('/dashboard/data-siswa', SiswaController::class)->names([
+    'index' => 'data-siswa.index',
+    'create' => 'data-siswa.create',
+    'store' => 'data-siswa.store',
+    'show' => 'data-siswa.show',
+    'edit' => 'data-siswa.edit',
+    'update' => 'data-siswa.update',
+    'destroy' => 'data-siswa.destroy'
+]);
 Route::resource('/dashboard/data-kelas', KelasController::class);
 Route::resource('/dashboard/data-spp', SppController::class);
 Route::resource('/dashboard/data-petugas', PetugasController::class);

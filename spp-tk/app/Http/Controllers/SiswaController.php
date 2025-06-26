@@ -7,7 +7,8 @@ use App\Models\User;
 use App\Models\Siswa;
 use App\Models\Kelas;
 use App\Models\Spp;
-use App\Models\Pembayaran;
+use App\Models\InfaqGedung;
+use Illuminate\Support\Facades\Log;
 use Alert;
 
 class SiswaController extends Controller
@@ -40,16 +41,17 @@ class SiswaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
-        $data = [
-            'user' => User::find(auth()->user()->id),
-            'kelas' => Kelas::all(),
-            'spp' => Spp::all(),
-        ];
-      
-        return view('dashboard.data-siswa.create', $data);
-    }
+public function create()
+{
+    $data = [
+        'user' => User::find(auth()->user()->id),
+        'kelas' => Kelas::all(),
+        // 'spp' => Spp::all(),
+        'infaq' => InfaqGedung::all(), 
+    ];
+  
+    return view('dashboard.data-siswa.create', $data);
+}
 
     /**
      * Store a newly created resource in storage.
@@ -57,44 +59,45 @@ class SiswaController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
-         $messages = [
-            'required' => ':attribute tidak boleh kosong!',
-            'numeric' => ':attribute harus berupa angka!',
-            'integer' => ':attribute harus berupa bilangan bulat!'
-         ];
-         
-        $validasi = $request->validate([
-            'nisn' => 'required|numeric',
-            'nis' => 'required|numeric',
-            'nama' => 'required',
-             'kelas' => 'required|integer',
-             'nomor_telepon' => 'required|numeric',
-             'alamat' => 'required',
-             'spp' => 'required|integer',
-        ], $messages);
-        
-        if($validasi) :
-            $store = Siswa::create([
-               'nisn' => $request->nisn,
-               'nis' => $request->nis,
-               'nama' => $request->nama,
-               'id_kelas' => $request->kelas,
-               'nomor_telp' => $request->nomor_telepon,
-               'alamat' => $request->alamat,
-               'id_spp' => $request->spp
-             ]);
-              if($store) :
-                  Alert::success('Berhasil!', 'Data Berhasil di Tambahkan');
-               else :
-                  Alert::error('Terjadi Kesalahan!', 'Data Gagal di Tambahkan');
-               endif;
-        endif;
-      
-        return redirect('dashboard/data-siswa');
-    }
+public function store(Request $request)
+{
+    Log::debug('Data Request:', $request->all());
 
+    $messages = [
+        'required' => ':attribute tidak boleh kosong!',
+        'numeric' => ':attribute harus berupa angka!',
+        'integer' => ':attribute harus berupa bilangan bulat!',
+        'unique' => ':attribute sudah terdaftar!'
+    ];
+    
+    $validasi = $request->validate([
+        'nisn' => 'required|numeric|unique:siswa,nisn|digits:12',
+        'nis' => 'required|numeric|unique:siswa,nis|digits:8',
+        'nama' => 'required|max:35',
+        'id_kelas' => 'required|integer|exists:kelas,id', // Ubah dari 'kelas' ke 'id_kelas'
+        'nomor_telp' => 'required|numeric', // Sesuaikan dengan name di form
+        'alamat' => 'required',
+        'id_infaq_gedung' => 'nullable|integer|exists:infaq_gedung,id',
+    ], $messages);
+
+    try {
+        $siswa = Siswa::create([
+            'nisn' => $request->nisn,
+            'nis' => $request->nis,
+            'nama' => $request->nama,
+            'id_kelas' => $request->id_kelas, // Sesuaikan dengan name di form
+            'nomor_telp' => $request->nomor_telp,
+            'alamat' => $request->alamat,
+            'id_infaq_gedung' => $request->id_infaq_gedung,
+        ]);
+        
+        Alert::success('Berhasil!', 'Data Berhasil di Tambahkan');
+        return redirect()->route('data-siswa.index'); // Gunakan named route
+    } catch (\Exception $e) {
+        Alert::error('Error!', 'Terjadi kesalahan: '.$e->getMessage());
+        return back()->withInput()->withErrors($e->getMessage());
+    }
+}
     /**
      * Display the specified resource.
      *
@@ -118,7 +121,8 @@ class SiswaController extends Controller
             'user' => User::find(auth()->user()->id),
             'siswa' => Siswa::find($id),
             'kelas' => Kelas::all(),
-            'spp' => Spp::all(),
+            // 'spp' => Spp::all(),
+            'infaq' => InfaqGedung::all(),
         ];
       
         return view('dashboard.data-siswa.edit', $data);
@@ -131,47 +135,51 @@ class SiswaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
-       
-        $messages = [
-            'required' => ':attribute tidak boleh kosong!',
-            'numeric' => ':attribute harus berupa angka!',
-            'integer' => ':attribute harus berupa bilangan bulat!'
-         ];
-         
-        $validasi = $request->validate([
-            'nisn' => 'required|numeric',
-            'nis' => 'required|numeric',
-            'nama' => 'required',
-             'kelas' => 'required|integer',
-             'nomor_telepon' => 'required|numeric',
-             'alamat' => 'required',
-             'spp' => 'required|integer',
-        ], $messages);
+public function update(Request $request, $id)
+{
+    Log::debug('Data Request Update:', $request->all());
+    
+    $messages = [
+        'required' => ':attribute tidak boleh kosong!',
+        'numeric' => ':attribute harus berupa angka!',
+        'integer' => ':attribute harus berupa bilangan bulat!',
+        'max' => ':attribute maksimal :max karakter!'
+    ];
+    
+    $validasi = $request->validate([
+        'nisn' => 'required|numeric|digits:12|unique:siswa,nisn,'.$id,
+        'nis' => 'required|numeric|digits:8|unique:siswa,nis,'.$id,
+        'nama' => 'required|max:35',
+        'id_kelas' => 'required|integer|exists:kelas,id',
+        'nomor_telp' => 'required|numeric',
+        'alamat' => 'required',
+        'id_infaq_gedung' => 'nullable|integer|exists:infaq_gedung,id',
+    ], $messages);
+
+    try {
+        $siswa = Siswa::findOrFail($id);
+        $update = $siswa->update([
+            'nisn' => $request->nisn,
+            'nis' => $request->nis,
+            'nama' => $request->nama,
+            'id_kelas' => $request->id_kelas,
+            'nomor_telp' => $request->nomor_telp,
+            'alamat' => $request->alamat,
+            'id_infaq_gedung' => $request->id_infaq_gedung,
+        ]);
         
-        if($validasi) :            
-            $update = Siswa::find($id)->update([
-               'nisn' => $request->nisn,
-               'nis' => $request->nis,
-               'nama' => $request->nama,
-               'id_kelas' => $request->kelas,
-               'nomor_telp' => $request->nomor_telepon,
-               'alamat' => $request->alamat,
-               'id_spp' => $request->spp
-             ]);
-            
-             
-             
-              if($update) :
-                  Alert::success('Berhasil!', 'Data Berhasil di Edit');
-               else :
-                  Alert::error('Terjadi Kesalahan!', 'Data Gagal di Edit');
-               endif;
-        endif;
-      
-        return redirect('dashboard/data-siswa');
+        if($update) {
+            Alert::success('Berhasil!', 'Data Berhasil di Update');
+            return redirect()->route('data-siswa.index');
+        }
+    } catch (\Exception $e) {
+        Alert::error('Error!', 'Terjadi kesalahan: '.$e->getMessage());
+        return back()->withInput()->withErrors($e->getMessage());
     }
+
+    Alert::error('Error!', 'Gagal mengupdate data siswa');
+    return back()->withInput();
+}
 
     /**
      * Remove the specified resource from storage.
