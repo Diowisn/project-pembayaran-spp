@@ -117,7 +117,7 @@
                                     <th>Tahun</th>
                                     <th>Jenis Pembayaran</th>
                                     <th>Kelas</th>
-                                    <th>Paket</th>
+                                    <th>Tagihan</th>
                                     <th>Nominal</th>
                                     <th>Dibuat</th>
                                     <th>Aksi</th>

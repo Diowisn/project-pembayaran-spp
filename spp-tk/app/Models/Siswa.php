@@ -9,7 +9,7 @@ class Siswa extends Model
     protected $table = 'siswa';
     protected $primaryKey = 'id';
     protected $fillable = [
-        'nisn', 'nis', 'nama', 'id_kelas', 
+        'nisn', 'nis', 'nama', 'id_kelas', 'id_spp',
         'alamat', 'nomor_telp', 'id_infaq_gedung'
     ];
 
@@ -33,15 +33,15 @@ class Siswa extends Model
         return $this->hasMany(AngsuranInfaq::class, 'id_siswa');
     }
 
-    // public function spp()
-    // {
-    //     return $this->hasOneThrough(
-    //         Spp::class,
-    //         Kelas::class,
-    //         'id',
-    //         'id_kelas',
-    //         'id_kelas',
-    //         'id'
-    //     );
-    // }
+    public function spp()
+    {
+        return $this->hasOneThrough(
+            Spp::class,
+            Kelas::class,
+            'id',
+            'id_kelas',
+            'id_kelas',
+            'id'
+        );
+    }
 }

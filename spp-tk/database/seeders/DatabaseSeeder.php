@@ -191,51 +191,61 @@ protected function seedUsers()
         }
     }
 
-    protected function seedSiswa($kelasIds, $infaqIds)
-    {
-        $siswaData = [
-            [
-                'nisn' => '1234567890',
-                'nis' => '1001',
-                'nama' => 'Ananda TPA',
-                'id_kelas' => $kelasIds[0], // TPA
-                'alamat' => 'Jl. TPA No.1',
-                'nomor_telp' => '081234567890',
-                'id_infaq_gedung' => $infaqIds[0] // Paket A
-            ],
-            [
-                'nisn' => '2345678901',
-                'nis' => '1002',
-                'nama' => 'Budi KBT',
-                'id_kelas' => $kelasIds[1], // KBT
-                'alamat' => 'Jl. KBT No.2',
-                'nomor_telp' => '082345678901',
-                'id_infaq_gedung' => $infaqIds[1] // Paket B
-            ],
-            [
-                'nisn' => '3456789012',
-                'nis' => '1003',
-                'nama' => 'Citra TK A',
-                'id_kelas' => $kelasIds[2], // TK A
-                'alamat' => 'Jl. TK A No.3',
-                'nomor_telp' => '083456789012',
-                'id_infaq_gedung' => $infaqIds[0] // Paket A
-            ],
-            [
-                'nisn' => '4567890123',
-                'nis' => '1004',
-                'nama' => 'Doni TK B',
-                'id_kelas' => $kelasIds[3], // TK B
-                'alamat' => 'Jl. TK B No.4',
-                'nomor_telp' => '084567890123',
-                'id_infaq_gedung' => $infaqIds[2] // Paket C
-            ]
-        ];
+protected function seedSiswa($kelasIds, $infaqIds)
+{
+    // Pertama, dapatkan semua SPP yang sudah dibuat
+    $sppTpa = Spp::where('id_kelas', $kelasIds[0])->first();
+    $sppKbt = Spp::where('id_kelas', $kelasIds[1])->first();
+    $sppTkA = Spp::where('id_kelas', $kelasIds[2])->first();
+    $sppTkB = Spp::where('id_kelas', $kelasIds[3])->first();
 
-        foreach ($siswaData as $data) {
-            Siswa::create($data);
-        }
+    $siswaData = [
+        [
+            'nisn' => '1234567890',
+            'nis' => '1001',
+            'nama' => 'Ananda TPA',
+            'id_kelas' => $kelasIds[0], // TPA
+            'id_spp' => $sppTpa->id,
+            'alamat' => 'Jl. TPA No.1',
+            'nomor_telp' => '081234567890',
+            'id_infaq_gedung' => $infaqIds[0] // Paket A
+        ],
+        [
+            'nisn' => '2345678901',
+            'nis' => '1002',
+            'nama' => 'Budi KBT',
+            'id_kelas' => $kelasIds[1], // KBT
+            'id_spp' => $sppKbt->id,
+            'alamat' => 'Jl. KBT No.2',
+            'nomor_telp' => '082345678901',
+            'id_infaq_gedung' => $infaqIds[1] // Paket B
+        ],
+        [
+            'nisn' => '3456789012',
+            'nis' => '1003',
+            'nama' => 'Citra TK A',
+            'id_kelas' => $kelasIds[2], // TK A
+            'id_spp' => $sppTkA->id,
+            'alamat' => 'Jl. TK A No.3',
+            'nomor_telp' => '083456789012',
+            'id_infaq_gedung' => $infaqIds[0] // Paket A
+        ],
+        [
+            'nisn' => '4567890123',
+            'nis' => '1004',
+            'nama' => 'Doni TK B',
+            'id_kelas' => $kelasIds[3], // TK B
+            'id_spp' => $sppTkB->id,
+            'alamat' => 'Jl. TK B No.4',
+            'nomor_telp' => '084567890123',
+            'id_infaq_gedung' => $infaqIds[2] // Paket C
+        ]
+    ];
+
+    foreach ($siswaData as $data) {
+        Siswa::create($data);
     }
+}
 
     protected function seedPembayaran()
     {

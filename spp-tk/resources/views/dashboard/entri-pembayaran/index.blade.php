@@ -53,6 +53,27 @@
                        <input type="text" class="form-control @error('jumlah_bayar') is-invalid @enderror" name="jumlah_bayar">
                        <span class="text-danger">@error('jumlah_bayar') {{ $message }} @enderror</span>
                     </div>
+
+<div class="input-group mb-3">
+    <div class="input-group-prepend">
+        <label class="input-group-text">Jenis Pembayaran</label>
+    </div>
+    <select class="custom-select @error('jenis_pembayaran') is-invalid @enderror" name="jenis_pembayaran" required>
+        <option value="">Pilih Jenis</option>
+        <option value="spp">SPP</option>
+        <option value="konsumsi">Konsumsi</option>
+        <option value="infaq_gedung">Infaq Gedung</option>
+        <option value="fullday">Fullday</option>
+    </select>
+</div>
+<span class="text-danger">@error('jenis_pembayaran') {{ $message }} @enderror</span>
+
+<div class="form-group">
+    <label>Tahun</label>
+    <input type="number" class="form-control @error('tahun') is-invalid @enderror" 
+           name="tahun" value="{{ date('Y') }}" required>
+    <span class="text-danger">@error('tahun') {{ $message }} @enderror</span>
+</div>
                   
                    <button type="submit" class="btn btn-success btn-rounded float-right">
                      <i class="mdi mdi-check"></i> Simpan
@@ -94,8 +115,8 @@
 								@foreach($pembayaran as $value)
                                         <tr>					    
                                             <th scope="row">{{ $i }}</th>
-                                            <td>{{ $value->users->name }}</td>
-								    <td>{{ $value->siswa->nisn }}</td>
+                                            <td>{{ $value->petugas->name ?? 'N/A' }}</td>
+								                    <td>{{ $value->siswa->nisn }}</td>
                                             <td>{{ $value->siswa->nama }}</td>
                                             <td>{{ $value->siswa->spp->nominal }}</td>
                                             <td>{{ $value->jumlah_bayar }}</td>
@@ -106,7 +127,7 @@
                                        				<i class="mdi mdi-dots-vertical"></i>
                                     			</a>
                                     				<div class="dropdown-menu dropdown-menu-right" aria-labelledby="actiondd">                                        			
-										     <a class="dropdown-item" href="{{ url('dashboard/pembayaran/'. $value->id .'/edit') }}"><i class="ti-pencil"></i> Edit </a>
+										               <a class="dropdown-item" href="{{ url('dashboard/pembayaran/'. $value->id .'/edit') }}"><i class="ti-pencil"></i> Edit </a>
                                                         <form method="post" action="{{ url('dashboard/pembayaran', $value->id) }}" id="delete{{ $value->id }}">
 												@csrf
 												@method('delete')

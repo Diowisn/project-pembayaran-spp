@@ -26,7 +26,7 @@ class PembayaranController extends Controller
     public function index()
     {
         $data = [
-            'pembayaran' => Pembayaran::orderBy('id', 'DESC')->paginate(10),
+            'pembayaran' => Pembayaran::with(['petugas'])->orderBy('id', 'DESC')->paginate(10),
             'user' => User::find(auth()->user()->id)
         ];
       
@@ -49,46 +49,42 @@ class PembayaranController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $req)
-    {
-      
-        $message = [
-            'required' => ':attribute harus di isi',
-            'numeric' => ':attribute harus berupa angka',
-            'min' => ':attribute minimal harus :min angka',
-            'max' => ':attribute maksimal harus :max angka',
-         ];
-         
-        $req->validate([
-            'nisn' => 'required',
-            'spp_bulan' => 'required',
-            'jumlah_bayar' => 'required|numeric'
-         ], $message);
-         
-         if(Siswa::where('nisn',$req->nisn)->exists() == false):
-            Alert::error('Terjadi Kesalahan!', 'Siswa dengan NISN ini Tidak di Temukan');
-           return back();
-            exit;
-         endif;
-            
-         
-         $siswa = Siswa::where('nisn',$req->nisn)->get();
-         
-         foreach($siswa as $val){
-            $id_siswa = $val->id;
-         }
-         
-         Pembayaran::create([
-            'id_petugas' => auth()->user()->id,
-            'id_siswa' => $id_siswa,
-            'spp_bulan' => $req->spp_bulan,
-            'jumlah_bayar' => $req->jumlah_bayar,
-         ]);
-         
-         Alert::success('Berhasil!', 'Pembayaran Berhasil di Tambahkan!');
-         
-         return back();
+public function store(Request $req)
+{
+    $message = [
+        'required' => ':attribute harus di isi',
+        'numeric' => ':attribute harus berupa angka',
+    ];
+
+    $req->validate([
+        'nisn' => 'required',
+        'spp_bulan' => 'required',
+        'tahun' => 'required|numeric',
+        'jumlah_bayar' => 'required|numeric',
+        'jenis_pembayaran' => 'required|in:spp,konsumsi,infaq_gedung,fullday'
+    ], $message);
+    
+    if(!Siswa::where('nisn', $req->nisn)->exists()) {
+        Alert::error('Terjadi Kesalahan!', 'Siswa dengan NISN ini Tidak di Temukan');
+        return back();
     }
+    
+    $siswa = Siswa::where('nisn', $req->nisn)->first();
+    
+    Pembayaran::create([
+        'id_petugas' => auth()->id(),
+        'id_siswa' => $siswa->id,
+        'jenis_pembayaran' => $req->jenis_pembayaran,
+        'bulan' => $req->spp_bulan, // Mapping dari form ke database
+        'tahun' => $req->tahun,
+        'jumlah_bayar' => $req->jumlah_bayar,
+        'tgl_bayar' => now(),
+        'is_lunas' => true
+    ]);
+    
+    Alert::success('Berhasil!', 'Pembayaran Berhasil di Tambahkan!');
+    return back();
+}
 
     /**
      * Display the specified resource.

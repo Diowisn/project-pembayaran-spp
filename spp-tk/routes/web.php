@@ -43,7 +43,15 @@ Route::resource('/dashboard/data-siswa', SiswaController::class)->names([
 Route::resource('/dashboard/data-kelas', KelasController::class);
 Route::resource('/dashboard/data-spp', SppController::class);
 Route::resource('/dashboard/data-petugas', PetugasController::class);
-Route::resource('/dashboard/pembayaran', PembayaranController::class);
+Route::resource('/dashboard/pembayaran', PembayaranController::class)->names([
+    'index' => 'entry-pembayaran.index',
+    'create' => 'entry-pembayaran.create',
+    'store' => 'entry-pembayaran.store',
+    'show' => 'entry-pembayaran.show',
+    'edit' => 'entry-pembayaran.edit',
+    'update' => 'entry-pembayaran.update',
+    'destroy' => 'entry-pembayaran.destroy'
+]);
 Route::resource('/dashboard/histori', HistoryController::class);
 
 // Laporan Routes
