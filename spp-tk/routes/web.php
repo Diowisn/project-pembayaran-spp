@@ -10,6 +10,7 @@ use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\SiswaLoginController;
+use App\Http\Controllers\InfaqGedungController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,6 +54,16 @@ Route::resource('/dashboard/pembayaran', PembayaranController::class)->names([
     'update' => 'entry-pembayaran.update',
     'destroy' => 'entry-pembayaran.destroy'
 ]);
+
+Route::resource('/dashboard/infaq-gedung', InfaqGedungController::class)->names([
+    'index' => 'infaq-gedung.index',
+    'create' => 'infaq-gedung.create',
+    'store' => 'infaq-gedung.store',
+    'edit' => 'infaq-gedung.edit',
+    'update' => 'infaq-gedung.update',
+    'destroy' => 'infaq-gedung.destroy',
+]);
+
 Route::resource('/dashboard/histori', HistoryController::class);
 
 // Laporan Routes

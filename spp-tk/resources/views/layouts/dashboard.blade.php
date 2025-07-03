@@ -160,6 +160,12 @@
 									<span class="hide-menu">Data SPP</span>
 							</a>
 						</li>
+						<li class="sidebar-item">
+							<a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url('dashboard/infaq-gedung') }}" aria-expanded="false">
+								<i class="mdi mdi-cash-usd"></i>
+									<span class="hide-menu">Data Infaq Gedung</span>
+							</a>
+						</li>
                               @endif
                               @if(auth()->user()->level == 'admin' || auth()->user()->level == 'petugas')
 						<li class="sidebar-item">

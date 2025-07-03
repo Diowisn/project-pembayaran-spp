@@ -112,7 +112,7 @@ class SiswaController extends Controller
         try {
             $siswa = Siswa::create([
                 'nisn' => $request->nisn,
-                'nis' => $request->nis,
+                // 'nis' => $request->nis,
                 'nama' => $request->nama,
                 'id_kelas' => $request->id_kelas, 
                 'nomor_telp' => $request->nomor_telp,
@@ -179,20 +179,20 @@ class SiswaController extends Controller
         
         $validasi = $request->validate([
             'nisn' => 'required|numeric|digits:12|unique:siswa,nisn,'.$id,
-            'nis' => 'required|numeric|digits:8|unique:siswa,nis,'.$id,
+            // 'nis' => 'required|numeric|digits:8|unique:siswa,nis,'.$id,
             'nama' => 'required|max:35',
             'id_kelas' => 'required|integer|exists:kelas,id',
             'nomor_telp' => 'required|numeric',
             'alamat' => 'required',
             'id_infaq_gedung' => 'nullable|integer|exists:infaq_gedung,id',
-            'id_spp' => 'required|integer|exists:spp,id,id_kelas,'.$request->id_kelas,
+            'id_spp' => 'required|integer|exists:spp,id'
         ], $messages);
 
         try {
             $siswa = Siswa::findOrFail($id);
             $update = $siswa->update([
                 'nisn' => $request->nisn,
-                'nis' => $request->nis,
+                // 'nis' => $request->nis,
                 'nama' => $request->nama,
                 'id_kelas' => $request->id_kelas,
                 'nomor_telp' => $request->nomor_telp,
