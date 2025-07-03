@@ -22,11 +22,11 @@
                             <span class="text-danger">@error('nisn') {{ $message }} @enderror</span>
                         </div>
                         
-                        <div class="form-group">
+                        {{-- <div class="form-group">
                             <label>NIS</label>
                             <input type="number" class="form-control @error('nis') is-invalid @enderror" name="nis" value="{{ old('nis') }}">
                             <span class="text-danger">@error('nis') {{ $message }} @enderror</span>
-                        </div>
+                        </div> --}}
                         
                         <div class="form-group">
                             <label>Nama</label>
@@ -64,7 +64,24 @@
                             <textarea class="form-control @error('alamat') is-invalid @enderror" rows="5" name="alamat">{{ old('alamat') }}</textarea>
                             <span class="text-danger">@error('alamat') {{ $message }} @enderror</span>
                         </div>
-                        
+<div class="input-group mb-3">
+    <div class="input-group-prepend">
+        <label class="input-group-text">SPP</label>
+    </div>
+    <select name="id_spp" class="custom-select @error('id_spp') is-invalid @enderror" id="id_spp" required>
+        <option value="">Pilih SPP</option>
+        @foreach($spp as $item)
+            <option value="{{ $item->id }}" 
+                @if(old('id_spp') == $item->id) selected @endif>
+                Rp {{ number_format($item->nominal_spp, 0, ',', '.') }} - 
+                Tahun {{ $item->tahun }}
+                (Kelas: {{ $item->kelas->nama_kelas ?? '-' }})
+            </option>
+        @endforeach
+    </select>
+</div>
+<span class="text-danger">@error('id_spp') {{ $message }} @enderror</span>
+
 <div class="input-group mb-3">
     <div class="input-group-prepend">
         <label class="input-group-text">Paket Infaq Gedung</label>

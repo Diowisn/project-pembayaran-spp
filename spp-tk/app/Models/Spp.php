@@ -24,19 +24,11 @@ class Spp extends Model
 
     public function siswa()
     {
-        return $this->hasManyThrough(
-            Siswa::class,
-            Kelas::class,
-            'id',
-            'id_kelas',
-            'id_kelas',
-            'id'
-        );
+        return $this->hasMany(Siswa::class, 'id_spp');
     }
 
-    public function infaqGedung()
-    {
-        return $this->belongsTo(InfaqGedung::class, 'id_infaq_gedung');
-    }
-    
+    // public function infaqGedung()
+    // {
+    //     return $this->belongsTo(InfaqGedung::class, 'id_infaq_gedung');
+    // }  
 }

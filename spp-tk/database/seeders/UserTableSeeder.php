@@ -5,10 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use App\Models\Siswa;
-use App\Models\Kelas;
-use App\Models\Spp;
-use App\Models\Pembayaran;
+use Carbon\Carbon;
 
 class UserTableSeeder extends Seeder
 {
@@ -19,51 +16,27 @@ class UserTableSeeder extends Seeder
      */
     public function run()
     {
-         
+
+        // Buat user admin
         User::create([
-            'name' => 'admin',
+            'name' => 'Admin SPP',
             'email' => 'admin@spp.com',
             'password' => Hash::make('admin'),
             'level' => 'admin',
-            'created_at' => now(),
-            'updated_at' => now()
-         ]);
-         
-         User::create([
-            'name' => 'petugas',
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
+        ]);
+
+        // Buat user petugas
+        User::create([
+            'name' => 'Petugas SPP',
             'email' => 'petugas@spp.com',
             'password' => Hash::make('petugas'),
             'level' => 'petugas',
-            'created_at' => now(),
-            'updated_at' => now()
-         ]);
-
-        Kelas::create([
-            'nama_kelas' => 'XII RPL 2',
-            'kompetensi_keahlian' => 'Rekayasa Perangkat Lunak'
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
         ]);
 
-        Spp::create([
-            'tahun' => 2020,
-            'nominal' => 150000
-        ]);
-
-        Siswa::create([
-            'nisn' => '123456789876',
-            'nis'  => '22373687',
-            'nama' => 'siswa',
-            'id_kelas' => 1,
-            'nomor_telp' => '089689957106',
-            'alamat' => 'Majalengka',
-            'id_spp' => 1
-        ]);
-
-        Pembayaran::create([
-            'id_petugas' => 2,
-            'id_siswa' => 1,
-            'spp_bulan' => 'februari',
-            'jumlah_bayar' => 150000
-
-        ]);
+        $this->command->info('Users seeded successfully!');
     }
 }

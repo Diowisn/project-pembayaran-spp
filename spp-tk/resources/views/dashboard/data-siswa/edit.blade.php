@@ -23,11 +23,11 @@
                             <span class="text-danger">@error('nisn') {{ $message }} @enderror</span>
                         </div>
                         
-                        <div class="form-group">
+                        {{-- <div class="form-group">
                             <label>NIS</label>
                             <input type="number" class="form-control @error('nis') is-invalid @enderror" name="nis" value="{{ old('nis', $siswa->nis) }}">
                             <span class="text-danger">@error('nis') {{ $message }} @enderror</span>
-                        </div>
+                        </div> --}}
                         
                         <div class="form-group">
                             <label>Nama</label>
@@ -65,7 +65,21 @@
                             <textarea class="form-control @error('alamat') is-invalid @enderror" rows="5" name="alamat">{{ old('alamat', $siswa->alamat) }}</textarea>
                             <span class="text-danger">@error('alamat') {{ $message }} @enderror</span>
                         </div>
-                        
+<div class="input-group mb-3">
+    <div class="input-group-prepend">
+        <label class="input-group-text">SPP</label>
+    </div>
+    <select name="id_spp" class="custom-select @error('id_spp') is-invalid @enderror" id="id_spp">
+        <option value="">Pilih Kelas terlebih dahulu</option>
+        @if($siswa->spp)
+            <option value="{{ $siswa->spp->id }}" selected>
+                Rp {{ number_format($siswa->spp->nominal_spp, 0, ',', '.') }} - Tahun {{ $siswa->spp->tahun }}
+            </option>
+        @endif
+    </select>
+</div>
+<span class="text-danger">@error('id_spp') {{ $message }} @enderror</span>
+
 <div class="input-group mb-3">
     <div class="input-group-prepend">
         <label class="input-group-text">Paket Infaq Gedung</label>
@@ -97,4 +111,42 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+<script>
+$(document).ready(function() {
+    // Fungsi untuk memuat SPP berdasarkan kelas
+    function loadSpp(kelasId, selectedSpp = null) {
+        if(kelasId) {
+            $.get('/get-spp/' + kelasId, function(data) {
+                $('#id_spp').empty().append('<option value="">Pilih SPP</option>');
+                
+                $.each(data, function(key, value) {
+                    $('#id_spp').append('<option value="'+value.id+'">'+
+                        'Rp '+value.nominal_spp.toLocaleString('id-ID')+' - Tahun '+value.tahun+
+                        '</option>');
+                });
+                
+                if(selectedSpp) {
+                    $('#id_spp').val(selectedSpp);
+                }
+            });
+        } else {
+            $('#id_spp').empty().append('<option value="">Pilih Kelas terlebih dahulu</option>');
+        }
+    }
+
+    // Ketika kelas dipilih
+    $('#id_kelas').change(function() {
+        var kelasId = $(this).val();
+        loadSpp(kelasId);
+    });
+    
+    // Untuk edit, trigger change jika kelas sudah ada
+    @if(isset($siswa) && $siswa->id_kelas)
+        loadSpp('{{ $siswa->id_kelas }}', '{{ $siswa->id_spp }}');
+    @endif
+});
+</script>
 @endsection

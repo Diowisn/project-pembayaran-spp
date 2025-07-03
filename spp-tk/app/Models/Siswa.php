@@ -9,8 +9,9 @@ class Siswa extends Model
     protected $table = 'siswa';
     protected $primaryKey = 'id';
     protected $fillable = [
-        'nisn', 'nis', 'nama', 'id_kelas', 'id_spp',
+        'nisn', 'nama', 'id_kelas', 'id_spp',
         'alamat', 'nomor_telp', 'id_infaq_gedung'
+        //  'nis',
     ];
 
     public function kelas()
@@ -35,13 +36,6 @@ class Siswa extends Model
 
     public function spp()
     {
-        return $this->hasOneThrough(
-            Spp::class,
-            Kelas::class,
-            'id',
-            'id_kelas',
-            'id_kelas',
-            'id'
-        );
+        return $this->belongsTo(Spp::class, 'id_spp');
     }
 }

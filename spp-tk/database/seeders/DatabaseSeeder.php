@@ -51,12 +51,12 @@ class DatabaseSeeder extends Seeder
         $this->seedAngsuranInfaq();
     }
 
-protected function seedUsers()
+    protected function seedUsers()
     {
         User::create([
             'name' => 'Admin SPP',
             'email' => 'admin@spp.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('admin'),
             'level' => 'admin',
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now()
@@ -65,17 +65,8 @@ protected function seedUsers()
         User::create([
             'name' => 'Petugas SPP',
             'email' => 'petugas@spp.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('petugas'),
             'level' => 'petugas',
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
-        ]);
-
-        User::create([
-            'name' => 'Siswa Contoh',
-            'email' => 'siswa@spp.com',
-            'password' => Hash::make('password'),
-            'level' => 'siswa',
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now()
         ]);

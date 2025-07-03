@@ -40,6 +40,7 @@ Route::resource('/dashboard/data-siswa', SiswaController::class)->names([
     'update' => 'data-siswa.update',
     'destroy' => 'data-siswa.destroy'
 ]);
+// Route::get('/get-spp/{kelas}', [SiswaController::class, 'getSppByKelas'])->name('get.spp');
 Route::resource('/dashboard/data-kelas', KelasController::class);
 Route::resource('/dashboard/data-spp', SppController::class);
 Route::resource('/dashboard/data-petugas', PetugasController::class);

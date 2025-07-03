@@ -160,27 +160,6 @@
 									<span class="hide-menu">Data SPP</span>
 							</a>
 						</li>
-						</li>
-						<li class="sidebar-item">
-							<a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url('dashboard/data-spp') }}" aria-expanded="false">
-								<i class="mdi mdi-cash-usd"></i>
-									<span class="hide-menu">Uang Gedung</span>
-							</a>
-						</li>
-						</li>
-						<li class="sidebar-item">
-							<a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url('dashboard/data-spp') }}" aria-expanded="false">
-								<i class="mdi mdi-cash-usd"></i>
-									<span class="hide-menu">Full Day</span>
-							</a>
-						</li>
-						</li>
-						<li class="sidebar-item">
-							<a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url('dashboard/data-spp') }}" aria-expanded="false">
-								<i class="mdi mdi-cash-usd"></i>
-									<span class="hide-menu">Uang Makan</span>
-							</a>
-						</li>
                               @endif
                               @if(auth()->user()->level == 'admin' || auth()->user()->level == 'petugas')
 						<li class="sidebar-item">

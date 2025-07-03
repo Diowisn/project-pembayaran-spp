@@ -21,11 +21,12 @@
                                 <tr>
                                     <th scope="col">#</th>
                                     <th scope="col">NISN</th>
-                                    <th scope="col">NIS</th>
+                                    {{-- <th scope="col">NIS</th> --}}
                                     <th scope="col">NAMA</th>
                                     <th scope="col">KELAS</th>
                                     <th scope="col">TELEPON</th>
                                     <th scope="col">ALAMAT</th>
+                                    <th scope="col">SPP</th>
                                     <th scope="col">INFAQ GEDUNG</th>
                                     <th scope="col"></th>
                                 </tr>
@@ -36,11 +37,28 @@
                                 <tr>
                                     <th scope="row">{{ $i }}</th>
                                     <td>{{ $value->nisn }}</td>
-                                    <td>{{ $value->nis }}</td>
+                                    {{-- <td>{{ $value->nis }}</td> --}}
                                     <td>{{ $value->nama }}</td>
                                     <td>{{ $value->kelas->nama_kelas }}</td>
                                     <td>{{ $value->nomor_telp }}</td>
                                     <td>{{ Str::limit($value->alamat, 20) }}</td>
+<td>
+    @if($value->spp)
+        <strong>Rp {{ number_format($value->spp->nominal_spp, 0, ',', '.') }}</strong><br>
+        <small>
+            Tahun: {{ $value->spp->tahun }}<br>
+            @if($value->spp->nominal_konsumsi)
+                Konsumsi: Rp {{ number_format($value->spp->nominal_konsumsi, 0, ',', '.') }}<br>
+            @endif
+            @if($value->spp->nominal_fullday)
+                Fullday: Rp {{ number_format($value->spp->nominal_fullday, 0, ',', '.') }}
+            @endif
+        </small>
+    @else
+        <em>Tidak Ada</em>
+    @endif
+</td>
+
 <td>
     @if($value->infaqGedung)
         Paket {{ $value->infaqGedung->paket }}<br>
