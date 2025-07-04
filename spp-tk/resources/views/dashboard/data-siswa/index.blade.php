@@ -14,7 +14,49 @@
                     <a href="{{ url('dashboard/data-siswa/create') }}" class="btn btn-success btn-rounded float-right mb-3">
                         <i class="mdi mdi-plus-circle"></i> {{ __('Tambah Siswa') }}
                     </a>
-                    
+
+{{-- Form Pencarian Nama / NISN --}}
+<form method="GET" action="{{ route('data-siswa.index') }}" class="form-inline mb-3">
+    <input type="text" name="search" class="form-control mr-2" placeholder="Cari NISN / Nama"
+           value="{{ request('search') }}">
+    <button type="submit" class="btn btn-primary mr-2">Cari</button>
+
+    @if(request()->has('search'))
+        <a href="{{ route('data-siswa.index') }}" class="btn btn-secondary">Reset</a>
+    @endif
+</form>
+
+{{-- Form Filter Kelas & Sortir --}}
+<form method="GET" action="{{ route('data-siswa.index') }}" class="form-inline mb-3">
+    {{-- Kelas --}}
+    <select name="kelas_id" class="form-control mr-2">
+        <option value="">-- Pilih Kelas --</option>
+        @foreach($allKelas as $kelasItem)
+            <option value="{{ $kelasItem->id }}" {{ request('kelas_id') == $kelasItem->id ? 'selected' : '' }}>
+                {{ $kelasItem->nama_kelas }}
+            </option>
+        @endforeach
+    </select>
+
+    {{-- Sorting --}}
+    <select name="sort_by" class="form-control mr-2">
+        <option value="">-- Urutkan --</option>
+        <option value="nama" {{ request('sort_by') == 'nama' ? 'selected' : '' }}>Nama</option>
+        <option value="nisn" {{ request('sort_by') == 'nisn' ? 'selected' : '' }}>NISN</option>
+    </select>
+
+    <select name="order" class="form-control mr-2">
+        <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>A-Z</option>
+        <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>Z-A</option>
+    </select>
+
+    <button type="submit" class="btn btn-success mr-2">Terapkan</button>
+
+    @if(request()->hasAny(['kelas_id', 'sort_by', 'order']))
+        <a href="{{ route('data-siswa.index') }}" class="btn btn-secondary">Reset</a>
+    @endif
+</form>
+
                     <div class="table-responsive mb-3">
                         <table class="table">
                             <thead>
@@ -42,33 +84,33 @@
                                     <td>{{ $value->kelas->nama_kelas }}</td>
                                     <td>{{ $value->nomor_telp }}</td>
                                     <td>{{ Str::limit($value->alamat, 20) }}</td>
-<td>
-    @if($value->spp)
-        <strong>Rp {{ number_format($value->spp->nominal_spp, 0, ',', '.') }}</strong><br>
-        <small>
-            Tahun: {{ $value->spp->tahun }}<br>
-            @if($value->spp->nominal_konsumsi)
-                Konsumsi: Rp {{ number_format($value->spp->nominal_konsumsi, 0, ',', '.') }}<br>
-            @endif
-            @if($value->spp->nominal_fullday)
-                Fullday: Rp {{ number_format($value->spp->nominal_fullday, 0, ',', '.') }}
-            @endif
-        </small>
-    @else
-        <em>Tidak Ada</em>
-    @endif
-</td>
+                                    <td>
+                                        @if($value->spp)
+                                            <strong>Rp {{ number_format($value->spp->nominal_spp, 0, ',', '.') }}</strong><br>
+                                            <small>
+                                                Tahun: {{ $value->spp->tahun }}<br>
+                                                @if($value->spp->nominal_konsumsi)
+                                                    Konsumsi: Rp {{ number_format($value->spp->nominal_konsumsi, 0, ',', '.') }}<br>
+                                                @endif
+                                                @if($value->spp->nominal_fullday)
+                                                    Fullday: Rp {{ number_format($value->spp->nominal_fullday, 0, ',', '.') }}
+                                                @endif
+                                            </small>
+                                        @else
+                                            <em>Tidak Ada</em>
+                                        @endif
+                                    </td>
 
-<td>
-    @if($value->infaqGedung)
-        Paket {{ $value->infaqGedung->paket }}<br>
-        <small>
-            {{ $value->infaqGedung->jumlah_angsuran }}x @ Rp {{ number_format($value->infaqGedung->nominal_per_angsuran, 0, ',', '.') }}
-        </small>
-    @else
-        -
-    @endif
-</td>
+                                    <td>
+                                        @if($value->infaqGedung)
+                                            Paket {{ $value->infaqGedung->paket }}<br>
+                                            <small>
+                                                {{ $value->infaqGedung->jumlah_angsuran }}x @ Rp {{ number_format($value->infaqGedung->nominal_per_angsuran, 0, ',', '.') }}
+                                            </small>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
                                     <td>
                                         <div class="hide-menu">
                                             <a href="javascript:void(0)" class="text-dark" id="actiondd" role="button" data-toggle="dropdown">

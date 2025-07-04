@@ -26,14 +26,33 @@ class SiswaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-	   $data = [
+        $query = Siswa::with(['kelas', 'spp', 'infaqGedung']);
+
+        if ($request->filled('kelas_id')) {
+            $query->where('id_kelas', $request->kelas_id);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', '%' . $search . '%')
+                ->orWhere('nisn', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->filled('sort_by') && $request->filled('order')) {
+            $query->orderBy($request->sort_by, $request->order);
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        return view('dashboard.data-siswa.index', [
             'user' => User::find(auth()->user()->id),
-            'siswa' => Siswa::orderBy('id', 'DESC')->paginate(10),
-        ];
-      
-        return view('dashboard.data-siswa.index', $data);
+            'siswa' => $query->paginate(10)->appends($request->all()),
+            'allKelas' => Kelas::all(),
+        ]);
     }
 
 // public function getSppByKelas($id_kelas)
