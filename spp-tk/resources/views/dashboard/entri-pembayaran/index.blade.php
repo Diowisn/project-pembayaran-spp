@@ -8,7 +8,6 @@
 @section('content')
     <div class="row">
         <div class="col-md-12">
-
             <div class="card">
                 <div class="card-body">
                     <div class="card-title">Entri Pembayaran</div>
@@ -37,35 +36,44 @@
                                 <input type="text" class="form-control" value="{{ $siswa->nama ?? '' }}" disabled>
                             </div>
 
-                            <div class="form-group">
-                                <label>Nominal SPP</label>
-                                <input type="text" class="form-control"
-                                    value="{{ isset($siswa) ? 'Rp ' . number_format($siswa->spp->nominal_spp, 0, ',', '.') : '' }}"
-                                    disabled>
-                                <input type="hidden" name="nominal_spp" value="{{ $siswa->spp->nominal_spp ?? 0 }}">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Nominal SPP</label>
+                                        <input type="text" class="form-control"
+                                            value="{{ isset($siswa) ? 'Rp ' . number_format($siswa->spp->nominal_spp, 0, ',', '.') : '' }}"
+                                            disabled>
+                                        <input type="hidden" name="nominal_spp"
+                                            value="{{ $siswa->spp->nominal_spp ?? 0 }}">
+                                    </div>
+                                </div>
+
+                                @if (isset($siswa) && $siswa->spp->nominal_konsumsi > 0)
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Nominal Konsumsi</label>
+                                            <input type="text" class="form-control"
+                                                value="{{ 'Rp ' . number_format($siswa->spp->nominal_konsumsi, 0, ',', '.') }}"
+                                                disabled>
+                                            <input type="hidden" name="nominal_konsumsi"
+                                                value="{{ $siswa->spp->nominal_konsumsi }}">
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if (isset($siswa) && $siswa->spp->nominal_fullday > 0)
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Nominal Fullday</label>
+                                            <input type="text" class="form-control"
+                                                value="{{ 'Rp ' . number_format($siswa->spp->nominal_fullday, 0, ',', '.') }}"
+                                                disabled>
+                                            <input type="hidden" name="nominal_fullday"
+                                                value="{{ $siswa->spp->nominal_fullday }}">
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
-
-                            @if (isset($siswa) && $siswa->spp->nominal_konsumsi > 0)
-                                <div class="form-group">
-                                    <label>Nominal Konsumsi</label>
-                                    <input type="text" class="form-control"
-                                        value="{{ 'Rp ' . number_format($siswa->spp->nominal_konsumsi, 0, ',', '.') }}"
-                                        disabled>
-                                    <input type="hidden" name="nominal_konsumsi"
-                                        value="{{ $siswa->spp->nominal_konsumsi }}">
-                                </div>
-                            @endif
-
-                            @if (isset($siswa) && $siswa->spp->nominal_fullday > 0)
-                                <div class="form-group">
-                                    <label>Nominal Fullday</label>
-                                    <input type="text" class="form-control"
-                                        value="{{ 'Rp ' . number_format($siswa->spp->nominal_fullday, 0, ',', '.') }}"
-                                        disabled>
-                                    <input type="hidden" name="nominal_fullday"
-                                        value="{{ $siswa->spp->nominal_fullday }}">
-                                </div>
-                            @endif
 
                             @if ($siswa)
                                 @php
@@ -80,6 +88,25 @@
                                     <input type="text" class="form-control"
                                         value="{{ 'Rp ' . number_format($total_bayar, 0, ',', '.') }}" readonly>
                                     <input type="hidden" name="jumlah_tagihan" value="{{ $total_bayar }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Bulan</label>
+                                    <select class="form-control @error('bulan') is-invalid @enderror" name="bulan"
+                                        required>
+                                        <option value="">Pilih Bulan</option>
+                                        @foreach (['januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember'] as $bulan)
+                                            <option value="{{ $bulan }}"
+                                                {{ old('bulan') == $bulan ? 'selected' : '' }}>
+                                                {{ ucfirst($bulan) }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <span class="text-danger">
+                                        @error('bulan')
+                                            {{ $message }}
+                                        @enderror
+                                    </span>
                                 </div>
 
                                 <div class="form-group">
@@ -103,12 +130,25 @@
                     @endif
                 </div>
             </div>
-
         </div>
     </div>
 
     <div class="row">
         <div class="col-md-12">
+            <!-- Form Pencarian -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <form method="GET" action="{{ route('entry-pembayaran.index') }}" class="form-inline">
+                        <input type="text" name="search" class="form-control mr-2" placeholder="Cari NISN / Nama Siswa"
+                            value="{{ request('search') }}">
+                        <button type="submit" class="btn btn-primary mr-2">Cari</button>
+
+                        @if (request()->has('search'))
+                            <a href="{{ route('entry-pembayaran.index') }}" class="btn btn-secondary">Reset</a>
+                        @endif
+                    </form>
+                </div>
+            </div>
 
             <div class="card">
                 <div class="card-body">
@@ -122,16 +162,42 @@
                                     <th scope="col">PETUGAS</th>
                                     <th scope="col">NISN SISWA</th>
                                     <th scope="col">NAMA SISWA</th>
-                                    <th scope="col">TOTAL BAYAR</th>
+                                    <th scope="col">
+                                        <a href="{{ route('entry-pembayaran.index', [
+                                            'search' => request('search'),
+                                            'sort_by' => 'jumlah_bayar',
+                                            'order' => request('sort_by') == 'jumlah_bayar' && request('order') == 'asc' ? 'desc' : 'asc',
+                                        ]) }}"
+                                            class="text-dark">
+                                            TOTAL BAYAR
+                                            @if (request('sort_by') == 'jumlah_bayar')
+                                                <i
+                                                    class="mdi mdi-chevron-{{ request('order') == 'asc' ? 'up' : 'down' }}"></i>
+                                            @endif
+                                        </a>
+                                    </th>
                                     <th scope="col">JUMLAH BAYAR</th>
                                     <th scope="col">SISA</th>
-                                    <th scope="col">TANGGAL BAYAR</th>
+                                    <th scope="col">
+                                        <a href="{{ route('entry-pembayaran.index', [
+                                            'search' => request('search'),
+                                            'sort_by' => 'created_at',
+                                            'order' => request('sort_by') == 'created_at' && request('order') == 'asc' ? 'desc' : 'asc',
+                                        ]) }}"
+                                            class="text-dark">
+                                            TANGGAL BAYAR
+                                            @if (request('sort_by') == 'created_at')
+                                                <i
+                                                    class="mdi mdi-chevron-{{ request('order') == 'asc' ? 'up' : 'down' }}"></i>
+                                            @endif
+                                        </a>
+                                    </th>
                                     <th scope="col"></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @php
-                                    $i = 1;
+                                    $i = ($pembayaran->currentPage() - 1) * $pembayaran->perPage() + 1;
                                 @endphp
                                 @foreach ($pembayaran as $value)
                                     <tr>
@@ -139,19 +205,21 @@
                                         <td>{{ $value->petugas->name ?? 'N/A' }}</td>
                                         <td>{{ $value->siswa->nisn }}</td>
                                         <td>{{ $value->siswa->nama }}</td>
-<td>Rp {{ number_format(
-    $value->siswa->spp->nominal_spp + 
-    ($value->siswa->spp->nominal_konsumsi ?? 0) + 
-    ($value->siswa->spp->nominal_fullday ?? 0), 
-    0, ',', '.') 
-}}</td>
-                                        <td>{{ $value->jumlah_bayar }}</td>
-                                        <td>{{ $value->kembalian }}</td>
+                                        <td>Rp
+                                            {{ number_format(
+                                                $value->nominal_spp + ($value->nominal_konsumsi ?? 0) + ($value->nominal_fullday ?? 0),
+                                                0,
+                                                ',',
+                                                '.',
+                                            ) }}
+                                        </td>
+                                        <td>Rp {{ number_format($value->jumlah_bayar, 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($value->kembalian, 0, ',', '.') }}</td>
                                         <td>{{ $value->created_at->format('d M, Y') }}</td>
                                         <td>
                                             <div class="hide-menu">
-                                                <a href="javascript:void(0)" class="text-dark" id="actiondd" role="button"
-                                                    data-toggle="dropdown">
+                                                <a href="javascript:void(0)" class="text-dark" id="actiondd"
+                                                    role="button" data-toggle="dropdown">
                                                     <i class="mdi mdi-dots-vertical"></i>
                                                 </a>
                                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="actiondd">
@@ -179,22 +247,25 @@
                                         $i++;
                                     @endphp
                                 @endforeach
-
                             </tbody>
                         </table>
                     </div>
 
-                    {{-- <! -- Pagination --> --}}
+                    <!-- Pagination -->
                     @if ($pembayaran->lastPage() != 1)
                         <div class="btn-group float-right">
-                            <a href="{{ $pembayaran->previousPageUrl() }}" class="btn btn-success">
+                            <a href="{{ $pembayaran->appends(request()->query())->previousPageUrl() }}"
+                                class="btn btn-success">
                                 <i class="mdi mdi-chevron-left"></i>
                             </a>
                             @for ($i = 1; $i <= $pembayaran->lastPage(); $i++)
                                 <a class="btn btn-success {{ $i == $pembayaran->currentPage() ? 'active' : '' }}"
-                                    href="{{ $pembayaran->url($i) }}">{{ $i }}</a>
+                                    href="{{ $pembayaran->appends(request()->query())->url($i) }}">
+                                    {{ $i }}
+                                </a>
                             @endfor
-                            <a href="{{ $pembayaran->nextPageUrl() }}" class="btn btn-success">
+                            <a href="{{ $pembayaran->appends(request()->query())->nextPageUrl() }}"
+                                class="btn btn-success">
                                 <i class="mdi mdi-chevron-right"></i>
                             </a>
                         </div>
@@ -202,12 +273,10 @@
                     <!-- End Pagination -->
 
                     @if (count($pembayaran) == 0)
-                        <div class="text-center">Tidak ada data!</div>
+                        <div class="text-center">Tidak ada data pembayaran!</div>
                     @endif
-
                 </div>
             </div>
-
         </div>
     </div>
 @endsection

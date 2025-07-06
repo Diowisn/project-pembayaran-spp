@@ -24,15 +24,38 @@ class PembayaranController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
-        $data = [
-            'pembayaran' => Pembayaran::with(['petugas'])->orderBy('id', 'DESC')->paginate(10),
-            'user' => User::find(auth()->user()->id)
-        ];
-      
-        return view('dashboard.entri-pembayaran.index', $data);
+public function index(Request $request)
+{
+    $query = Pembayaran::with(['petugas', 'siswa', 'siswa.spp']);
+
+    // Fitur Pencarian
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->whereHas('siswa', function($q) use ($search) {
+            $q->where('nama', 'like', '%' . $search . '%')
+              ->orWhere('nisn', 'like', '%' . $search . '%');
+        });
     }
+
+    // Fitur Sorting
+    if ($request->filled('sort_by') && $request->filled('order')) {
+        // Validasi kolom sorting untuk keamanan
+        $validColumns = ['created_at', 'jumlah_bayar'];
+        $sortBy = in_array($request->sort_by, $validColumns) ? $request->sort_by : 'created_at';
+        
+        $query->orderBy($sortBy, $request->order);
+    } else {
+        $query->orderBy('created_at', 'desc');
+    }
+
+    return view('dashboard.entri-pembayaran.index', [
+        'pembayaran' => $query->paginate(10)->appends($request->all()),
+        'user' => User::find(auth()->user()->id),
+        'search' => $request->search ?? '',
+        'sort_by' => $request->sort_by ?? 'created_at',
+        'order' => $request->order ?? 'desc',
+    ]);
+}
 
     /**
      * Show the form for creating a new resource.
@@ -89,9 +112,11 @@ public function store(Request $request)
     $validator = Validator::make($request->all(), [
         'id_siswa' => 'required|exists:siswa,id',
         'nisn' => 'required|exists:siswa,nisn',
+        'bulan' => 'required|string',
         'nominal_pembayaran' => 'required|numeric|min:'.$request->jumlah_tagihan,
         'jumlah_tagihan' => 'required|numeric'
     ], [
+        'bulan.required' => 'Bulan pembayaran harus dipilih',
         'min' => 'Pembayaran tidak boleh kurang dari :min',
         'required' => 'Field :attribute wajib diisi'
     ]);
@@ -110,7 +135,7 @@ public function store(Request $request)
             'id_petugas' => auth()->id(),
             'id_siswa' => $request->id_siswa,
             'id_spp' => $siswa->id_spp,
-            'bulan' => date('m'),
+            'bulan' => $request->bulan,
             'tahun' => date('Y'),
             'nominal_spp' => $siswa->spp->nominal_spp,
             'nominal_konsumsi' => $siswa->spp->nominal_konsumsi ?? 0,
@@ -148,15 +173,17 @@ public function store(Request $request)
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
-        $data = [
-            'edit' => Pembayaran::find($id),
-            'user' => User::find(auth()->user()->id)
-         ];
-         
-         return view('dashboard.entri-pembayaran.edit', $data);
-    }
+public function edit($id)
+{
+    $pembayaran = Pembayaran::with('siswa.spp')->findOrFail($id);
+    
+    $data = [
+        'edit' => $pembayaran,
+        'user' => User::find(auth()->user()->id)
+    ];
+    
+    return view('dashboard.entri-pembayaran.edit', $data);
+}
 
     /**
      * Update the specified resource in storage.
@@ -165,49 +192,52 @@ public function store(Request $request)
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $req, $id)
-    {
-         $message = [
-            'required' => ':attribute harus di isi',
-            'numeric' => ':attribute harus berupa angka',
-            'min' => ':attribute minimal harus :min angka',
-            'max' => ':attribute maksimal harus :max angka',
-         ];
-         
-        $req->validate([
-            'nisn' => 'required',
-            'spp_bulan' => 'required',
-            'jumlah_bayar' => 'required|numeric'
-         ], $message);
-         
-         $pembayaran = Pembayaran::find($id);
-         
-         $pembayaran->update([
-             'spp_bulan' => $req->spp_bulan,
-            'jumlah_bayar' => $req->jumlah_bayar
-         ]);
-         
-         if(Siswa::where('nisn',$req->nisn)->exists() == false):
-            Alert::error('Terjadi Kesalahan!', 'Siswa dengan NISN ini Tidak di Temukan');
-           return back();
-            exit;
-         endif;
+public function update(Request $request, $id)
+{
+    $pembayaran = Pembayaran::with('siswa.spp')->findOrFail($id);
+    
+    $messages = [
+        'required' => ':attribute harus diisi',
+        'numeric' => ':attribute harus berupa angka',
+        'min' => 'Pembayaran tidak boleh kurang dari tagihan'
+    ];
 
-         if($req->nisn != $pembayaran->siswa->nisn) :
-            $siswa = Siswa::where('nisn',$req->nisn)->get();
-         
-            foreach($siswa as $val){
-               $id_siswa = $val->id;
-            }
-            
-            $pembayaran->update([
-               'id_siswa' => $id_siswa,
-            ]);
-         endif;
-         
-         Alert::success('Berhasil!', 'Pembayaran berhasil di Edit');
-         return back();
+    $validator = Validator::make($request->all(), [
+        'bulan' => 'required',
+        'jumlah_bayar' => 'required|numeric|min:'.($pembayaran->nominal_spp + 
+                          ($pembayaran->nominal_konsumsi ?? 0) + 
+                          ($pembayaran->nominal_fullday ?? 0)),
+        'tgl_bayar' => 'required|date',
+        'is_lunas' => 'required|boolean'
+    ], $messages);
+
+    if ($validator->fails()) {
+        return redirect()
+                ->back()
+                ->withErrors($validator)
+                ->withInput();
     }
+
+    try {
+        $pembayaran->update([
+            'bulan' => $request->bulan,
+            'jumlah_bayar' => $request->jumlah_bayar,
+            'tgl_bayar' => $request->tgl_bayar,
+            'is_lunas' => $request->is_lunas,
+            'kembalian' => $request->jumlah_bayar - ($pembayaran->nominal_spp + 
+                          ($pembayaran->nominal_konsumsi ?? 0) + 
+                          ($pembayaran->nominal_fullday ?? 0))
+        ]);
+
+        Alert::success('Berhasil!', 'Pembayaran berhasil diperbarui');
+        return redirect()->route('entry-pembayaran.index');
+
+    } catch (\Exception $e) {
+        Log::error('Error updating pembayaran: '.$e->getMessage());
+        Alert::error('Error!', 'Terjadi kesalahan saat memperbarui pembayaran');
+        return back()->withInput();
+    }
+}
 
     /**
      * Remove the specified resource from storage.
