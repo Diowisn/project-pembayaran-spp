@@ -9,8 +9,9 @@ class Pembayaran extends Model
     protected $table = 'pembayaran';
     protected $primaryKey = 'id';
     protected $fillable = [
-        'id_petugas', 'id_siswa', 'jenis_pembayaran',
-        'bulan', 'tahun', 'jumlah_bayar', 'is_lunas', 'tgl_bayar'
+        'id_petugas', 'id_siswa', 'id_spp', 'bulan', 'tahun',
+        'nominal_spp', 'nominal_konsumsi', 'nominal_fullday',
+        'jumlah_bayar', 'kembalian', 'is_lunas', 'tgl_bayar'
     ];
 
     protected $casts = [
@@ -18,6 +19,11 @@ class Pembayaran extends Model
         'tgl_bayar' => 'date'
     ];
 
+    public function spp()
+    {
+        return $this->belongsTo(Spp::class, 'id_spp');
+    }
+    
     public function petugas()
     {
         return $this->belongsTo(User::class, 'id_petugas');

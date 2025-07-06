@@ -42,9 +42,17 @@ Route::resource('/dashboard/data-siswa', SiswaController::class)->names([
     'destroy' => 'data-siswa.destroy'
 ]);
 // Route::get('/get-spp/{kelas}', [SiswaController::class, 'getSppByKelas'])->name('get.spp');
+
 Route::resource('/dashboard/data-kelas', KelasController::class);
 Route::resource('/dashboard/data-spp', SppController::class);
 Route::resource('/dashboard/data-petugas', PetugasController::class);
+
+// web.php
+// Route::get('/dashboard/pembayaran/cari/{nisn}', [PembayaranController::class, 'getSiswaByNisn'])
+//     ->name('pembayaran.get-siswa');
+Route::get('/dashboard/pembayaran/cari', [PembayaranController::class, 'cariSiswa'])
+     ->name('pembayaran.cari-siswa');
+
 Route::resource('/dashboard/pembayaran', PembayaranController::class)->names([
     'index' => 'entry-pembayaran.index',
     'create' => 'entry-pembayaran.create',
