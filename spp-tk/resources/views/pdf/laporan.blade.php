@@ -110,7 +110,7 @@
    
    <!-- header -->
    <div class="text-center">
-      <img src="{{ public_path('img/West_Java_coa.png') }}" class="img" alt="logo.png" width="90">
+      <img src="{{ public_path('img/amanah31.png') }}" class="img" alt="logo.png" width="90">
       <div style="margin-left:6rem;">
          <span class="text-header text-bold text-danger">
             PEMERINTAH DAERAH PROVINSI JAWA BARAT <br> DINAS PENDIDIKAN <br>
@@ -144,7 +144,7 @@
       <tbody>
          @foreach($pembayaran as $val)
          <tr>
-            <td>{{ $val->petugas->name }}</td>
+            <td>{{ $val->users->name }}</td>
             <td>{{ $val->siswa->nama }}</td>
             <td>{{ $val->siswa->kelas->nama_kelas }}</td>
             <td>{{ $val->bulan }}</td>

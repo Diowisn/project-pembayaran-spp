@@ -24,10 +24,17 @@ use App\Http\Controllers\InfaqGedungController;
 */
 
 Route::get('/', function () {
-    return view('auth.login');
-});
+    return view('auth.login-option');
+})->name('login.option');
 
 Auth::routes();
+
+Route::get('/login-option', function () {
+    return view('auth.login-option');
+})->name('login.option');
+
+Route::get('/login/admin', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])
+    ->name('login.admin');
 
 Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
 
@@ -78,10 +85,11 @@ Route::resource('/dashboard/histori', HistoryController::class);
 Route::get('/dashboard/laporan', [LaporanController::class, 'index']);
 Route::get('/dashboard/laporan/create', [LaporanController::class, 'create']);
 
-\Route::get('/pembayaran/{id}/generate', [PembayaranController::class, 'generate'])->name('pembayaran.generate');
+Route::get('/pembayaran/{id}/generate', [PembayaranController::class, 'generate'])->name('pembayaran.generate');
 
 // Siswa Login Routes
-Route::get('/login/siswa', [SiswaLoginController::class, 'siswaLogin']);
+Route::get('/login/siswa', [SiswaLoginController::class, 'siswaLogin'])
+    ->name('login.siswa');
 Route::post('/login/siswa/proses', [SiswaLoginController::class, 'login']);
 Route::get('/dashboard/siswa/histori', [SiswaLoginController::class, 'index']);
 Route::get('/siswa/logout', [SiswaLoginController::class, 'logout']);
