@@ -78,6 +78,8 @@ Route::resource('/dashboard/histori', HistoryController::class);
 Route::get('/dashboard/laporan', [LaporanController::class, 'index']);
 Route::get('/dashboard/laporan/create', [LaporanController::class, 'create']);
 
+\Route::get('/pembayaran/{id}/generate', [PembayaranController::class, 'generate'])->name('pembayaran.generate');
+
 // Siswa Login Routes
 Route::get('/login/siswa', [SiswaLoginController::class, 'siswaLogin']);
 Route::post('/login/siswa/proses', [SiswaLoginController::class, 'login']);

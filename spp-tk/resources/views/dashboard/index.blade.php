@@ -37,12 +37,15 @@
                                             <li class="list-group-item">Kembalian Rp. {{ $history->kembalian }}</li>
                                         </ul>
                                     </span>
-                                    <div class="comment-footer ">
-                                        <span
-                                            class="text-muted float-right">{{ $history->created_at->format('M d, Y') }}</span>
+                                    <div class="comment-footer">
+                                        <span class="text-muted float-right">{{ $history->created_at->format('M d, Y') }}</span>
                                         <span class="action-icons active">
-                                            <a href="{{ url('dashboard/pembayaran/' . $history->id . '/edit') }}"><i
-                                                    class="ti-pencil-alt"></i></a>
+                                            <a href="{{ route('pembayaran.generate', $history->id) }}" class="mr-2" title="Cetak Bukti">
+                                                <i class="mdi mdi-printer"></i>
+                                            </a>
+                                            <a href="{{ url('dashboard/pembayaran/' . $history->id . '/edit') }}" title="Edit">
+                                                <i class="ti-pencil-alt"></i>
+                                            </a>
                                         </span>
                                     </div>
                                 </div>

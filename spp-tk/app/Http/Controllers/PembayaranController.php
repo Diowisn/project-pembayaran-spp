@@ -8,6 +8,7 @@ use App\Models\Pembayaran;
 use App\Models\User;
 use App\Models\Siswa;
 use Alert;
+use PDF;
 
 class PembayaranController extends Controller
 {
@@ -254,5 +255,22 @@ public function update(Request $request, $id)
          endif;
          
          return back();
+    }
+
+    public function generate($id)
+    {
+        ini_set('max_execution_time', 300);
+        
+        $pembayaran = Pembayaran::with(['siswa', 'siswa.kelas', 'petugas'])->findOrFail($id);
+        
+        $pdf = PDF::loadView('pdf.bukti', compact('pembayaran'))
+                  ->setPaper('a5', 'portrait')
+                  ->setOptions([
+                      'isHtml5ParserEnabled' => true,
+                      'isRemoteEnabled' => true,
+                      'dpi' => 150
+                  ]);
+        
+        return $pdf->download('Bukti-Pembayaran-SPP-' . $pembayaran->siswa->nama . '.pdf');
     }
 }

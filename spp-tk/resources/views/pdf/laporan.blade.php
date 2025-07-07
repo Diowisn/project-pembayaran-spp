@@ -144,11 +144,11 @@
       <tbody>
          @foreach($pembayaran as $val)
          <tr>
-            <td>{{ $val->users->name }}</td>
+            <td>{{ $val->petugas->name }}</td>
             <td>{{ $val->siswa->nama }}</td>
             <td>{{ $val->siswa->kelas->nama_kelas }}</td>
-            <td>{{ $val->spp_bulan }}</td>
-            <td>{{ $val->siswa->spp->nominal }}</td>
+            <td>{{ $val->bulan }}</td>
+            <td>{{ $val->siswa->spp->nominal_spp }}</td>
             <td>{{ $val->jumlah_bayar }}</td>
             <td>{{ $val->created_at->format('d M, Y') }}</td>
          

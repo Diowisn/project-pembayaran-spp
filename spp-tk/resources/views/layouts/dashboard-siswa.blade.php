@@ -9,8 +9,8 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <!-- Favicon icon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/images/favicon.png') }}">
-    <title>E-Pembayaran SPP</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/images/logo-amanah.png') }}">
+    <title>Assakiinah - SPP</title>
     <!-- Custom CSS -->
     <link href="{{ asset('assets/libs/chartist/dist/chartist.min.css') }}" rel="stylesheet">
     <!-- Custom CSS -->
@@ -58,7 +58,8 @@
                     <a class="navbar-brand" href="{{ url('/dashboard') }}">
                         <!-- Logo text -->
                         <span class="logo-text">
-						<i class="mdi mdi-square-inc-cash"></i> E-Pembayaran SPP
+						{{-- <i class="mdi mdi-square-inc-cash"></i> Assakiinah - SPP --}}
+                        <img src="{{ asset('assets/images/amanah3.png') }}" alt="" width="150" height="auto">
                         </span>
                     </a>
                     <!-- ============================================================== -->
