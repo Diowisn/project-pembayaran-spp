@@ -15,21 +15,20 @@ class AngsuranInfaq extends Model
         'tgl_bayar' => 'date'
     ];
 
-    public function siswa()
+public function siswa()
     {
         return $this->belongsTo(Siswa::class, 'id_siswa');
     }
 
-    // Akses ke infaq gedung melalui siswa
     public function infaqGedung()
     {
         return $this->hasOneThrough(
             InfaqGedung::class,
             Siswa::class,
-            'id', // Foreign key pada tabel siswa
-            'id', // Foreign key pada tabel infaq_gedung
-            'id_siswa', // Local key pada tabel angsuran_infaq
-            'id_infaq_gedung' // Local key pada tabel siswa
+            'id', // Foreign key on siswa table
+            'id', // Foreign key on infaq_gedung table
+            'id_siswa', // Local key on angsuran_infaq table
+            'id_infaq_gedung' // Local key on siswa table
         );
     }
 }

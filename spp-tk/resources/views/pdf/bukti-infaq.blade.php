@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Bukti Pembayaran SPP</title>
+    <title>Bukti Pembayaran Infaq Gedung</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -100,19 +100,19 @@
     <table class="info-table">
         <tr>
             <td width="25%">NISN</td>
-            <td width="25%">: {{ $pembayaran->siswa->nisn }}</td>
+            <td width="25%">: {{ $angsuran->siswa->nisn }}</td>
             <td width="25%">Tanggal Pembayaran</td>
-            <td width="25%">: {{ $pembayaran->tgl_bayar->format('d F Y') }}</td>
+            <td width="25%">: {{ $angsuran->tgl_bayar->format('d F Y') }}</td>
         </tr>
         <tr>
             <td>Nama</td>
-            <td>: {{ $pembayaran->siswa->nama }}</td>
-            <td>Tahun Ajaran</td>
-            <td>: {{ $pembayaran->tahun }}/{{ $pembayaran->tahun+1 }}</td>
+            <td>: {{ $angsuran->siswa->nama }}</td>
+            <td>Paket Infaq</td>
+            <td>: {{ $angsuran->infaqGedung->paket ?? '-' }}</td>
         </tr>
         <tr>
-            <td>Kelas</td>
-            <td>: {{ $pembayaran->siswa->kelas->nama_kelas }}</td>
+            <td>Angsuran Ke</td>
+            <td>: {{ $angsuran->angsuran_ke }}</td>
             <td></td>
             <td></td>
         </tr>
@@ -125,45 +125,26 @@
             <tr>
                 <th width="5%">No.</th>
                 <th>Pembayaran</th>
-                <th width="25%">Total Tagihan</th>
-                <th width="25%">Jumlah Pembayaran</th>
+                <th width="25%">Jumlah Bayar</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td>1</td>
-                <td>SPP - T.A {{ $pembayaran->tahun }}/{{ $pembayaran->tahun+1 }} - ({{ ucfirst($pembayaran->bulan) }} {{ $pembayaran->tahun }})</td>
-                <td>Rp. {{ number_format($pembayaran->nominal_spp,0,',','.') }}</td>
-                <td>Rp. {{ number_format($pembayaran->nominal_spp,0,',','.') }}</td>
+                <td>Infaq Gedung - Paket {{ $angsuran->infaqGedung->paket ?? '-' }}</td>
+                <td>Rp. {{ number_format($angsuran->jumlah_bayar,0,',','.') }}</td>
             </tr>
-            @if($pembayaran->nominal_konsumsi > 0)
-            <tr>
-                <td>2</td>
-                <td>Konsumsi - T.A {{ $pembayaran->tahun }}/{{ $pembayaran->tahun+1 }}</td>
-                <td>Rp. {{ number_format($pembayaran->nominal_konsumsi,0,',','.') }}</td>
-                <td>Rp. {{ number_format($pembayaran->nominal_konsumsi,0,',','.') }}</td>
-            </tr>
-            @endif
-            @if($pembayaran->nominal_fullday > 0)
-            <tr>
-                <td>3</td>
-                <td>Fullday - T.A {{ $pembayaran->tahun }}/{{ $pembayaran->tahun+1 }}</td>
-                <td>Rp. {{ number_format($pembayaran->nominal_fullday,0,',','.') }}</td>
-                <td>Rp. {{ number_format($pembayaran->nominal_fullday,0,',','.') }}</td>
-            </tr>
-            @endif
         </tbody>
     </table>
 
-    <p class="total">Total Pembayaran : Rp. {{ number_format($pembayaran->jumlah_bayar,0,',','.') }}</p>
-    <p class="total">Kembalian : Rp. {{ number_format($pembayaran->kembalian,0,',','.') }}</p>
+    <p class="total">Total Pembayaran : Rp. {{ number_format($angsuran->jumlah_bayar,0,',','.') }}</p>
 
     <div class="footer clearfix">
         <div class="left">
-            <p>{{ \Carbon\Carbon::parse($pembayaran->created_at)->locale('id')->isoFormat('dddd, D MMMM Y') }}</p>
+            <p>{{ \Carbon\Carbon::parse($angsuran->created_at)->locale('id')->isoFormat('dddd, D MMMM Y') }}</p>
         </div>
         <div class="right">
-            <p>({{ $pembayaran->petugas->name ?? 'Administrator' }})</p>
+            <p>({{ $angsuran->petugas->name ?? 'Administrator' }})</p>
         </div>
     </div>
 

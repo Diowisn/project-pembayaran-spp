@@ -12,7 +12,7 @@
 
             <div class="card">
                 <div class="card-body">
-                    <div class="card-title">Histori Pembayaran</div>
+                    <div class="card-title">Histori Pembayaran SPP</div>
 
                     @foreach ($pembayaran as $value)
                         <div class="border-top">

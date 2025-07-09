@@ -11,6 +11,7 @@ use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\SiswaLoginController;
 use App\Http\Controllers\InfaqGedungController;
+use App\Http\Controllers\InfaqController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,17 +49,12 @@ Route::resource('/dashboard/data-siswa', SiswaController::class)->names([
     'update' => 'data-siswa.update',
     'destroy' => 'data-siswa.destroy'
 ]);
-// Route::get('/get-spp/{kelas}', [SiswaController::class, 'getSppByKelas'])->name('get.spp');
 
 Route::resource('/dashboard/data-kelas', KelasController::class);
 Route::resource('/dashboard/data-spp', SppController::class);
 Route::resource('/dashboard/data-petugas', PetugasController::class);
 
-// web.php
-// Route::get('/dashboard/pembayaran/cari/{nisn}', [PembayaranController::class, 'getSiswaByNisn'])
-//     ->name('pembayaran.get-siswa');
-Route::get('/dashboard/pembayaran/cari', [PembayaranController::class, 'cariSiswa'])
-     ->name('pembayaran.cari-siswa');
+Route::get('/dashboard/pembayaran/cari', [PembayaranController::class, 'cariSiswa'])->name('pembayaran.cari-siswa');
 
 Route::resource('/dashboard/pembayaran', PembayaranController::class)->names([
     'index' => 'entry-pembayaran.index',
@@ -70,6 +66,18 @@ Route::resource('/dashboard/pembayaran', PembayaranController::class)->names([
     'destroy' => 'entry-pembayaran.destroy'
 ]);
 
+Route::get('/dashboard/infaq/cari', [InfaqController::class, 'cariSiswa'])->name('infaq.cari-siswa');
+
+Route::resource('/dashboard/infaq', InfaqController::class)->names([
+    'index' => 'infaq.index',
+    'create' => 'infaq.create',
+    'store' => 'infaq.store',
+    'show' => 'infaq.show',
+    'edit' => 'infaq.edit',
+    'update' => 'infaq.update',
+    'destroy' => 'infaq.destroy'
+]);
+
 Route::resource('/dashboard/infaq-gedung', InfaqGedungController::class)->names([
     'index' => 'infaq-gedung.index',
     'create' => 'infaq-gedung.create',
@@ -79,13 +87,15 @@ Route::resource('/dashboard/infaq-gedung', InfaqGedungController::class)->names(
     'destroy' => 'infaq-gedung.destroy',
 ]);
 
-Route::resource('/dashboard/histori', HistoryController::class);
+Route::get('histori', [HistoryController::class, 'index'])->name('histori.spp');
+Route::get('histori-infaq', [HistoryController::class, 'infaq'])->name('histori.infaq');
 
 // Laporan Routes
 Route::get('/dashboard/laporan', [LaporanController::class, 'index']);
 Route::get('/dashboard/laporan/create', [LaporanController::class, 'create']);
 
 Route::get('/pembayaran/{id}/generate', [PembayaranController::class, 'generate'])->name('pembayaran.generate');
+Route::get('/infaq/{id}/generate', [InfaqController::class, 'generate'])->name('infaq.generate');
 
 // Siswa Login Routes
 Route::get('/login/siswa', [SiswaLoginController::class, 'siswaLogin'])

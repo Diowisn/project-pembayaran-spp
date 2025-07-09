@@ -191,17 +191,33 @@
                                 <a class="sidebar-liauth()->user()->level == 'admin'nk waves-effect waves-dark sidebar-link"
                                     href="{{ url('dashboard/pembayaran') }}" aria-expanded="false">
                                     <i class="mdi mdi-cash"></i>
-                                    <span class="hide-menu">Entri Transaksi Pembayaran</span>
+                                    <span class="hide-menu">Entri Transaksi SPP</span>
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a class="sidebar-liauth()->user()->level == 'admin'nk waves-effect waves-dark sidebar-link"
+                                    href="{{ url('dashboard/infaq') }}" aria-expanded="false">
+                                    <i class="mdi mdi-cash"></i>
+                                    <span class="hide-menu">Entri Transaksi Infaq</span>
                                 </a>
                             </li>
                         @endif
-                        <li class="sidebar-item">
-                            <a class="sidebar-link waves-effect waves-dark sidebar-link"
-                                href="{{ url('dashboard/histori') }}" aria-expanded="false">
-                                <i class="mdi mdi-note-multiple"></i>
-                                <span class="hide-menu">History Pembayaran</span>
-                            </a>
-                        </li>
+                        @if (auth()->user()->level == 'admin' || auth()->user()->level == 'petugas')
+                            <li class="sidebar-item">
+                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                    href="{{ route('histori.spp') }}" aria-expanded="false">
+                                    <i class="mdi mdi-note-multiple"></i>
+                                    <span class="hide-menu">History Pembayaran SPP</span>
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                    href="{{ route('histori.infaq') }}" aria-expanded="false">
+                                    <i class="mdi mdi-note-multiple"></i>
+                                    <span class="hide-menu">History Pembayaran Infaq</span>
+                                </a>
+                            </li>
+                        @endif
                         @if (auth()->user()->level == 'admin')
                             <li class="sidebar-item">
                                 <a class="sidebar-link waves-effect waves-dark sidebar-link"
