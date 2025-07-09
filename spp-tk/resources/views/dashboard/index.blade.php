@@ -7,6 +7,31 @@
 @section('content')
     <div class="alert alert-success text-center"><b>Selamat Datang</b> di aplikasi pembayaran SPP Sekolah</div>
 
+    <!-- Widget Pemasukan per Kelas -->
+    <div class="row mb-4">
+        @foreach($pemasukanPerKelas as $kelas => $total)
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Kelas {{ $kelas }}</h6>
+                            <h4 class="mb-0">Rp. {{ number_format($total, 0, ',', '.') }}</h4>
+                        </div>
+                        <div class="bg-primary rounded p-3">
+                            <i class="mdi mdi-account-multiple text-white"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-muted">Total Pemasukan</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+    <!-- End Widget -->
+
     <div class="row">
         <div class="col-md-12">
             <div class="card">

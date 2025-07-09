@@ -24,7 +24,7 @@
     <!-- Sweet Alert -->
     <script src="{{ asset('vendor/sweetalert/sweetalert.all.js') }}"></script>
 
-     @yield('plugin')
+    @yield('plugin')
 
 </head>
 
@@ -44,7 +44,8 @@
     <!-- ============================================================== -->
     <!-- Main wrapper - style you can find in pages.scss -->
     <!-- ============================================================== -->
-    <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="full" data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full">
+    <div id="main-wrapper" data-layout="vertical" data-navbarbg="skin5" data-sidebartype="full"
+        data-sidebar-position="absolute" data-header-position="absolute" data-boxed-layout="full">
         <!-- ============================================================== -->
         <!-- Topbar header - style you can find in pages.scss -->
         <!-- ============================================================== -->
@@ -57,15 +58,17 @@
                     <a class="navbar-brand" href="{{ url('/dashboard') }}">
                         <!-- Logo text -->
                         <span class="logo-text">
-						{{-- <i class="mdi mdi-square-inc-cash"></i> Assakiinah - SPP --}}
-                        <img src="{{ asset('assets/images/amanah3.png') }}" alt="" width="150" height="auto">
+                            {{-- <i class="mdi mdi-square-inc-cash"></i> Assakiinah - SPP --}}
+                            <img src="{{ asset('assets/images/amanah3.png') }}" alt="" width="150"
+                                height="auto">
                         </span>
                     </a>
                     <!-- ============================================================== -->
                     <!-- End Logo -->
                     <!-- ============================================================== -->
                     <!-- This is for the sidebar toggle which is visible on mobile only -->
-                    <a class="nav-toggler waves-effect waves-light d-block d-md-none" href="javascript:void(0)"><i class="ti-menu ti-close"></i></a>
+                    <a class="nav-toggler waves-effect waves-light d-block d-md-none" href="javascript:void(0)"><i
+                            class="ti-menu ti-close"></i></a>
                 </div>
                 <!-- ============================================================== -->
                 <!-- End Logo -->
@@ -79,7 +82,7 @@
                         <!-- Logo Text -->
                         <!-- ============================================================== -->
                         <a class="navbar-brand" href="{{ url('/dashboard') }}">
-                    </a>
+                        </a>
                     </ul>
                     <!-- ============================================================== -->
                     <!-- Right side toggle and nav items -->
@@ -89,7 +92,10 @@
                         <!-- User profile and search -->
                         <!-- ============================================================== -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark pro-pic" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="{{ url('assets/images/users/d3.jpg') }}" alt="user" class="rounded-circle" width="31"></a>
+                            <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark pro-pic"
+                                href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img
+                                    src="{{ url('assets/images/users/d3.jpg') }}" alt="user" class="rounded-circle"
+                                    width="31"></a>
                         </li>
                         <!-- ============================================================== -->
                         <!-- User profile and search -->
@@ -114,81 +120,97 @@
                         <li>
                             <!-- User Profile-->
                             <div class="user-profile d-flex no-block dropdown m-t-20">
-                                <div class="user-pic"><img src="{{ url('assets/images/users/d3.jpg') }}" alt="users" class="rounded-circle" width="40" /></div>
+                                <div class="user-pic"><img src="{{ url('assets/images/users/d3.jpg') }}" alt="users"
+                                        class="rounded-circle" width="40" /></div>
                                 <div class="user-content hide-menu m-l-10">
-                                    <a href="javascript:void(0)" class="" id="Userdd" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <h5 class="m-b-0 user-name font-medium">{{ $user->name }}<i class="ml-2 fa fa-angle-down"></i></h5>
+                                    <a href="javascript:void(0)" class="" id="Userdd" role="button"
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <h5 class="m-b-0 user-name font-medium">{{ $user->name }}<i
+                                                class="ml-2 fa fa-angle-down"></i></h5>
                                         <span class="op-5 user-email">{{ $user->email }}</span>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="Userdd">
 
 
-                                        <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();" ><i class="fa fa-power-off m-r-5 m-l-5"></i> Logout</a>
-								<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                        @csrf
-                                    </form>
+                                        <a class="dropdown-item" href="{{ route('logout') }}"
+                                            onclick="event.preventDefault();
+                                                     document.getElementById('logout-form').submit();"><i
+                                                class="fa fa-power-off m-r-5 m-l-5"></i> Logout</a>
+                                        <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                                            style="display: none;">
+                                            @csrf
+                                        </form>
                                     </div>
                                 </div>
                             </div>
                             <!-- End User Profile-->
                         </li>
                         <!-- User Profile-->
-                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url('dashboard') }}" aria-expanded="false"><i class="mdi mdi-view-dashboard"></i><span class="hide-menu">Dashboard</span></a></li>
-					@if(auth()->user()->level == 'admin')
-                        		<li class="sidebar-item">
-							<a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url('dashboard/data-siswa') }}" aria-expanded="false">
-								<i class="mdi mdi-account-outline"></i>
-								<span class="hide-menu">Data Siswa</span>
-							</a>
-						</li>
-                        		<li class="sidebar-item">
-							<a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url('dashboard/data-petugas') }}" aria-expanded="false">
-								<i class="mdi mdi-account-multiple"></i>
-								<span class="hide-menu">Data Petugas</span>
-							</a>
-						</li>
-                        		<li class="sidebar-item">
-							 <a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url('dashboard/data-kelas') }}" aria-expanded="false">
-								<i class="mdi mdi-home-variant"></i>
-									<span class="hide-menu">Data Kelas</span>
-							</a>
-						</li>
-						<li class="sidebar-item">
-							<a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url('dashboard/data-spp') }}" aria-expanded="false">
-								<i class="mdi mdi-cash-usd"></i>
-									<span class="hide-menu">Data SPP</span>
-							</a>
-						</li>
-						<li class="sidebar-item">
-							<a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url('dashboard/infaq-gedung') }}" aria-expanded="false">
-								<i class="mdi mdi-cash-usd"></i>
-									<span class="hide-menu">Data Infaq Gedung</span>
-							</a>
-						</li>
-                              @endif
-                              @if(auth()->user()->level == 'admin' || auth()->user()->level == 'petugas')
-						<li class="sidebar-item">
-							<a class="sidebar-liauth()->user()->level == 'admin'nk waves-effect waves-dark sidebar-link" href="{{ url('dashboard/pembayaran') }}" aria-expanded="false">
-								<i class="mdi mdi-cash"></i>
-									<span class="hide-menu">Entri Transaksi Pembayaran</span>
-							</a>
-						</li>
-                              @endif
-						<li class="sidebar-item">
-							<a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url('dashboard/histori') }}" aria-expanded="false">
-								<i class="mdi mdi-note-multiple"></i>
-									<span class="hide-menu">History Pembayaran</span>
-							</a>
-						</li>
-                              @if(auth()->user()->level == 'admin')
-						<li class="sidebar-item">
-							<a class="sidebar-link waves-effect waves-dark sidebar-link" href="{{ url('dashboard/laporan') }}" aria-expanded="false">
-								<i class="mdi mdi-file-document"></i>
-									<span class="hide-menu">Generate Laporan</span>
-							</a>
-					     </li>
-				         @endif
+                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                href="{{ url('dashboard') }}" aria-expanded="false"><i
+                                    class="mdi mdi-view-dashboard"></i><span class="hide-menu">Dashboard</span></a></li>
+                        @if (auth()->user()->level == 'admin')
+                            <li class="sidebar-item">
+                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                    href="{{ url('dashboard/data-siswa') }}" aria-expanded="false">
+                                    <i class="mdi mdi-account-outline"></i>
+                                    <span class="hide-menu">Data Siswa</span>
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                    href="{{ url('dashboard/data-petugas') }}" aria-expanded="false">
+                                    <i class="mdi mdi-account-multiple"></i>
+                                    <span class="hide-menu">Data Petugas</span>
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                    href="{{ url('dashboard/data-kelas') }}" aria-expanded="false">
+                                    <i class="mdi mdi-home-variant"></i>
+                                    <span class="hide-menu">Data Kelas</span>
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                    href="{{ url('dashboard/data-spp') }}" aria-expanded="false">
+                                    <i class="mdi mdi-cash-usd"></i>
+                                    <span class="hide-menu">Data SPP</span>
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                    href="{{ url('dashboard/infaq-gedung') }}" aria-expanded="false">
+                                    <i class="mdi mdi-cash-usd"></i>
+                                    <span class="hide-menu">Data Infaq Gedung</span>
+                                </a>
+                            </li>
+                        @endif
+                        @if (auth()->user()->level == 'admin' || auth()->user()->level == 'petugas')
+                            <li class="sidebar-item">
+                                <a class="sidebar-liauth()->user()->level == 'admin'nk waves-effect waves-dark sidebar-link"
+                                    href="{{ url('dashboard/pembayaran') }}" aria-expanded="false">
+                                    <i class="mdi mdi-cash"></i>
+                                    <span class="hide-menu">Entri Transaksi Pembayaran</span>
+                                </a>
+                            </li>
+                        @endif
+                        <li class="sidebar-item">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                href="{{ url('dashboard/histori') }}" aria-expanded="false">
+                                <i class="mdi mdi-note-multiple"></i>
+                                <span class="hide-menu">History Pembayaran</span>
+                            </a>
+                        </li>
+                        @if (auth()->user()->level == 'admin')
+                            <li class="sidebar-item">
+                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                    href="{{ url('dashboard/laporan') }}" aria-expanded="false">
+                                    <i class="mdi mdi-file-document"></i>
+                                    <span class="hide-menu">Generate Laporan</span>
+                                </a>
+                            </li>
+                        @endif
                     </ul>
 
                 </nav>
@@ -213,7 +235,7 @@
                         <div class="d-flex align-items-center">
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb">
-							@yield('breadcrumb')
+                                    @yield('breadcrumb')
                                 </ol>
                             </nav>
                         </div>
@@ -230,7 +252,7 @@
                 <!-- ============================================================== -->
                 <!-- Content -->
                 <!-- ============================================================== -->
-                	@yield('content')
+                @yield('content')
                 <!-- ============================================================== -->
                 <!-- End content -->
                 <!-- ============================================================== -->
@@ -243,7 +265,7 @@
             <!-- footer -->
             <!-- ============================================================== -->
             <footer class="footer text-center">
-                Copyrights &copy; 2025 | All Rights Reserved. by <a href="https://github.com/Diowisn">Dio Wisnu</a> 
+                Copyrights &copy; 2025 | All Rights Reserved. by <a href="https://github.com/Diowisn">Dio Wisnu</a>
             </footer>
             <!-- ============================================================== -->
             <!-- End footer -->
@@ -259,11 +281,11 @@
     <!-- ============================================================== -->
     <!-- All Jquery -->
     <!-- ============================================================== -->
-	<script>
-		@yield('sweet')
+    <script>
+        @yield('sweet')
 
-		@yield('js')
-	</script>
+        @yield('js')
+    </script>
     <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}"></script>
     <!-- Bootstrap tether Core JavaScript -->
     <script src="{{ asset('assets/libs/popper.js/dist/umd/popper.min.js') }}"></script>

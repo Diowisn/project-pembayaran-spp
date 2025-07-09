@@ -191,7 +191,7 @@
             <!-- footer -->
             <!-- ============================================================== -->
             <footer class="footer text-center">
-                Design by Xtreme Admin. Backend by <a href="https://github.com/ravialdo">Ravialdo</a>  | Repost by <a href="https://stokcoding.com/" title="StokCoding.com" target="_blank">StokCoding.com</a>
+                Copyrights &copy; 2025 | All Rights Reserved. by <a href="https://github.com/Diowisn">Dio Wisnu</a>
             </footer>
             <!-- ============================================================== -->
             <!-- End footer -->
