@@ -132,12 +132,16 @@ public function store(Request $request)
     try {
         $siswa = Siswa::with('spp')->findOrFail($request->id_siswa);
         
+        // Tambahkan tahun dari input bulan
+        $bulan = strtolower($request->bulan);
+        $tahun = $request->tahun ?? date('Y'); // Pastikan tahun disimpan
+        
         $pembayaran = Pembayaran::create([
             'id_petugas' => auth()->id(),
             'id_siswa' => $request->id_siswa,
             'id_spp' => $siswa->id_spp,
-            'bulan' => $request->bulan,
-            'tahun' => date('Y'),
+            'bulan' => $bulan,
+            'tahun' => $tahun, // Simpan tahun
             'nominal_spp' => $siswa->spp->nominal_spp,
             'nominal_konsumsi' => $siswa->spp->nominal_konsumsi ?? 0,
             'nominal_fullday' => $siswa->spp->nominal_fullday ?? 0,
@@ -147,8 +151,9 @@ public function store(Request $request)
             'is_lunas' => true,
         ]);
 
+        // Redirect ke halaman yang menampilkan data baru
         Alert::success('Berhasil!', 'Pembayaran berhasil disimpan!');
-        return redirect()->route('pembayaran.cari-siswa', ['nisn' => $siswa->nisn]);
+        return redirect()->route('entry-pembayaran.index'); // Ganti redirect ke halaman list
 
     } catch (\Exception $e) {
         Log::error('Error creating pembayaran: '.$e->getMessage());

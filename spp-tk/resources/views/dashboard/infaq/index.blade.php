@@ -73,10 +73,9 @@
 
                             <div class="form-group">
                                 <label>Jumlah Bayar</label>
-                                <input type="number"
-                                    class="form-control @error('jumlah_bayar') is-invalid @enderror"
-                                    name="jumlah_bayar" value="{{ old('jumlah_bayar') }}" required
-                                    min="1" max="{{ $sisa_pembayaran ?? 0 }}">
+                                <input type="number" class="form-control @error('jumlah_bayar') is-invalid @enderror"
+                                    name="jumlah_bayar" value="{{ old('jumlah_bayar') }}" required min="1"
+                                    max="{{ $sisa_pembayaran ?? 0 }}">
                                 <span class="text-danger">
                                     @error('jumlah_bayar')
                                         {{ $message }}
@@ -86,8 +85,7 @@
 
                             <div class="form-group">
                                 <label>Tanggal Bayar</label>
-                                <input type="date"
-                                    class="form-control @error('tgl_bayar') is-invalid @enderror"
+                                <input type="date" class="form-control @error('tgl_bayar') is-invalid @enderror"
                                     name="tgl_bayar" value="{{ old('tgl_bayar', date('Y-m-d')) }}" required>
                                 <span class="text-danger">
                                     @error('tgl_bayar')
@@ -144,7 +142,8 @@
                                         ]) }}"
                                             class="text-dark">
                                             JUMLAH BAYAR
-                                            @if (request('sort_by') == 'jumlah_bayar'))
+                                            @if (request('sort_by') == 'jumlah_bayar')
+                                                )
                                                 <i
                                                     class="mdi mdi-chevron-{{ request('order') == 'asc' ? 'up' : 'down' }}"></i>
                                             @endif
@@ -158,7 +157,8 @@
                                         ]) }}"
                                             class="text-dark">
                                             TANGGAL BAYAR
-                                            @if (request('sort_by') == 'tgl_bayar'))
+                                            @if (request('sort_by') == 'tgl_bayar')
+                                                )
                                                 <i
                                                     class="mdi mdi-chevron-{{ request('order') == 'asc' ? 'up' : 'down' }}"></i>
                                             @endif
@@ -187,23 +187,28 @@
                                                     <i class="mdi mdi-dots-vertical"></i>
                                                 </a>
                                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="actiondd">
-                                                    <a class="dropdown-item" href="{{ route('infaq.generate', $value->id) }}">
-                                                        <i class="ti-printer"></i> Cetak 
-                                                    </a>
+                                                    {{-- <a class="dropdown-item"
+                                                        href="{{ route('infaq.generate', $value->id) }}">
+                                                        <i class="ti-printer"></i> Cetak
+                                                    </a> --}}
                                                     <a class="dropdown-item"
                                                         href="{{ url('dashboard/infaq/' . $value->id . '/edit') }}"><i
-                                                            class="ti-pencil"></i> Edit 
+                                                            class="ti-pencil"></i> Edit
                                                     </a>
-                                                    <form method="post" action="{{ route('infaq.destroy', $value->id) }}"
-                                                        id="delete{{ $value->id }}">
-                                                        @csrf
-                                                        @method('delete')
 
-                                                        <button type="button" class="dropdown-item"
-                                                            onclick="deleteData({{ $value->id }})">
-                                                            <i class="ti-trash"></i> Hapus
-                                                        </button>
-                                                    </form>
+                                                    @if (auth()->user()->level == 'admin')
+                                                        <form method="post"
+                                                            action="{{ route('infaq.destroy', $value->id) }}"
+                                                            id="delete{{ $value->id }}">
+                                                            @csrf
+                                                            @method('delete')
+
+                                                            <button type="button" class="dropdown-item"
+                                                                onclick="deleteData({{ $value->id }})">
+                                                                <i class="ti-trash"></i> Hapus
+                                                            </button>
+                                                        </form>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </td>
@@ -248,19 +253,19 @@
 
 @section('sweet')
     function deleteData(id) {
-        Swal.fire({
-            title: 'PERINGATAN!',
-            text: "Yakin ingin menghapus data pembayaran infaq?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yakin',
-            cancelButtonText: 'Batal',
-        }).then((result) => {
-            if (result.value) {
-                $('#delete' + id).submit();
-            }
-        })
+    Swal.fire({
+    title: 'PERINGATAN!',
+    text: "Yakin ingin menghapus data pembayaran infaq?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yakin',
+    cancelButtonText: 'Batal',
+    }).then((result) => {
+    if (result.value) {
+    $('#delete' + id).submit();
+    }
+    })
     }
 @endsection

@@ -9,6 +9,7 @@ use App\Models\Pembayaran;
 use App\Models\Kelas;
 use App\Models\AngsuranInfaq;
 use App\Models\Siswa;
+use Illuminate\Support\Str;
 
 class HomeController extends Controller
 {
@@ -29,39 +30,72 @@ class HomeController extends Controller
      */
 public function index()
 {
-    // Ambil semua kelas
-    $kelasList = Kelas::all();
+    $bulanIndo = [
+        'January' => 'Januari',
+        'February' => 'Februari',
+        'March' => 'Maret',
+        'April' => 'April',
+        'May' => 'Mei',
+        'June' => 'Juni',
+        'July' => 'Juli',
+        'August' => 'Agustus',
+        'September' => 'September',
+        'October' => 'Oktober',
+        'November' => 'November',
+        'December' => 'Desember'
+    ];
+    $currentMonth = now()->format('m');
+    $currentYear = now()->format('Y');
+    $currentMonthName = $bulanIndo[now()->format('F')];
+    $previousMonth = now()->subMonth()->format('m');
+    $previousYear = now()->subMonth()->format('Y');
+    $previousMonthName = $bulanIndo[now()->subMonth()->format('F')];
+
+    // Get all classes
+    $kelasList = Kelas::with(['siswa'])->get();
     
-    // Hitung total pemasukan bersih SPP per kelas (jumlah_bayar - kembalian)
+    // Payment statistics
     $pemasukanSPPPerKelas = [];
+
     foreach ($kelasList as $kelas) {
-        $totalPembayaran = Pembayaran::whereHas('siswa', function($query) use ($kelas) {
+        // Current month payments (gunakan nama bulan lowercase)
+        $currentPayments = Pembayaran::whereHas('siswa', function($query) use ($kelas) {
             $query->where('id_kelas', $kelas->id);
-        })->sum('jumlah_bayar');
-        
-        $totalKembalian = Pembayaran::whereHas('siswa', function($query) use ($kelas) {
+        })
+        ->where('bulan', strtolower($currentMonthName)) // Pastikan lowercase
+        ->where('tahun', $currentYear)
+        ->sum('jumlah_bayar');
+
+        // Previous month payments
+        $previousPayments = Pembayaran::whereHas('siswa', function($query) use ($kelas) {
             $query->where('id_kelas', $kelas->id);
-        })->sum('kembalian');
+        })
+        ->where('bulan', strtolower($previousMonthName)) // Pastikan lowercase
+        ->where('tahun', $previousYear)
+        ->sum('jumlah_bayar');
+
+        // Unpaid students calculation
+        $paidStudents = Pembayaran::whereHas('siswa', function($query) use ($kelas) {
+            $query->where('id_kelas', $kelas->id);
+        })
+        ->where('bulan', strtolower($currentMonthName))
+        ->where('tahun', $currentYear)
+        ->pluck('id_siswa');
+
+        $unpaid = $kelas->siswa->whereNotIn('id', $paidStudents);
         
-        $pemasukanSPPPerKelas[$kelas->nama_kelas] = $totalPembayaran - $totalKembalian;
+        $pemasukanSPPPerKelas[$kelas->nama_kelas] = [
+            'current' => $currentPayments,
+            'previous' => $previousPayments,
+            'unpaid_count' => $unpaid->count(),
+            'unpaid_students' => $unpaid,
+            'total_students' => $kelas->siswa->count(),
+            'payment_rate' => $kelas->siswa->count() > 0 ? 
+                round(($kelas->siswa->count() - $unpaid->count()) / $kelas->siswa->count() * 100, 2) : 0
+        ];
     }
 
-    // Hitung total pemasukan Infaq Gedung per kelas
-    $pemasukanInfaqPerKelas = [];
-    foreach ($kelasList as $kelas) {
-        $totalInfaq = AngsuranInfaq::whereHas('siswa', function($query) use ($kelas) {
-            $query->where('id_kelas', $kelas->id);
-        })->sum('jumlah_bayar');
-        
-        $pemasukanInfaqPerKelas[$kelas->nama_kelas] = $totalInfaq;
-    }
-
-    // Hitung total semua pemasukan
-    $totalPemasukanSPP = array_sum($pemasukanSPPPerKelas);
-    $totalPemasukanInfaq = array_sum($pemasukanInfaqPerKelas);
-    $totalSemuaPemasukan = $totalPemasukanSPP + $totalPemasukanInfaq;
-
-$data = [
+    $data = [
         'user' => User::find(auth()->user()->id),
         'pembayaran' => Pembayaran::with(['siswa.kelas', 'siswa.spp'])
                         ->orderBy('created_at', 'desc')
@@ -71,17 +105,14 @@ $data = [
                         ->orderBy('created_at', 'desc')
                         ->limit(5)
                         ->get(),
-        'pemasukanPerKelas' => $pemasukanSPPPerKelas, // Keep this for backward compatibility
         'pemasukanSPPPerKelas' => $pemasukanSPPPerKelas,
-        'pemasukanInfaqPerKelas' => $pemasukanInfaqPerKelas,
-        'totalPemasukanSPP' => $totalPemasukanSPP,
-        'totalPemasukanInfaq' => $totalPemasukanInfaq,
-        'totalSemuaPemasukan' => $totalSemuaPemasukan,
-        'jumlahSiswa' => Siswa::count(),
-        'jumlahPembayaranSPP' => Pembayaran::count(),
-        'jumlahPembayaranInfaq' => AngsuranInfaq::count(),
+        'currentMonthName' => $currentMonthName,
+        'previousMonthName' => $previousMonthName, // Pastikan variabel ini dikirim ke view
+        'kelasList' => $kelasList
     ];
   
-    return view('dashboard.index', $data);
+    return view('dashboard.index', [
+        'currentMonthName' => $currentMonthName,
+        'previousMonthName' => $previousMonthName ],$data);
 }
 }

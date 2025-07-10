@@ -95,7 +95,20 @@
                                     <select class="form-control @error('bulan') is-invalid @enderror" name="bulan"
                                         required>
                                         <option value="">Pilih Bulan</option>
-                                        @foreach (['januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember'] as $bulan)
+                                        @foreach ([
+                                            'januari' => 'Januari',
+                                            'februari' => 'Februari',
+                                            'maret' => 'Maret',
+                                            'april' => 'April',
+                                            'mei' => 'Mei',
+                                            'juni' => 'Juni',
+                                            'juli' => 'Juli',
+                                            'agustus' => 'Agustus',
+                                            'september' => 'September',
+                                            'oktober' => 'Oktober',
+                                            'november' => 'November',
+                                            'desember' => 'Desember'
+                                        ]  as $bulan)
                                             <option value="{{ $bulan }}"
                                                 {{ old('bulan') == $bulan ? 'selected' : '' }}>
                                                 {{ ucfirst($bulan) }}
@@ -223,22 +236,25 @@
                                                     <i class="mdi mdi-dots-vertical"></i>
                                                 </a>
                                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="actiondd">
+
                                                     <a class="dropdown-item"
-                                                        href="{{ url('dashboard/pembayaran/' . $value->id . '/edit') }}"><i
-                                                            class="ti-pencil"></i> Edit </a>
-                                                    <form method="post"
-                                                        action="{{ url('dashboard/pembayaran', $value->id) }}"
-                                                        id="delete{{ $value->id }}">
-                                                        @csrf
-                                                        @method('delete')
+                                                        href="{{ url('dashboard/pembayaran/' . $value->id . '/edit') }}">
+                                                        <i class="ti-pencil"></i> Edit
+                                                    </a>
 
-                                                        <button type="button" class="dropdown-item"
-                                                            onclick="deleteData({{ $value->id }})">
-                                                            <i class="ti-trash"></i> Hapus
-                                                        </button>
+                                                    @if (auth()->user()->level == 'admin')
+                                                        <form method="post"
+                                                            action="{{ url('dashboard/pembayaran', $value->id) }}"
+                                                            id="delete{{ $value->id }}">
+                                                            @csrf
+                                                            @method('delete')
 
-                                                    </form>
-
+                                                            <button type="button" class="dropdown-item"
+                                                                onclick="deleteData({{ $value->id }})">
+                                                                <i class="ti-trash"></i> Hapus
+                                                            </button>
+                                                        </form>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </td>
