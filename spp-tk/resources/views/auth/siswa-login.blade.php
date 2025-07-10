@@ -7,7 +7,7 @@
             background-color: rgba(255, 255, 255, 0.95);
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
+        } 
 
         .hover-shadow:hover {
             transform: translateY(-5px);
@@ -30,8 +30,7 @@
                             @csrf
 
                             <div class="form-group row">
-                                <label for="email"
-                                    class="col-md-4 col-form-label text-md-right">{{ __('NISN') }}</label>
+                                <label for="nisn" class="col-md-4 col-form-label text-md-right">{{ __('NISN') }}</label>
 
                                 <div class="col-md-6">
                                     <input type="text" class="form-control @error('nisn') is-invalid @enderror"
@@ -45,32 +44,29 @@
                                 </div>
                             </div>
 
-                            <div class="form-group row">
-                                <label for="password"
-                                    class="col-md-4 col-form-label text-md-right">{{ __('Nama Lengkap') }}</label>
+<div class="form-group row">
+    <label for="password" class="col-md-4 col-form-label text-md-right">{{ __('Password') }}</label>
 
-                                <div class="col-md-6">
-                                    <input id="nama_siswa" type="text"
-                                        class="form-control @error('nama_siswa') is-invalid @enderror" name="nama_siswa"
-                                        value="{{ old('nisn') }}" required>
+    <div class="col-md-6">
+        <input id="password" type="password"
+            class="form-control @error('password') is-invalid @enderror" name="password"
+            required>
 
-                                    @error('nama_siswa')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                            </div>
+        @error('password')
+            <span class="invalid-feedback" role="alert">
+                <strong>{{ $message }}</strong>
+            </span>
+        @enderror
+    </div>
+</div>
 
                             <div class="form-group row mb-0">
                                 <div class="col-md-8 offset-md-4">
                                     <button type="submit" class="btn btn-primary">
                                         {{ __('Login') }}
                                     </button>
-
                                 </div>
                             </div>
-                            <br>
                         </form>
                     </div>
                 </div>

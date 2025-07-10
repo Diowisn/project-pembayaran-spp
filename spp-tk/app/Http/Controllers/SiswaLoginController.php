@@ -7,67 +7,82 @@ use Alert;
 use Session;
 use App\Models\Siswa;
 use App\Models\Pembayaran;
+use App\Models\AngsuranInfaq;
+use Illuminate\Support\Facades\Hash;
 
 class SiswaLoginController extends Controller
 {
-   
-   public function siswaLogin(){
-      
-       if(session('nama') != null) :  
-         return redirect('dashboard/siswa/histori');
-       endif;
-   
-       return view('auth.siswa-login');
-   }
-   
-    public function login(Request $req){
-      
-         $exists = Siswa::where('nisn', $req->nisn)->exists();
-         
-         if($exists) :
-               $siswa = Siswa::where('nisn', $req->nisn)->get();
-               
-               foreach($siswa as $val) :
-                   Session::put('id', $val->id);
-                   $nama = $val->nama;
-               endforeach;
-               
-               if(strtolower($nama) == strtolower($req->nama_siswa)) :
-                  
-                     Session::put('nama', $nama);
-                     Session::put('nisn', $req->nisn);
-                     
-                     return redirect('dashboard/siswa/histori');
-               else :
-               
-                      Alert::error('Gagal Login!', 'NISN dan nama siswa tidak sesuai');
-                     return back();
-                     
-               endif;
-               
-            else :
-               Alert::error('Gagal Login!', 'Data siswa dengan NISN ini tidak ditemukan');
-               return back();
-            endif;
+    public function siswaLogin()
+    {
+        if (session('nisn') != null) {  
+            return redirect('dashboard/siswa/histori');
+        }
+    
+        return view('auth.siswa-login');
     }
-   
-    public function logout(){
-      
+    
+    public function login(Request $request)
+    {
+        $request->validate([
+            'nisn' => 'required|string',
+            'password' => 'required|string',
+        ]);
+        
+        $siswa = Siswa::where('nisn', $request->nisn)->first();
+        
+        if ($siswa) {
+            // Verifikasi password
+            if (Hash::check($request->password, $siswa->password)) {
+                Session::put('id', $siswa->id);
+                Session::put('nama', $siswa->nama);
+                Session::put('nisn', $siswa->nisn);
+                
+                return redirect('dashboard/siswa/histori');
+            } else {
+                Alert::error('Gagal Login!', 'Password salah');
+                return back();
+            }
+        } else {
+            Alert::error('Gagal Login!', 'Data siswa dengan NISN ini tidak ditemukan');
+            return back();
+        }
+    }
+    
+    public function logout()
+    {
         Session::flush();
         return redirect('login/siswa');
-      
     }
-   
-    public function index(){
-      
-      if(session('nama') == null) :  
-         return redirect('login/siswa');
-     endif;
-       
-      $data = [
-          'pembayaran' => Pembayaran::where('id_siswa', Session::get('id'))->paginate(10)
-      ];
-       
-      return view('dashboard.siswa.index', $data);
+    
+    public function index()
+    {
+        if (session('nisn') == null) {  
+            return redirect('login/siswa');
+        }
+        
+        $data = [
+            'pembayaran' => Pembayaran::where('id_siswa', Session::get('id'))->paginate(10)
+        ];
+        
+        return view('dashboard.siswa.index', $data);
+    }
+
+    public function infaq()
+    {
+        if (session('nisn') == null) {  
+            return redirect('login/siswa');
+        }
+        
+        $siswa = Siswa::find(Session::get('id'));
+        
+        $data = [
+            'infaqHistori' => AngsuranInfaq::with(['siswa.kelas', 'infaqGedung'])
+                            ->where('id_siswa', $siswa->id)
+                            ->orderBy('created_at', 'DESC')
+                            ->paginate(10),
+            'siswa' => $siswa
+        ];
+        
+        return view('dashboard.siswa.infaq', $data);
     }
 }

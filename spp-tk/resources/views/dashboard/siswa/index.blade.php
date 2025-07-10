@@ -39,9 +39,9 @@
                                 </span>
                                 <div class="comment-footer">
                                     <span class="text-muted float-right">{{ $history->created_at->format('M d, Y') }}</span>
-                                    <span class="action-icons active" style="background-color: aqua;">
-                                        <a href="{{ route('pembayaran.generate', $history->id) }}" class="mr-2"
-                                            title="Cetak Bukti">
+                                    <span class="action-icons active" style="background-color: #FB9E3A;">
+                                        <a href="{{ route('siswa.pembayaran.cetak', $history->id) }}" class="mr-2"
+                                            title="Cetak Bukti" style="color: white;">
                                             <i class="mdi mdi-printer"></i> Cetak Bukti Pembayaran 
                                         </a>
                                     </span>

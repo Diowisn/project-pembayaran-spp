@@ -12,6 +12,7 @@ use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\SiswaLoginController;
 use App\Http\Controllers\InfaqGedungController;
 use App\Http\Controllers\InfaqController;
+use App\Http\Controllers\SiswaInfaqController;
 
 /*
 |--------------------------------------------------------------------------
@@ -102,4 +103,7 @@ Route::get('/login/siswa', [SiswaLoginController::class, 'siswaLogin'])
     ->name('login.siswa');
 Route::post('/login/siswa/proses', [SiswaLoginController::class, 'login']);
 Route::get('/dashboard/siswa/histori', [SiswaLoginController::class, 'index']);
+Route::get('/dashboard/siswa/infaq', [SiswaLoginController::class, 'infaq']);
+Route::get('/siswa/pembayaran/{id}/cetak', [SiswaInfaqController::class, 'generateSpp'])->name('siswa.pembayaran.cetak');
+Route::get('/siswa/infaq/{id}/cetak', [SiswaInfaqController::class, 'generateInfaq'])->name('siswa.infaq.cetak');
 Route::get('/siswa/logout', [SiswaLoginController::class, 'logout']);
