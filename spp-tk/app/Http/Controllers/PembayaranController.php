@@ -265,17 +265,32 @@ public function update(Request $request, $id)
     public function generate($id)
     {
         ini_set('max_execution_time', 300);
-        
+
         $pembayaran = Pembayaran::with(['siswa', 'siswa.kelas', 'petugas'])->findOrFail($id);
-        
-        $pdf = PDF::loadView('pdf.bukti', compact('pembayaran'))
-                  ->setPaper('a5', 'portrait')
-                  ->setOptions([
-                      'isHtml5ParserEnabled' => true,
-                      'isRemoteEnabled' => true,
-                      'dpi' => 150
-                  ]);
-        
+
+        $logoPath = public_path('img/amanah31.png');
+        $websitePath = public_path('img/icons/website.png');
+        $instagramPath = public_path('img/icons/instagram.png');
+        $facebookPath = public_path('img/icons/facebook.png');
+        $youtubePath = public_path('img/icons/youtube.png');
+        $whatsappPath = public_path('img/icons/whatsapp.png');
+
+        $logoData = base64_encode(file_get_contents($logoPath));
+        $websiteData = base64_encode(file_get_contents($websitePath));
+        $instagramData = base64_encode(file_get_contents($instagramPath));
+        $facebookData = base64_encode(file_get_contents($facebookPath));
+        $youtubeData = base64_encode(file_get_contents($youtubePath));
+        $whatsappData = base64_encode(file_get_contents($whatsappPath));
+
+
+        $pdf = PDF::loadView('pdf.bukti', compact('pembayaran', 'logoData', 'websiteData', 'instagramData', 'facebookData', 'youtubeData', 'whatsappData'))
+                ->setPaper('a5', 'portrait')
+                ->setOptions([
+                    'isHtml5ParserEnabled' => true,
+                    'isRemoteEnabled' => true,
+                    'dpi' => 150,
+                ]);
+
         return $pdf->download('Bukti-Pembayaran-SPP-' . $pembayaran->siswa->nama . '.pdf');
     }
 }

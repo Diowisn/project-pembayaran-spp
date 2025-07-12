@@ -95,7 +95,7 @@ public function index()
         ];
     }
 
-    $data = [
+$data = [
         'user' => User::find(auth()->user()->id),
         'pembayaran' => Pembayaran::with(['siswa.kelas', 'siswa.spp'])
                         ->orderBy('created_at', 'desc')
@@ -107,12 +107,13 @@ public function index()
                         ->get(),
         'pemasukanSPPPerKelas' => $pemasukanSPPPerKelas,
         'currentMonthName' => $currentMonthName,
-        'previousMonthName' => $previousMonthName, // Pastikan variabel ini dikirim ke view
+        'previousMonthName' => $previousMonthName,
         'kelasList' => $kelasList
     ];
   
-    return view('dashboard.index', [
-        'currentMonthName' => $currentMonthName,
-        'previousMonthName' => $previousMonthName ],$data);
+return view('dashboard.index', array_merge($data, [
+    'currentMonthName' => $currentMonthName,
+    'previousMonthName' => $previousMonthName
+]));
 }
 }

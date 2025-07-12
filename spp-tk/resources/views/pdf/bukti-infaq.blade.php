@@ -82,18 +82,43 @@
             display: table;
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
     <div class="header">
         <div class="header-left">
-            {{-- <img src="{{ asset ('img/amanah31.png') }}" alt="Logo Sekolah" class="img"> --}}
-            <h2>Assakiinah - SPP</h2>
-            <p>Bendungan, Kedawung, Sragen</p>
-            <p>082111050200</p>
+            <img src="data:image/png;base64,{{ $logoData }}" style="width: 200px; height: auto; display: block; margin-bottom: 10px;" alt="Logo Sekolah">
+            {{-- <h2>Assakiinah - SPP</h2> --}}
+            <p>Jl. Raya Ngawi-Solo KM 33 Dadung RT. 1/11, Sambirejo, Mantingan, Ngawi</p>
+            <p style="margin-top: 6px; font-size: 12px; line-height: 1.6;">
+                <span style="margin-right: 3px;">
+                    <img src="data:image/png;base64,{{ $websiteData }}" alt="Website"
+                        style="width:14px; height:14px; vertical-align: text-bottom; margin-right:2px;"> www.assakiinah.com
+                </span>
+                <span style="margin-right: 3px;">
+                    <img src="data:image/png;base64,{{ $instagramData }}" alt="Instagram"
+                        style="width:14px; height:14px; vertical-align: text-bottom; margin-right:2px;"> pas_asskiinah
+                </span>
+                <span style="margin-right: 3px;">
+                    <img src="data:image/png;base64,{{ $facebookData }}" alt="Facebook"
+                        style="width:14px; height:14px; vertical-align: text-bottom; margin-right:2px;"> Pas Assakiinah
+                </span>
+                <span style="margin-right: 3px;">
+                    <img src="data:image/png;base64,{{ $youtubeData }}" alt="YouTube"
+                        style="width:14px; height:14px; vertical-align: text-bottom; margin-right:2px;"> Assakiinah TV
+                </span>
+                <span>
+                    <img src="data:image/png;base64,{{ $whatsappData }}" alt="WhatsApp"
+                        style="width:14px; height:14px; vertical-align: text-bottom; margin-right:4px;"> +62 851 6258 6667
+                </span>
+            </p>
+            <br>
+            <br>
+
         </div>
         <div class="header-right">
-            Bukti Pembayaran SPP
+            Bukti Pembayaran Infaq Gedung
         </div>
     </div>
 

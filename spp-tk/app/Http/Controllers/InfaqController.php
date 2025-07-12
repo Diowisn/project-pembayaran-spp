@@ -179,9 +179,25 @@ public function update(Request $request, $id)
 
     public function generate($id)
     {
+        ini_set('max_execution_time', 300);
+
         $angsuran = AngsuranInfaq::with(['siswa', 'infaqGedung'])->findOrFail($id);
+
+        $logoPath = public_path('img/amanah31.png');
+        $websitePath = public_path('img/icons/website.png');
+        $instagramPath = public_path('img/icons/instagram.png');
+        $facebookPath = public_path('img/icons/facebook.png');
+        $youtubePath = public_path('img/icons/youtube.png');
+        $whatsappPath = public_path('img/icons/whatsapp.png');
+
+        $logoData = base64_encode(file_get_contents($logoPath));
+        $websiteData = base64_encode(file_get_contents($websitePath));
+        $instagramData = base64_encode(file_get_contents($instagramPath));
+        $facebookData = base64_encode(file_get_contents($facebookPath));
+        $youtubeData = base64_encode(file_get_contents($youtubePath));
+        $whatsappData = base64_encode(file_get_contents($whatsappPath));
         
-        $pdf = PDF::loadView('pdf.bukti-infaq', compact('angsuran'))
+        $pdf = PDF::loadView('pdf.bukti-infaq', compact('angsuran', 'logoData', 'websiteData', 'instagramData', 'facebookData', 'youtubeData', 'whatsappData'))
                   ->setPaper('a5', 'portrait')
                   ->setOptions([
                       'isHtml5ParserEnabled' => true,
