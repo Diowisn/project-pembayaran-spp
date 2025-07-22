@@ -13,6 +13,7 @@ use App\Http\Controllers\SiswaLoginController;
 use App\Http\Controllers\InfaqGedungController;
 use App\Http\Controllers\InfaqController;
 use App\Http\Controllers\SiswaInfaqController;
+use App\Http\Controllers\SiswaProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -99,11 +100,15 @@ Route::get('/pembayaran/{id}/generate', [PembayaranController::class, 'generate'
 Route::get('/infaq/{id}/generate', [InfaqController::class, 'generate'])->name('infaq.generate');
 
 // Siswa Login Routes
-Route::get('/login/siswa', [SiswaLoginController::class, 'siswaLogin'])
-    ->name('login.siswa');
+Route::get('/login/siswa', [SiswaLoginController::class, 'siswaLogin'])->name('login.siswa');
 Route::post('/login/siswa/proses', [SiswaLoginController::class, 'login']);
+Route::get('/siswa/logout', [SiswaLoginController::class, 'logout']);
+
 Route::get('/dashboard/siswa/histori', [SiswaLoginController::class, 'index']);
 Route::get('/dashboard/siswa/infaq', [SiswaLoginController::class, 'infaq']);
+
 Route::get('/siswa/pembayaran/{id}/cetak', [SiswaInfaqController::class, 'generateSpp'])->name('siswa.pembayaran.cetak');
 Route::get('/siswa/infaq/{id}/cetak', [SiswaInfaqController::class, 'generateInfaq'])->name('siswa.infaq.cetak');
-Route::get('/siswa/logout', [SiswaLoginController::class, 'logout']);
+
+Route::put('/profile/update', [SiswaLoginController::class, 'updateProfile'])->name('siswa.profile.update');
+Route::get('/get-data', [SiswaLoginController::class, 'getData'])->name('siswa.get-data');

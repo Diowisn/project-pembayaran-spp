@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Siswa;
 use Alert;
 use PDF;
+use Illuminate\Support\Facades\Auth;
 
 class PembayaranController extends Controller
 {
@@ -138,6 +139,7 @@ public function store(Request $request)
         
         $pembayaran = Pembayaran::create([
             'id_petugas' => auth()->id(),
+            'nama_petugas' => auth()->user()->name,
             'id_siswa' => $request->id_siswa,
             'id_spp' => $siswa->id_spp,
             'bulan' => $bulan,
@@ -265,7 +267,8 @@ public function update(Request $request, $id)
     public function generate($id)
     {
         ini_set('max_execution_time', 300);
-
+        
+        $user = Auth::user();
         $pembayaran = Pembayaran::with(['siswa', 'siswa.kelas', 'petugas'])->findOrFail($id);
 
         $logoPath = public_path('img/amanah31.png');
@@ -274,6 +277,7 @@ public function update(Request $request, $id)
         $facebookPath = public_path('img/icons/facebook.png');
         $youtubePath = public_path('img/icons/youtube.png');
         $whatsappPath = public_path('img/icons/whatsapp.png');
+        $barcodePath = public_path('img/barcode/barcode-ita.png');
 
         $logoData = base64_encode(file_get_contents($logoPath));
         $websiteData = base64_encode(file_get_contents($websitePath));
@@ -281,9 +285,10 @@ public function update(Request $request, $id)
         $facebookData = base64_encode(file_get_contents($facebookPath));
         $youtubeData = base64_encode(file_get_contents($youtubePath));
         $whatsappData = base64_encode(file_get_contents($whatsappPath));
+        $barcodeData = base64_encode(file_get_contents($barcodePath));
 
 
-        $pdf = PDF::loadView('pdf.bukti', compact('pembayaran', 'logoData', 'websiteData', 'instagramData', 'facebookData', 'youtubeData', 'whatsappData'))
+        $pdf = PDF::loadView('pdf.bukti', compact('pembayaran', 'logoData', 'websiteData', 'instagramData', 'facebookData', 'youtubeData', 'whatsappData', 'barcodeData', 'user'))
                 ->setPaper('a5', 'portrait')
                 ->setOptions([
                     'isHtml5ParserEnabled' => true,

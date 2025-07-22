@@ -62,7 +62,7 @@ class HomeController extends Controller
             $currentPayments = Pembayaran::whereHas('siswa', function($query) use ($kelas) {
                 $query->where('id_kelas', $kelas->id);
             })
-            ->where('bulan', strtolower($currentMonthName)) // Pastikan lowercase
+            ->where('bulan', strtolower($currentMonthName)) 
             ->where('tahun', $currentYear)
             ->sum('jumlah_bayar');
 
@@ -70,7 +70,7 @@ class HomeController extends Controller
             $previousPayments = Pembayaran::whereHas('siswa', function($query) use ($kelas) {
                 $query->where('id_kelas', $kelas->id);
             })
-            ->where('bulan', strtolower($previousMonthName)) // Pastikan lowercase
+            ->where('bulan', strtolower($previousMonthName))
             ->where('tahun', $previousYear)
             ->sum('jumlah_bayar');
 
@@ -84,7 +84,8 @@ class HomeController extends Controller
 
             $unpaid = $kelas->siswa->whereNotIn('id', $paidStudents);
             
-            $pemasukanSPPPerKelas[$kelas->nama_kelas] = [
+            $pemasukanSPPPerKelas[] = [ // Ubah menjadi array numerik
+                'kelas' => $kelas->nama_kelas,
                 'current' => $currentPayments,
                 'previous' => $previousPayments,
                 'unpaid_count' => $unpaid->count(),
@@ -111,9 +112,20 @@ class HomeController extends Controller
                 'kelasList' => $kelasList
             ];
         
-        return view('dashboard.index', array_merge($data, [
+        return view('dashboard.index', [
+            'user' => User::find(auth()->user()->id),
+            'pembayaran' => Pembayaran::with(['siswa.kelas', 'siswa.spp'])
+                            ->orderBy('created_at', 'desc')
+                            ->limit(5)
+                            ->get(),
+            'infaqHistori' => AngsuranInfaq::with(['siswa.kelas', 'infaqGedung'])
+                            ->orderBy('created_at', 'desc')
+                            ->limit(5)
+                            ->get(),
+            'pemasukanSPPPerKelas' => $pemasukanSPPPerKelas,
             'currentMonthName' => $currentMonthName,
-            'previousMonthName' => $previousMonthName
-        ]));
+            'previousMonthName' => $previousMonthName,
+            'kelasList' => $kelasList
+        ]);
     }
 }

@@ -197,7 +197,7 @@ class SiswaController extends Controller
         ];
         
         $validasi = $request->validate([
-            'nisn' => 'required|numeric|digits:12|unique:siswa,nisn,'.$id,
+            'nisn' => 'required|numeric|digits:8|unique:siswa,nisn,'.$id,
             // 'nis' => 'required|numeric|digits:8|unique:siswa,nis,'.$id,
             'nama' => 'required|max:35',
             'id_kelas' => 'required|integer|exists:kelas,id',

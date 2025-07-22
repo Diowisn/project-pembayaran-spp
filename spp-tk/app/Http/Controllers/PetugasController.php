@@ -63,7 +63,7 @@ class PetugasController extends Controller
          
          $req->validate([
             'level' => 'required',
-            'nama' => 'required|max:15',
+            'nama' => 'required|max:20',
             'email' => 'required|unique:users',
             'password' => 'required|min:8'
          ], $messages);
@@ -148,7 +148,7 @@ class PetugasController extends Controller
      */
     public function destroy($id)
     {
-        if($destroy = User::find($id)) :
+        if($destroy = User::findOrFail($id)) :
              $destroy->delete();
                Alert::success('Berhasil!', 'Data Berhasil di Hapus');
          else :

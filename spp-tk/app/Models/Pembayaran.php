@@ -9,7 +9,7 @@ class Pembayaran extends Model
     protected $table = 'pembayaran';
     protected $primaryKey = 'id';
     protected $fillable = [
-        'id_petugas', 'id_siswa', 'id_spp', 'bulan', 'tahun',
+        'id_petugas', 'name', 'id_siswa', 'id_spp', 'bulan', 'tahun',
         'nominal_spp', 'nominal_konsumsi', 'nominal_fullday',
         'jumlah_bayar', 'kembalian', 'is_lunas', 'tgl_bayar'
     ];
@@ -26,7 +26,9 @@ class Pembayaran extends Model
     
     public function petugas()
     {
-        return $this->belongsTo(User::class, 'id_petugas');
+        return $this->belongsTo(User::class, 'id_petugas')->withDefault([
+            'name' => $this->name ?? 'Administrator',
+        ]);
     }
 
     public function siswa()

@@ -12,7 +12,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/images/logo-amanah.png') }}">
     <title>Assakiinah - SPP</title>
     <!-- Custom CSS -->
-    <link href="{{ asset('assets/libs/chartist/dist/chartist.min.css') }}" rel="stylesheet">
+    {{-- <link href="{{ asset('assets/libs/chartist/dist/chartist.min.css') }}" rel="stylesheet"> --}}
     <!-- Custom CSS -->
     <link href="{{ asset('dist/css/style.min.css') }}" rel="stylesheet">
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -134,11 +134,13 @@
                                         <span class="op-5 user-email">NISN : {{ session('nisn') }}</span>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="Userdd">
-
-
+                                        <a class="dropdown-item" href="javascript:void(0)" data-toggle="modal"
+                                            data-target="#profileModal">
+                                            <i class="ti-user m-r-5 m-l-5"></i> Lengkapi Profil
+                                        </a>
                                         <a class="dropdown-item" href="{{ url('siswa/logout') }}"><i
-                                                class="fa fa-power-off m-r-5 m-l-5"></i> Logout</a>
-
+                                                class="fa fa-power-off m-r-5 m-l-5"></i> Logout
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -244,9 +246,103 @@
     <script src="{{ asset('dist/js/custom.js') }}"></script>
     <!--This page JavaScript -->
     <!--chartis chart-->
-    <script src="{{ asset('assets/libs/chartist/dist/chartist.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js') }}"></script>
-    <script src="{{ asset('dist/js/pages/dashboards/dashboard1.js') }}"></script>
+    {{-- <script src="{{ asset('assets/libs/chartist/dist/chartist.min.js') }}"></script> --}}
+    {{-- <script src="{{ asset('assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js') }}"></script> --}}
+    {{-- <script src="{{ asset('dist/js/pages/dashboards/dashboard1.js') }}"></script> --}}
+
+    <!-- Profile Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1" role="dialog" aria-labelledby="profileModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="profileModalLabel">Lengkapi Data Profil</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="profileForm" action="{{ route('siswa.profile.update') }}" method="POST">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">NISN</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" value="{{ session('nisn') }}" readonly>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Nama Lengkap</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="nama" class="form-control"
+                                    value="{{ session('nama') }}" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Kelas</label>
+                            <div class="col-sm-9" id="kelas-container">
+                                <!-- Data akan diisi via JavaScript -->
+                                <input type="text" class="form-control" value="Memuat data..." readonly>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Nomor Telepon</label>
+                            <div class="col-sm-9">
+                                <input type="text" name="nomor_telp" class="form-control"
+                                    value="{{ session('nomor_telp') }}" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Alamat</label>
+                            <div class="col-sm-9">
+                                <textarea name="alamat" class="form-control" rows="3" required>{{ session('alamat') }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Password Baru</label>
+                            <div class="col-sm-9">
+                                <input type="password" name="password" class="form-control"
+                                    placeholder="Kosongkan jika tidak ingin mengubah">
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Konfirmasi Password</label>
+                            <div class="col-sm-9">
+                                <input type="password" name="password_confirmation" class="form-control">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                    <button type="submit" form="profileForm" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
+
+<script>
+    $(document).ready(function() {
+        $('#profileModal').on('show.bs.modal', function() {
+            $.get('{{ route('siswa.get-data') }}', function(data) {
+                if (data.siswa) {
+                    $('#kelas-container').html(`
+                        <input type="text" class="form-control" 
+                            value="${data.siswa.kelas.nama_kelas}" readonly>
+                        <input type="hidden" name="id_kelas" value="${data.siswa.id_kelas}">
+                    `);
+                }
+            });
+        });
+    });
+</script>
 
 </html>

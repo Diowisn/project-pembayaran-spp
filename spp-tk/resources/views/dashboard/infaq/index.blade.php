@@ -70,6 +70,11 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <label>Status</label>
+                                <input type="text" class="form-control {{ $sisa_pembayaran <= 0 ? 'text-success' : 'text-warning' }}"
+                                    value="{{ $sisa_pembayaran <= 0 ? 'LUNAS' : 'BELUM LUNAS' }}" disabled>
+                            </div>
 
                             <div class="form-group">
                                 <label>Jumlah Bayar</label>
@@ -143,12 +148,11 @@
                                             class="text-dark">
                                             JUMLAH BAYAR
                                             @if (request('sort_by') == 'jumlah_bayar')
-                                                )
-                                                <i
-                                                    class="mdi mdi-chevron-{{ request('order') == 'asc' ? 'up' : 'down' }}"></i>
+                                                <i class="mdi mdi-chevron-{{ request('order') == 'asc' ? 'up' : 'down' }}"></i>
                                             @endif
                                         </a>
                                     </th>
+                                    <th scope="col">STATUS</th>
                                     <th scope="col">
                                         <a href="{{ route('infaq.index', [
                                             'search' => request('search'),
@@ -158,9 +162,7 @@
                                             class="text-dark">
                                             TANGGAL BAYAR
                                             @if (request('sort_by') == 'tgl_bayar')
-                                                )
-                                                <i
-                                                    class="mdi mdi-chevron-{{ request('order') == 'asc' ? 'up' : 'down' }}"></i>
+                                                <i class="mdi mdi-chevron-{{ request('order') == 'asc' ? 'up' : 'down' }}"></i>
                                             @endif
                                         </a>
                                     </th>
@@ -179,6 +181,13 @@
                                         <td>{{ $value->infaqGedung->paket ?? '-' }}</td>
                                         <td>{{ $value->angsuran_ke }}</td>
                                         <td>Rp {{ number_format($value->jumlah_bayar, 0, ',', '.') }}</td>
+                                        <td>
+                                            @if ($value->is_lunas)
+                                                <span class="badge bg-success">Lunas</span>
+                                            @else
+                                                <span class="badge bg-warning text-dark">Belum Lunas</span>
+                                            @endif
+                                        </td>
                                         <td>{{ $value->tgl_bayar->format('d M, Y') }}</td>
                                         <td>
                                             <div class="hide-menu">

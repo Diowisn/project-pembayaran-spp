@@ -12,7 +12,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/images/logo-amanah.png') }}">
     <title>Assakiinah - SPP</title>
     <!-- Custom CSS -->
-    <link href="{{ asset('assets/libs/chartist/dist/chartist.min.css') }}" rel="stylesheet">
+    {{-- <link href="{{ asset('assets/libs/chartist/dist/chartist.min.css') }}" rel="stylesheet"> --}}
     <!-- Custom CSS -->
     <link href="{{ asset('dist/css/style.min.css') }}" rel="stylesheet">
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -315,9 +315,9 @@
     <script src="{{ asset('dist/js/custom.js') }}"></script>
     <!--This page JavaScript -->
     <!--chartis chart-->
-    <script src="{{ asset('assets/libs/chartist/dist/chartist.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js') }}"></script>
-    <script src="{{ asset('dist/js/pages/dashboards/dashboard1.js') }}"></script>
+    {{-- <script src="{{ asset('assets/libs/chartist/dist/chartist.min.js') }}"></script> --}}
+    {{-- <script src="{{ asset('assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js') }}"></script> --}}
+    {{-- <script src="{{ asset('dist/js/pages/dashboards/dashboard1.js') }}"></script> --}}
 </body>
 
 </html>

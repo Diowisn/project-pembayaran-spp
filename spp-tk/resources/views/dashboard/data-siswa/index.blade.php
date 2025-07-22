@@ -15,47 +15,47 @@
                         <i class="mdi mdi-plus-circle"></i> {{ __('Tambah Siswa') }}
                     </a>
 
-{{-- Form Pencarian Nama / NISN --}}
-<form method="GET" action="{{ route('data-siswa.index') }}" class="form-inline mb-3">
-    <input type="text" name="search" class="form-control mr-2" placeholder="Cari NISN / Nama"
-           value="{{ request('search') }}">
-    <button type="submit" class="btn btn-primary mr-2">Cari</button>
+                    {{-- Form Pencarian Nama / NISN --}}
+                    <form method="GET" action="{{ route('data-siswa.index') }}" class="form-inline mb-3">
+                        <input type="text" name="search" class="form-control mr-2" placeholder="Cari NISN / Nama"
+                            value="{{ request('search') }}">
+                        <button type="submit" class="btn btn-primary mr-2">Cari</button>
 
-    @if(request()->has('search'))
-        <a href="{{ route('data-siswa.index') }}" class="btn btn-secondary">Reset</a>
-    @endif
-</form>
+                        @if(request()->has('search'))
+                            <a href="{{ route('data-siswa.index') }}" class="btn btn-secondary">Reset</a>
+                        @endif
+                    </form>
 
-{{-- Form Filter Kelas & Sortir --}}
-<form method="GET" action="{{ route('data-siswa.index') }}" class="form-inline mb-3">
-    {{-- Kelas --}}
-    <select name="kelas_id" class="form-control mr-2">
-        <option value="">-- Pilih Kelas --</option>
-        @foreach($allKelas as $kelasItem)
-            <option value="{{ $kelasItem->id }}" {{ request('kelas_id') == $kelasItem->id ? 'selected' : '' }}>
-                {{ $kelasItem->nama_kelas }}
-            </option>
-        @endforeach
-    </select>
+                    {{-- Form Filter Kelas & Sortir --}}
+                    <form method="GET" action="{{ route('data-siswa.index') }}" class="form-inline mb-3">
+                        {{-- Kelas --}}
+                        <select name="kelas_id" class="form-control mr-2">
+                            <option value="">-- Pilih Kelas --</option>
+                            @foreach($allKelas as $kelasItem)
+                                <option value="{{ $kelasItem->id }}" {{ request('kelas_id') == $kelasItem->id ? 'selected' : '' }}>
+                                    {{ $kelasItem->nama_kelas }}
+                                </option>
+                            @endforeach
+                        </select>
 
-    {{-- Sorting --}}
-    <select name="sort_by" class="form-control mr-2">
-        <option value="">-- Urutkan --</option>
-        <option value="nama" {{ request('sort_by') == 'nama' ? 'selected' : '' }}>Nama</option>
-        <option value="nisn" {{ request('sort_by') == 'nisn' ? 'selected' : '' }}>NISN</option>
-    </select>
+                        {{-- Sorting --}}
+                        <select name="sort_by" class="form-control mr-2">
+                            <option value="">-- Urutkan --</option>
+                            <option value="nama" {{ request('sort_by') == 'nama' ? 'selected' : '' }}>Nama</option>
+                            <option value="nisn" {{ request('sort_by') == 'nisn' ? 'selected' : '' }}>NISN</option>
+                        </select>
 
-    <select name="order" class="form-control mr-2">
-        <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>A-Z</option>
-        <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>Z-A</option>
-    </select>
+                        <select name="order" class="form-control mr-2">
+                            <option value="asc" {{ request('order') == 'asc' ? 'selected' : '' }}>A-Z</option>
+                            <option value="desc" {{ request('order') == 'desc' ? 'selected' : '' }}>Z-A</option>
+                        </select>
 
-    <button type="submit" class="btn btn-success mr-2">Terapkan</button>
+                        <button type="submit" class="btn btn-success mr-2">Terapkan</button>
 
-    @if(request()->hasAny(['kelas_id', 'sort_by', 'order']))
-        <a href="{{ route('data-siswa.index') }}" class="btn btn-secondary">Reset</a>
-    @endif
-</form>
+                        @if(request()->hasAny(['kelas_id', 'sort_by', 'order']))
+                            <a href="{{ route('data-siswa.index') }}" class="btn btn-secondary">Reset</a>
+                        @endif
+                    </form>
 
                     <div class="table-responsive mb-3">
                         <table class="table">

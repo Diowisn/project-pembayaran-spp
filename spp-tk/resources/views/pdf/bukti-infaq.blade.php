@@ -76,6 +76,12 @@
             float: right;
             text-align: center;
         }
+        .footer .right img {
+            width: 100px;
+            height: auto;
+            margin: 0 auto 5px;
+            display: block;
+        }
         .clearfix::after {
             content: "";
             clear: both;
@@ -169,7 +175,8 @@
             <p>{{ \Carbon\Carbon::parse($angsuran->created_at)->locale('id')->isoFormat('dddd, D MMMM Y') }}</p>
         </div>
         <div class="right">
-            <p>({{ $angsuran->petugas->name ?? 'Administrator' }})</p>
+            <img src="data:image/png;base64,{{ $barcodeData }}" style="width: 100px; height: auto; display: block; margin-bottom: 5px;" alt="Barcode">
+            <p>({{ $user->name ?? 'Administrator' }})</p>
         </div>
     </div>
 

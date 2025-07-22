@@ -20,7 +20,7 @@
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h6 class="card-title">Kelas {{ $kelas }}</h6>
+                                                <h6 class="card-title">Kelas {{ $data['kelas'] }}</h6>
                                                 <h4 class="mb-0">{{ $data['payment_rate'] }}%</h4>
                                                 <small>{{ $data['total_students'] - $data['unpaid_count'] }} dari
                                                     {{ $data['total_students'] }} siswa</small>
@@ -52,17 +52,129 @@
         </div>
     </div>
 
+    <style>
+        #paymentChart {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+        }
+    </style>
+
     <!-- Payment Comparison -->
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title">Perbandingan Pembayaran</h4>
-                    <canvas id="paymentChart" height="100"></canvas>
+                    <div class="chart-container" style="border:2px;height:400px;">
+                        <canvas id="paymentChart" width="400" height="400"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('paymentChart');
+            if (!canvas) return;
+
+            // Set ukuran fisik canvas
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            // Coba render chart jika data ada
+            @if (!empty($pemasukanSPPPerKelas))
+                try {
+                    new Chart(canvas.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: {!! json_encode(array_column($pemasukanSPPPerKelas, 'kelas')) !!},
+                            datasets: [{
+                                    label: '{{ $previousMonthName }}',
+                                    data: {!! json_encode(array_column($pemasukanSPPPerKelas , 'previous')) !!},
+                                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: '{{ $currentMonthName }}',
+                                    data: {!! json_encode(array_column($pemasukanSPPPerKelas, 'current')) !!},
+                                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return 'Rp ' + value.toLocaleString('id-ID');
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.dataset.label + ': Rp ' + context.raw
+                                                .toLocaleString('id-ID');
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    console.log('Chart rendered successfully');
+                } catch (e) {
+                    console.error('Chart error:', e);
+                    canvas.parentElement.innerHTML = `
+                <div class="alert alert-danger">
+                    Error rendering chart: ${e.message}
+                </div>
+            `;
+                }
+            @endif
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+
+    <script>
+        window.forceRenderChart = function() {
+            const container = document.getElementById('chartFallback');
+            container.innerHTML = `
+            <canvas id="forcedChart" style="width:100%;height:100%"></canvas>
+        `;
+
+            new Chart(
+                document.getElementById('forcedChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Force', 'Render'],
+                        datasets: [{
+                            label: 'Test',
+                            data: [10, 20],
+                            backgroundColor: 'green'
+                        }]
+                    }
+                }
+            );
+            console.log('Forced chart rendered');
+        };
+    </script>
 
     <!-- Payment History Sections -->
     <div class="row">
@@ -83,7 +195,8 @@
                                     <h6 class="font-medium">{{ $history->siswa->nama }}</h6>
                                     <span class="m-b-15 d-block">
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item">Kelas {{ $history->siswa->kelas->nama_kelas }} ~ SPP
+                                            <li class="list-group-item">Kelas {{ $history->siswa->kelas->nama_kelas }} ~
+                                                SPP
                                                 Bulan <b class="text-capitalize text-bold">{{ $history->bulan }}</b></li>
                                             <li class="list-group-item">Nominal SPP Rp.
                                                 {{ $history->siswa->spp->nominal_spp ?? '-' }}</li>
@@ -96,12 +209,15 @@
                                         </ul>
                                     </span>
                                     <div class="comment-footer">
-                                        <span class="text-muted float-right">{{ $history->created_at->format('M d, Y') }}</span>
+                                        <span
+                                            class="text-muted float-right">{{ $history->created_at->format('M d, Y') }}</span>
                                         <span class="action-icons active">
-                                            <a href="{{ route('pembayaran.generate', $history->id) }}" class="mr-2" title="Cetak Bukti">
+                                            <a href="{{ route('pembayaran.generate', $history->id) }}" class="mr-2"
+                                                title="Cetak Bukti">
                                                 <i class="mdi mdi-printer"></i>
                                             </a>
-                                            <a href="{{ url('dashboard/pembayaran/' . $history->id . '/edit') }}" title="Edit">
+                                            <a href="{{ url('dashboard/pembayaran/' . $history->id . '/edit') }}"
+                                                title="Edit">
                                                 <i class="ti-pencil-alt"></i>
                                             </a>
                                         </span>
@@ -135,21 +251,27 @@
                                     <h6 class="font-medium">{{ $history->siswa->nama }}</h6>
                                     <span class="m-b-15 d-block">
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item">Kelas {{ $history->siswa->kelas->nama_kelas }} ~ Paket 
-                                                <b class="text-uppercase text-bold">{{ $history->infaqGedung->paket ?? '-' }}</b></li>
+                                            <li class="list-group-item">Kelas {{ $history->siswa->kelas->nama_kelas }} ~
+                                                Paket
+                                                <b
+                                                    class="text-uppercase text-bold">{{ $history->infaqGedung->paket ?? '-' }}</b>
+                                            </li>
                                             <li class="list-group-item">Total Infaq Rp.
                                                 {{ number_format($history->infaqGedung->nominal ?? 0, 0, ',', '.') }}</li>
                                             <li class="list-group-item">Angsuran Ke-{{ $history->angsuran_ke }}</li>
-                                            <li class="list-group-item">Jumlah Bayar Rp. 
+                                            <li class="list-group-item">Jumlah Bayar Rp.
                                                 {{ number_format($history->jumlah_bayar, 0, ',', '.') }}</li>
-                                            <li class="list-group-item">Sisa Pembayaran Rp. 
-                                                {{ number_format($history->infaqGedung->nominal - $history->siswa->angsuranInfaq->sum('jumlah_bayar'), 0, ',', '.') }}</li>
+                                            <li class="list-group-item">Sisa Pembayaran Rp.
+                                                {{ number_format($history->infaqGedung->nominal - $history->siswa->angsuranInfaq->sum('jumlah_bayar'), 0, ',', '.') }}
+                                            </li>
                                         </ul>
                                     </span>
                                     <div class="comment-footer">
-                                        <span class="text-muted float-right">{{ $history->created_at->format('M d, Y') }}</span>
+                                        <span
+                                            class="text-muted float-right">{{ $history->created_at->format('M d, Y') }}</span>
                                         <span class="action-icons active">
-                                            <a href="{{ route('infaq.generate', $history->id) }}" class="mr-2" title="Cetak Bukti">
+                                            <a href="{{ route('infaq.generate', $history->id) }}" class="mr-2"
+                                                title="Cetak Bukti">
                                                 <i class="mdi mdi-printer"></i>
                                             </a>
                                             <a href="{{ route('infaq.edit', $history->id) }}" title="Edit">
@@ -172,8 +294,8 @@
 
     <!-- Unpaid Students Modals -->
     @foreach ($pemasukanSPPPerKelas as $kelas => $data)
-        <div class="modal fade" id="unpaidModal-{{ \Illuminate\Support\Str::slug($kelas) }}" tabindex="-1" role="dialog"
-            aria-hidden="true">
+        <div class="modal fade" id="unpaidModal-{{ \Illuminate\Support\Str::slug($kelas) }}" tabindex="-1"
+            role="dialog" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -204,60 +326,4 @@
             </div>
         </div>
     @endforeach
-
-    @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // Payment comparison chart
-    const ctx = document.getElementById('paymentChart').getContext('2d');
-    const paymentChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode($kelasList->pluck('nama_kelas')) !!},
-            datasets: [
-                {
-                    label: 'Pembayaran {{ $previousMonthName }}',
-                    data: {!! json_encode(array_column($pemasukanSPPPerKelas, 'previous')) !!},
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                },
-                {
-                    label: 'Pembayaran {{ $currentMonthName }}',
-                    data: {!! json_encode(array_column($pemasukanSPPPerKelas, 'current')) !!},
-                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Jumlah Pembayaran (Rp)'
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return 'Rp ' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                        }
-                    }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return 'Rp ' + context.raw.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                        }
-                    }
-                }
-            }
-        }
-    });
-</script>
-    @endpush
 @endsection

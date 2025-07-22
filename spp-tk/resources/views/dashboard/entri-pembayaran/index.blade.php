@@ -191,6 +191,7 @@
                                     </th>
                                     <th scope="col">JUMLAH BAYAR</th>
                                     <th scope="col">SISA</th>
+                                    <th scope="col">STATUS</th>
                                     <th scope="col">
                                         <a href="{{ route('entry-pembayaran.index', [
                                             'search' => request('search'),
@@ -228,6 +229,13 @@
                                         </td>
                                         <td>Rp {{ number_format($value->jumlah_bayar, 0, ',', '.') }}</td>
                                         <td>Rp {{ number_format($value->kembalian, 0, ',', '.') }}</td>
+                                        <td>
+                                            @if ($value->is_lunas)
+                                                <span class="badge badge-success">Lunas</span>
+                                            @else
+                                                <span class="badge badge-warning">Belum Lunas</span>
+                                            @endif
+                                        </td>
                                         <td>{{ $value->created_at->format('d M, Y') }}</td>
                                         <td>
                                             <div class="hide-menu">

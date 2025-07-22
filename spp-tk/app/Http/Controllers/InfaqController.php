@@ -11,6 +11,7 @@ use App\Models\InfaqGedung;
 use Alert;
 use PDF;
 use Log;
+use Illuminate\Support\Facades\Auth;
 
 class InfaqController extends Controller
 {
@@ -64,15 +65,32 @@ class InfaqController extends Controller
 
         // Hitung total yang sudah dibayar
         $totalDibayar = $siswa->angsuranInfaq->sum('jumlah_bayar');
-        $sisaPembayaran = $siswa->infaqGedung ? ($siswa->infaqGedung->nominal - $totalDibayar) : 0;
+        $totalTagihan = $siswa->infaqGedung ? $siswa->infaqGedung->nominal : 0;
+        $sisaPembayaran = $totalTagihan - $totalDibayar;
 
         return view('dashboard.infaq.index', [
             'angsuran' => AngsuranInfaq::with(['siswa'])->orderBy('id', 'DESC')->paginate(10),
             'siswa' => $siswa,
             'total_dibayar' => $totalDibayar,
-            'sisa_pembayaran' => $sisaPembayaran,
+            'sisa_pembayaran' => max($sisaPembayaran, 0), // Pastikan tidak minus
             'user' => User::find(auth()->user()->id)
         ]);
+    }
+
+    public function updateLunasStatus($idSiswa)
+    {
+        $siswa = Siswa::with(['infaqGedung', 'angsuranInfaq'])->findOrFail($idSiswa);
+        
+        $totalDibayar = $siswa->angsuranInfaq->sum('jumlah_bayar');
+        $totalTagihan = $siswa->infaqGedung->nominal ?? 0;
+        $isLunas = ($totalDibayar >= $totalTagihan);
+        
+        if ($isLunas) {
+            AngsuranInfaq::where('id_siswa', $idSiswa)
+                ->update(['is_lunas' => true]);
+        }
+        
+        return $isLunas;
     }
 
     public function store(Request $request)
@@ -97,16 +115,24 @@ class InfaqController extends Controller
         try {
             $siswa = Siswa::with(['infaqGedung', 'angsuranInfaq'])->findOrFail($request->id_siswa);
             
-            // Hitung angsuran ke berapa
-            $angsuranKe = $siswa->angsuranInfaq->count() + 1;
+            $totalDibayar = $siswa->angsuranInfaq->sum('jumlah_bayar') + $request->jumlah_bayar;
+            $totalTagihan = $siswa->infaqGedung->nominal ?? 0;
+            $isLunas = ($totalDibayar >= $totalTagihan);
             
-            // Buat pembayaran infaq
+            // Buat pembayaran baru
             $angsuran = AngsuranInfaq::create([
                 'id_siswa' => $request->id_siswa,
-                'angsuran_ke' => $angsuranKe,
+                'angsuran_ke' => $siswa->angsuranInfaq->count() + 1,
                 'jumlah_bayar' => $request->jumlah_bayar,
-                'tgl_bayar' => $request->tgl_bayar
+                'tgl_bayar' => $request->tgl_bayar,
+                'is_lunas' => $isLunas
             ]);
+
+            // Jika lunas, update SEMUA angsuran untuk siswa ini
+            if ($isLunas) {
+                AngsuranInfaq::where('id_siswa', $request->id_siswa)
+                    ->update(['is_lunas' => true]);
+            }
 
             Alert::success('Berhasil!', 'Pembayaran infaq berhasil disimpan!');
             return redirect()->route('infaq.cari-siswa', ['nisn' => $siswa->nisn]);
@@ -119,56 +145,63 @@ class InfaqController extends Controller
         }
     }
 
-public function edit($id)
-{
-    $angsuran = AngsuranInfaq::with(['siswa', 'infaqGedung'])->findOrFail($id);
-    
-    return view('dashboard.infaq.edit', [
-        'edit' => $angsuran,
-        'user' => User::find(auth()->user()->id)
-    ]);
-}
-
-public function update(Request $request, $id)
-{
-    $angsuran = AngsuranInfaq::with(['siswa', 'infaqGedung'])->findOrFail($id);
-    
-    $validator = Validator::make($request->all(), [
-        'angsuran_ke' => 'required|numeric|min:1',
-        'jumlah_bayar' => 'required|numeric|min:1',
-        'tgl_bayar' => 'required|date'
-    ], [
-        'required' => 'Field :attribute wajib diisi',
-        'min' => ':attribute tidak boleh kurang dari :min'
-    ]);
-
-    if ($validator->fails()) {
-        return redirect()
-                ->back()
-                ->withErrors($validator)
-                ->withInput();
+    public function edit($id)
+    {
+        $angsuran = AngsuranInfaq::with(['siswa', 'infaqGedung'])->findOrFail($id);
+        
+        return view('dashboard.infaq.edit', [
+            'edit' => $angsuran,
+            'user' => User::find(auth()->user()->id)
+        ]);
     }
 
-    try {
-        $angsuran->update([
-            'angsuran_ke' => $request->angsuran_ke,
-            'jumlah_bayar' => $request->jumlah_bayar,
-            'tgl_bayar' => $request->tgl_bayar
+    public function update(Request $request, $id)
+    {
+        $angsuran = AngsuranInfaq::with(['siswa', 'infaqGedung'])->findOrFail($id);
+        
+        $validator = Validator::make($request->all(), [
+            'angsuran_ke' => 'required|numeric|min:1',
+            'jumlah_bayar' => 'required|numeric|min:1',
+            'tgl_bayar' => 'required|date'
+        ], [
+            'required' => 'Field :attribute wajib diisi',
+            'min' => ':attribute tidak boleh kurang dari :min'
         ]);
 
-        Alert::success('Berhasil!', 'Pembayaran infaq berhasil diperbarui');
-        return redirect()->route('infaq.index');
+        if ($validator->fails()) {
+            return redirect()
+                    ->back()
+                    ->withErrors($validator)
+                    ->withInput();
+        }
 
-    } catch (\Exception $e) {
-        Log::error('Error updating pembayaran infaq: '.$e->getMessage());
-        Alert::error('Error!', 'Terjadi kesalahan saat memperbarui pembayaran infaq');
-        return back()->withInput();
+        try {
+            $angsuran->update([
+                'angsuran_ke' => $request->angsuran_ke,
+                'jumlah_bayar' => $request->jumlah_bayar,
+                'tgl_bayar' => $request->tgl_bayar
+            ]);
+
+            $this->updateLunasStatus($angsuran->id_siswa);
+
+            Alert::success('Berhasil!', 'Pembayaran infaq berhasil diperbarui');
+            return redirect()->route('infaq.index');
+
+        } catch (\Exception $e) {
+            Log::error('Error updating pembayaran infaq: '.$e->getMessage());
+            Alert::error('Error!', 'Terjadi kesalahan saat memperbarui pembayaran infaq');
+            return back()->withInput();
+        }
     }
-}
 
     public function destroy($id)
     {
-        if(AngsuranInfaq::find($id)->delete()) {
+        $angsuran = AngsuranInfaq::findOrFail($id);
+        $idSiswa = $angsuran->id_siswa;
+        
+        if($angsuran->delete()) {
+            $this->updateLunasStatus($idSiswa);
+            
             Alert::success('Berhasil!', 'Pembayaran infaq berhasil dihapus!');
         } else {
             Alert::error('Terjadi Kesalahan!', 'Pembayaran infaq gagal dihapus!');
@@ -181,6 +214,7 @@ public function update(Request $request, $id)
     {
         ini_set('max_execution_time', 300);
 
+        $user = Auth::user();
         $angsuran = AngsuranInfaq::with(['siswa', 'infaqGedung'])->findOrFail($id);
 
         $logoPath = public_path('img/amanah31.png');
@@ -189,6 +223,7 @@ public function update(Request $request, $id)
         $facebookPath = public_path('img/icons/facebook.png');
         $youtubePath = public_path('img/icons/youtube.png');
         $whatsappPath = public_path('img/icons/whatsapp.png');
+        $barcodePath = public_path('img/barcode/barcode-ita.png');
 
         $logoData = base64_encode(file_get_contents($logoPath));
         $websiteData = base64_encode(file_get_contents($websitePath));
@@ -196,8 +231,9 @@ public function update(Request $request, $id)
         $facebookData = base64_encode(file_get_contents($facebookPath));
         $youtubeData = base64_encode(file_get_contents($youtubePath));
         $whatsappData = base64_encode(file_get_contents($whatsappPath));
+        $barcodeData = base64_encode(file_get_contents($barcodePath));
         
-        $pdf = PDF::loadView('pdf.bukti-infaq', compact('angsuran', 'logoData', 'websiteData', 'instagramData', 'facebookData', 'youtubeData', 'whatsappData'))
+        $pdf = PDF::loadView('pdf.bukti-infaq', compact('angsuran', 'logoData', 'websiteData', 'instagramData', 'facebookData', 'youtubeData', 'whatsappData', 'barcodeData', 'user'))
                   ->setPaper('a5', 'portrait')
                   ->setOptions([
                       'isHtml5ParserEnabled' => true,
