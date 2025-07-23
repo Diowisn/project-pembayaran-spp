@@ -191,6 +191,7 @@
                                     </th>
                                     <th scope="col">JUMLAH BAYAR</th>
                                     <th scope="col">SISA</th>
+                                    <th scope="col">BULAN</th>
                                     <th scope="col">STATUS</th>
                                     <th scope="col">
                                         <a href="{{ route('entry-pembayaran.index', [
@@ -229,6 +230,7 @@
                                         </td>
                                         <td>Rp {{ number_format($value->jumlah_bayar, 0, ',', '.') }}</td>
                                         <td>Rp {{ number_format($value->kembalian, 0, ',', '.') }}</td>
+                                        <td> {{ ucfirst($value->bulan) }}</td>
                                         <td>
                                             @if ($value->is_lunas)
                                                 <span class="badge badge-success">Lunas</span>

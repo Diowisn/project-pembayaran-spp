@@ -42,6 +42,58 @@
                                                 <small>{{ $data['unpaid_count'] }} siswa belum bayar</small>
                                             </a>
                                         </div>
+                                        <div class="mt-2">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <small class="text-muted">Penerimaan Bersih:</small>
+                                                    <h5>Rp {{ number_format($data['current'], 0, ',', '.') }}</h5>
+                                                </div>
+                                                <div class="col-6">
+                                                    <small class="text-muted">Target Penerimaan:</small>
+                                                    <h5>Rp {{ number_format($data['target_penerimaan'], 0, ',', '.') }}
+                                                    </h5>
+                                                </div>
+                                            </div>
+                                            <div class="mt-2">
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-outline-info dropdown-toggle"
+                                                        type="button" id="dropdownRincian{{ $loop->index }}"
+                                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        Lihat Rincian Target
+                                                    </button>
+                                                    <div class="dropdown-menu"
+                                                        aria-labelledby="dropdownRincian{{ $loop->index }}">
+                                                        <div class="px-3 py-2">
+                                                            <small class="text-muted d-block">Rincian Target Kelas
+                                                                {{ $data['kelas'] }}:</small>
+                                                            <ul class="list-unstyled mb-0">
+                                                                <li>
+                                                                    <small>SPP: Rp
+                                                                        {{ number_format($data['target_spp'], 0, ',', '.') }}</small>
+                                                                </li>
+                                                                <li>
+                                                                    <small>Konsumsi: Rp
+                                                                        {{ number_format($data['target_konsumsi'], 0, ',', '.') }}</small>
+                                                                </li>
+                                                                <li>
+                                                                    <small>Fullday: Rp
+                                                                        {{ number_format($data['target_fullday'], 0, ',', '.') }}</small>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {{-- <div class="progress mt-1" style="height: 5px;">
+                                                <div class="progress-bar bg-info"
+                                                    style="width: {{ $data['target_penerimaan'] > 0 ? min(round(($data['current'] / $data['target_penerimaan']) * 100, 2), 100) : 0 }}%">
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">
+                                                {{ $data['target_penerimaan'] > 0 ? round(($data['current'] / $data['target_penerimaan']) * 100, 2) : 0 }}%
+                                                dari target
+                                            </small> --}}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -98,7 +150,7 @@
                             labels: {!! json_encode(array_column($pemasukanSPPPerKelas, 'kelas')) !!},
                             datasets: [{
                                     label: '{{ $previousMonthName }}',
-                                    data: {!! json_encode(array_column($pemasukanSPPPerKelas , 'previous')) !!},
+                                    data: {!! json_encode(array_column($pemasukanSPPPerKelas, 'previous')) !!},
                                     backgroundColor: 'rgba(54, 162, 235, 0.7)',
                                     borderColor: 'rgba(54, 162, 235, 1)',
                                     borderWidth: 1
@@ -128,9 +180,21 @@
                             plugins: {
                                 tooltip: {
                                     callbacks: {
-                                        label: function(context) {
-                                            return context.dataset.label + ': Rp ' + context.raw
-                                                .toLocaleString('id-ID');
+                                        afterBody: function(context) {
+                                            const datasetIndex = context[0].datasetIndex;
+                                            const dataIndex = context[0].dataIndex;
+                                            const kelas = context[0].label;
+                                            const netPayment = context[0].raw;
+
+                                            // Hitung jumlah siswa yang sudah bayar
+                                            const paidStudents = {!! json_encode(array_column($pemasukanSPPPerKelas, 'total_students')) !!}[dataIndex] -
+                                                {!! json_encode(array_column($pemasukanSPPPerKelas, 'unpaid_count')) !!}[dataIndex];
+
+                                            return [
+                                                `Kelas: ${kelas}`,
+                                                `Siswa Bayar: ${paidStudents} orang`,
+                                                `Penerimaan Bersih: Rp ${netPayment.toLocaleString('id-ID')}`
+                                            ];
                                         }
                                     }
                                 }
@@ -204,8 +268,14 @@
                                                 Rp. {{ $history->siswa->spp->nominal_konsumsi ?? '-' }}</li>
                                             <li class="list-group-item">Nominal Fullday Rp.
                                                 {{ $history->siswa->spp->nominal_fullday ?? '-' }}</li>
-                                            <li class="list-group-item">Jumlah Bayar Rp. {{ $history->jumlah_bayar }}</li>
-                                            <li class="list-group-item">Kembalian Rp. {{ $history->kembalian }}</li>
+                                            <li class="list-group-item">Jumlah Bayar: Rp
+                                                {{ number_format($history->jumlah_bayar, 0, ',', '.') }}</li>
+                                            <li class="list-group-item">Kembalian: Rp
+                                                {{ number_format($history->kembalian, 0, ',', '.') }}</li>
+                                            <li class="list-group-item font-weight-bold">
+                                                Penerimaan Bersih: Rp
+                                                {{ number_format($history->jumlah_bayar - $history->kembalian, 0, ',', '.') }}
+                                            </li>
                                         </ul>
                                     </span>
                                     <div class="comment-footer">
@@ -259,10 +329,13 @@
                                             <li class="list-group-item">Total Infaq Rp.
                                                 {{ number_format($history->infaqGedung->nominal ?? 0, 0, ',', '.') }}</li>
                                             <li class="list-group-item">Angsuran Ke-{{ $history->angsuran_ke }}</li>
-                                            <li class="list-group-item">Jumlah Bayar Rp.
+                                            <li class="list-group-item">Jumlah Bayar: Rp
                                                 {{ number_format($history->jumlah_bayar, 0, ',', '.') }}</li>
-                                            <li class="list-group-item">Sisa Pembayaran Rp.
-                                                {{ number_format($history->infaqGedung->nominal - $history->siswa->angsuranInfaq->sum('jumlah_bayar'), 0, ',', '.') }}
+                                            <li class="list-group-item">Kembalian: Rp
+                                                {{ number_format($history->kembalian, 0, ',', '.') }}</li>
+                                            <li class="list-group-item font-weight-bold">
+                                                Penerimaan Bersih: Rp
+                                                {{ number_format($history->jumlah_bayar - $history->kembalian, 0, ',', '.') }}
                                             </li>
                                         </ul>
                                     </span>

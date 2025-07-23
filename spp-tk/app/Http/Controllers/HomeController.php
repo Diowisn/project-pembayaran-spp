@@ -58,13 +58,27 @@ class HomeController extends Controller
         $pemasukanSPPPerKelas = [];
 
         foreach ($kelasList as $kelas) {
+                $targetSPP = 0;
+                $targetKonsumsi = 0;
+                $targetFullday = 0;
+                
+                foreach ($kelas->siswa as $siswa) {
+                    $targetSPP += $siswa->spp->nominal_spp ?? 0;
+                    $targetKonsumsi += $siswa->spp->nominal_konsumsi ?? 0;
+                    $targetFullday += $siswa->spp->nominal_fullday ?? 0;
+                }
+                
+                $targetPenerimaan = $targetSPP + $targetKonsumsi + $targetFullday;
             // Current month payments (gunakan nama bulan lowercase)
             $currentPayments = Pembayaran::whereHas('siswa', function($query) use ($kelas) {
                 $query->where('id_kelas', $kelas->id);
             })
-            ->where('bulan', strtolower($currentMonthName)) 
+            ->where('bulan', strtolower($currentMonthName))
             ->where('tahun', $currentYear)
-            ->sum('jumlah_bayar');
+            ->get() // Ubah dari sum() ke get() untuk menghitung net payment
+            ->sum(function($item) {
+                return $item->jumlah_bayar - $item->kembalian; // Hitung net payment
+            });
 
             // Previous month payments
             $previousPayments = Pembayaran::whereHas('siswa', function($query) use ($kelas) {
@@ -72,7 +86,10 @@ class HomeController extends Controller
             })
             ->where('bulan', strtolower($previousMonthName))
             ->where('tahun', $previousYear)
-            ->sum('jumlah_bayar');
+            ->get()
+            ->sum(function($item) {
+                return $item->jumlah_bayar - $item->kembalian;
+            });
 
             // Unpaid students calculation
             $paidStudents = Pembayaran::whereHas('siswa', function($query) use ($kelas) {
@@ -84,10 +101,14 @@ class HomeController extends Controller
 
             $unpaid = $kelas->siswa->whereNotIn('id', $paidStudents);
             
-            $pemasukanSPPPerKelas[] = [ // Ubah menjadi array numerik
+            $pemasukanSPPPerKelas[] = [
                 'kelas' => $kelas->nama_kelas,
                 'current' => $currentPayments,
                 'previous' => $previousPayments,
+                'target_penerimaan' => $targetPenerimaan,
+                'target_spp' => $targetSPP,
+                'target_konsumsi' => $targetKonsumsi,
+                'target_fullday' => $targetFullday,
                 'unpaid_count' => $unpaid->count(),
                 'unpaid_students' => $unpaid,
                 'total_students' => $kelas->siswa->count(),
