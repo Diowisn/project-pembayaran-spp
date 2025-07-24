@@ -40,4 +40,9 @@ class Pembayaran extends Model
     {
         return ucfirst(str_replace('_', ' ', $value));
     }
+
+    public function tabungan()
+    {
+        return $this->hasOne(Tabungan::class, 'id_pembayaran');
+    }
 }

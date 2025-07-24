@@ -38,4 +38,9 @@ class Siswa extends Model
     {
         return $this->belongsTo(Spp::class, 'id_spp');
     }
+
+    public function tabungan()
+    {
+        return $this->hasMany(Tabungan::class, 'id_siswa');
+    }
 }

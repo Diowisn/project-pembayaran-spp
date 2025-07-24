@@ -201,6 +201,13 @@
                                     <span class="hide-menu">Entri Transaksi Infaq</span>
                                 </a>
                             </li>
+                            <li class="sidebar-item">
+                                <a class="sidebar-liauth()->user()->level == 'admin'nk waves-effect waves-dark sidebar-link"
+                                    href="{{ route('tabungan.index') }}" aria-expanded="false">
+                                    <i class="mdi mdi-cash"></i>
+                                    <span class="hide-menu">Entri Tabungan</span>
+                                </a>
+                            </li>
                         @endif
                         @if (auth()->user()->level == 'admin' || auth()->user()->level == 'petugas')
                             <li class="sidebar-item">

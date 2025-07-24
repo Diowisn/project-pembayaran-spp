@@ -13,7 +13,8 @@ use App\Http\Controllers\SiswaLoginController;
 use App\Http\Controllers\InfaqGedungController;
 use App\Http\Controllers\InfaqController;
 use App\Http\Controllers\SiswaInfaqController;
-use App\Http\Controllers\SiswaProfileController;
+use App\Http\Controllers\TabunganController;
+use App\Models\Tabungan;
 
 /*
 |--------------------------------------------------------------------------
@@ -112,3 +113,21 @@ Route::get('/siswa/infaq/{id}/cetak', [SiswaInfaqController::class, 'generateInf
 
 Route::put('/profile/update', [SiswaLoginController::class, 'updateProfile'])->name('siswa.profile.update');
 Route::get('/get-data', [SiswaLoginController::class, 'getData'])->name('siswa.get-data');
+
+Route::get('/dashboard/tabungan', [TabunganController::class, 'index'])->name('tabungan.index');
+Route::get('/dashboard/tabungan/{id}', [TabunganController::class, 'show'])->name('tabungan.show');
+Route::post('/dashboard/tabungan/tarik/{id}', [TabunganController::class, 'tarik'])->name('tabungan.tarik');
+Route::get('/dashboard/tabungan/report/{id}', [TabunganController::class, 'generateReport'])->name('tabungan.report');
+// Di routes/web.php tambahkan sementara:
+Route::get('/test-tabungan', function() {
+    $tabungan = Tabungan::create([
+        'id_siswa' => 1, // Ganti dengan ID siswa yang ada
+        'id_petugas' => 1, // Ganti dengan ID petugas yang ada
+        'debit' => 100000,
+        'kredit' => 0,
+        'saldo' => 100000,
+        'keterangan' => 'Data testing manual'
+    ]);
+    
+    return 'Tabungan test created: '.$tabungan->id;
+});
