@@ -15,7 +15,7 @@
                         <input type="text" name="search" class="form-control mr-2" placeholder="Cari NISN/Nama Siswa"
                             value="{{ request('search') }}">
                         <button type="submit" class="btn btn-primary mr-2">Cari</button>
-                        @if(request()->has('search'))
+                        @if (request()->has('search'))
                             <a href="{{ route('tabungan.index') }}" class="btn btn-secondary">Reset</a>
                         @endif
                     </form>
@@ -24,7 +24,12 @@
 
             <div class="card">
                 <div class="card-body">
-                    <div class="card-title">Data Tabungan Siswa</div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="card-title mb-0">Data Tabungan Siswa</div>
+                        <a href="{{ route('tabungan.create') }}" class="btn btn-primary">
+                            <i class="mdi mdi-plus"></i> Tambah Setoran Manual
+                        </a>
+                    </div>
 
                     <div class="table-responsive mb-3">
                         <table class="table table-hover">
@@ -42,22 +47,23 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($tabungan as $item)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $item->siswa->nisn }}</td>
-                                    <td>{{ $item->siswa->nama }}</td>
-                                    <td class="text-success">Rp {{ number_format($item->debit, 0, ',', '.') }}</td>
-                                    <td class="text-danger">Rp {{ number_format($item->kredit, 0, ',', '.') }}</td>
-                                    <td>Rp {{ number_format($item->saldo, 0, ',', '.') }}</td>
-                                    <td>{{ $item->keterangan }}</td>
-                                    <td>{{ $item->created_at->format('d/m/Y H:i') }}</td>
-                                    <td>
-                                        <a href="{{ route('tabungan.show', $item->id_siswa) }}" class="btn btn-sm btn-info">
-                                            <i class="mdi mdi-eye"></i> Detail
-                                        </a>
-                                    </td>
-                                </tr>
+                                @foreach ($tabungan as $item)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $item->siswa->nisn }}</td>
+                                        <td>{{ $item->siswa->nama }}</td>
+                                        <td class="text-success">Rp {{ number_format($item->debit, 0, ',', '.') }}</td>
+                                        <td class="text-danger">Rp {{ number_format($item->kredit, 0, ',', '.') }}</td>
+                                        <td>Rp {{ number_format($item->saldo, 0, ',', '.') }}</td>
+                                        <td>{{ $item->keterangan }}</td>
+                                        <td>{{ $item->created_at->format('d/m/Y H:i') }}</td>
+                                        <td>
+                                            <a href="{{ route('tabungan.show', $item->id_siswa) }}"
+                                                class="btn btn-sm btn-info">
+                                                <i class="mdi mdi-eye"></i> Detail
+                                            </a>
+                                        </td>
+                                    </tr>
                                 @endforeach
                             </tbody>
                         </table>
@@ -65,7 +71,7 @@
 
                     {{ $tabungan->appends(request()->query())->links() }}
 
-                    @if(count($tabungan) == 0)
+                    @if (count($tabungan) == 0)
                         <div class="alert alert-warning text-center">
                             Tidak ada data tabungan ditemukan
                         </div>

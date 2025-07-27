@@ -199,7 +199,7 @@ class SiswaController extends Controller
         $validasi = $request->validate([
             'nisn' => 'required|numeric|digits:8|unique:siswa,nisn,'.$id,
             // 'nis' => 'required|numeric|digits:8|unique:siswa,nis,'.$id,
-            'nama' => 'required|max:35',
+            'nama' => 'required|max:50',
             'id_kelas' => 'required|integer|exists:kelas,id',
             'nomor_telp' => 'required|numeric',
             'alamat' => 'required',

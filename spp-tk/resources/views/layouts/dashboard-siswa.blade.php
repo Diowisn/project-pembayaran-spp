@@ -56,7 +56,7 @@
                     <!-- ============================================================== -->
                     <!-- Logo -->
                     <!-- ============================================================== -->
-                    <a class="navbar-brand" href="{{ url('/dashboard') }}">
+                    <a class="navbar-brand" href="{{ url('/dashboard/siswa/histori') }}">
                         <!-- Logo text -->
                         <span class="logo-text">
                             {{-- <i class="mdi mdi-square-inc-cash"></i> Assakiinah - SPP --}}

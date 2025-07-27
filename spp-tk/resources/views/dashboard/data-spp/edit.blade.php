@@ -58,7 +58,7 @@
                             <span class="text-danger">@error('nominal_fullday') {{ $message }} @enderror</span>
                         </div>
                         
-                        <div class="form-group" id="infaq-container">
+                        {{-- <div class="form-group" id="infaq-container">
                             <label>Infaq Gedung (Opsional)</label>
                             <select class="form-control @error('id_infaq_gedung') is-invalid @enderror" name="id_infaq_gedung">
                                 <option value="">-- Pilih Paket Infaq --</option>
@@ -69,7 +69,7 @@
                                 @endforeach
                             </select>
                             <span class="text-danger">@error('id_infaq_gedung') {{ $message }} @enderror</span>
-                        </div>
+                        </div> --}}
                         
                         <a href="{{ url('dashboard/data-spp') }}" class="btn btn-primary btn-rounded">
                             <i class="mdi mdi-chevron-left"></i> Kembali

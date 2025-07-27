@@ -42,13 +42,70 @@ class TabunganController extends Controller
             ->paginate(10);
 
         // Debug - tampilkan data yang diambil
-        \Log::debug('Tabungan data:', ['count' => $tabungan->count()]);
+        Log::debug('Tabungan data:', ['count' => $tabungan->count()]);
         
         return view('dashboard.tabungan.index', [
             'tabungan' => $tabungan,
             'search' => $search,
             'user' => auth()->user()
         ]);
+    }
+
+    /**
+     * Show form for manual savings input
+     */
+    public function create()
+    {
+        $siswaList = Siswa::orderBy('nama')->get();
+        return view('dashboard.tabungan.create', [
+            'siswaList' => $siswaList,
+            'user' => auth()->user()
+        ]);
+    }
+
+    /**
+     * Process manual savings input
+     */
+    public function storeManual(Request $request)
+    {
+        $request->validate([
+            'id_siswa' => 'required|exists:siswa,id',
+            'jumlah' => 'required|numeric|min:1',
+            'keterangan' => 'required|string|max:255'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $siswa = Siswa::findOrFail($request->id_siswa);
+            
+            $saldo_terakhir = Tabungan::where('id_siswa', $request->id_siswa)
+                ->latest()
+                ->first();
+            
+            $saldo_sebelumnya = $saldo_terakhir ? $saldo_terakhir->saldo : 0;
+            $saldo_sekarang = $saldo_sebelumnya + $request->jumlah;
+
+            Tabungan::create([
+                'id_siswa' => $request->id_siswa,
+                'id_petugas' => auth()->id(),
+                'debit' => $request->jumlah,
+                'kredit' => 0,
+                'saldo' => $saldo_sekarang,
+                'keterangan' => $request->keterangan,
+            ]);
+
+            DB::commit();
+
+            Alert::success('Berhasil!', 'Setoran tabungan berhasil disimpan');
+            return redirect()->route('tabungan.index');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error saving manual savings: '.$e->getMessage());
+            Alert::error('Gagal!', 'Terjadi kesalahan saat menyimpan setoran');
+            return back()->withInput();
+        }
     }
 
     /**
