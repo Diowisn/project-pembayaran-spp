@@ -121,6 +121,7 @@ Route::post('/dashboard/tabungan/store-manual', [TabunganController::class, 'sto
 Route::get('/dashboard/tabungan/{id}', [TabunganController::class, 'show'])->name('tabungan.show');
 Route::post('/dashboard/tabungan/tarik/{id}', [TabunganController::class, 'tarik'])->name('tabungan.tarik');
 Route::get('/dashboard/tabungan/report/{id}', [TabunganController::class, 'generateReport'])->name('tabungan.report');
+Route::get('/history-tabungan', [TabunganController::class, 'histori'])->name('histori.tabungan');
 
 // Di routes/web.php tambahkan sementara:
 // Route::get('/test-tabungan', function() {

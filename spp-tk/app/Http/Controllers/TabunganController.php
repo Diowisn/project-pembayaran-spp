@@ -234,4 +234,28 @@ class TabunganController extends Controller
         $namaFile = 'Laporan-Tabungan-' . $siswa->nama . '-' . $tanggal . '.pdf';
         return $pdf->download($namaFile);
     }
+
+    /**
+     * Display savings transaction history
+     */
+    public function histori(Request $request)
+    {
+        $search = $request->input('search');
+        
+        $tabunganHistori = Tabungan::with(['siswa.kelas', 'petugas'])
+            ->when($search, function($query) use ($search) {
+                return $query->whereHas('siswa', function($q) use ($search) {
+                    $q->where('nisn', 'like', "%{$search}%")
+                    ->orWhere('nama', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('dashboard.history-tabungan.index', [
+            'tabunganHistori' => $tabunganHistori,
+            'search' => $search,
+            'user' => auth()->user()
+        ]);
+    }
 }

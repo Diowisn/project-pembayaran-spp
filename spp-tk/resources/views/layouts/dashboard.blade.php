@@ -222,6 +222,13 @@
                                     <span class="hide-menu">History Pembayaran Infaq</span>
                                 </a>
                             </li>
+                            <li class="sidebar-item">
+                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                    href="{{ route('histori.tabungan') }}" aria-expanded="false">
+                                    <i class="mdi mdi-note-multiple"></i>
+                                    <span class="hide-menu">History Pembayaran Tabungan</span>
+                                </a>
+                            </li>
                         @endif
                         @if (auth()->user()->level == 'admin')
                             <li class="sidebar-item">
