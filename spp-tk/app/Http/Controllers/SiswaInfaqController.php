@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\AngsuranInfaq;
 use App\Models\Pembayaran;
 use PDF;
+use Carbon\Carbon;
 
 class SiswaInfaqController extends Controller
 {
@@ -15,6 +16,7 @@ class SiswaInfaqController extends Controller
     public function generateInfaq($id)
     {
         $nisn = session('nisn');
+        $tanggal = Carbon::now()->format('d-m-Y');
         
         if (!$nisn) {
             abort(403, 'Akses ditolak - Silakan login terlebih dahulu');
@@ -50,12 +52,14 @@ class SiswaInfaqController extends Controller
                       'dpi' => 150
                   ]);
 
-        return $pdf->download('Bukti-Pembayaran-Infaq-' . $angsuran->siswa->nama . '.pdf');
+        $namaFile = 'Bukti-Pembayaran-SPP-' . $pembayaran->siswa->nama . '-' . $tanggal . '.pdf';
+        return $pdf->download($namaFile);
     }
 
     public function generateSpp($id)
     {
         $nisn = session('nisn');
+        $tanggal = Carbon::now()->format('d-m-Y');
         
         if (!$nisn) {
             abort(403, 'Akses ditolak - Silakan login terlebih dahulu');
@@ -93,6 +97,7 @@ class SiswaInfaqController extends Controller
             'dpi' => 150
         ]);
 
-        return $pdf->download('Bukti-Pembayaran-SPP-' . $pembayaran->siswa->nama . '.pdf');
+        $namaFile = 'Bukti-Pembayaran-SPP-' . $pembayaran->siswa->nama . '-' . $tanggal . '.pdf';
+        return $pdf->download($namaFile);
     }
 }

@@ -11,6 +11,7 @@ use App\Models\InfaqGedung;
 use Alert;
 use PDF;
 use Log;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class InfaqController extends Controller
@@ -215,6 +216,7 @@ class InfaqController extends Controller
         ini_set('max_execution_time', 300);
 
         $user = Auth::user();
+        $tanggal = Carbon::now()->format('d-m-Y');
         $angsuran = AngsuranInfaq::with(['siswa', 'infaqGedung'])->findOrFail($id);
 
         $logoPath = public_path('img/amanah31.png');
@@ -241,6 +243,7 @@ class InfaqController extends Controller
                       'dpi' => 150
                   ]);
         
-        return $pdf->download('Bukti-Pembayaran-Infaq-' . $angsuran->siswa->nama . '.pdf');
+        $namaFile = 'Bukti-Pembayaran-Infaq-' . $angsuran->siswa->nama . '-' . $tanggal . '.pdf';
+        return $pdf->download($namaFile);
     }
 }

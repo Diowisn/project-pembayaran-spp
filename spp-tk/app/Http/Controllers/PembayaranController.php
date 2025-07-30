@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Siswa;
 use Alert;
 use PDF;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -264,8 +265,8 @@ class PembayaranController extends Controller
                             ($pembayaran->nominal_fullday ?? 0);
             
             $kembalian = $request->jumlah_bayar - $total_tagihan;
-            $is_lunas = $kembalian >= 0; // Tambahkan ini
-            $kembalian_lama = $pembayaran->kembalian; // Tambahkan ini
+            $is_lunas = $kembalian >= 0; 
+            $kembalian_lama = $pembayaran->kembalian; 
 
             $pembayaran->update([
                 'bulan' => $request->bulan,
@@ -356,6 +357,7 @@ class PembayaranController extends Controller
         ini_set('max_execution_time', 300);
         
         $user = Auth::user();
+        $tanggal = Carbon::now()->format('d-m-Y');
         $pembayaran = Pembayaran::with(['siswa', 'siswa.kelas', 'petugas'])->findOrFail($id);
 
         $logoPath = public_path('img/amanah31.png');
@@ -383,6 +385,7 @@ class PembayaranController extends Controller
                     'dpi' => 150,
                 ]);
 
-        return $pdf->download('Bukti-Pembayaran-SPP-' . $pembayaran->siswa->nama . '.pdf');
+        $namaFile = 'Bukti-Pembayaran-SPP-' . $pembayaran->siswa->nama . '-' . $tanggal . '.pdf';
+        return $pdf->download($namaFile);
     }
 }

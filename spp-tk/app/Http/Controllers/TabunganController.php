@@ -10,6 +10,7 @@ use App\Models\Siswa;
 use App\Models\Pembayaran;
 use Alert;
 use PDF;
+use Carbon\Carbon;
 
 class TabunganController extends Controller
 {
@@ -188,6 +189,7 @@ class TabunganController extends Controller
     public function generateReport($id)
     {
         $siswa = Siswa::findOrFail($id);
+        $tanggal = Carbon::now()->format('d-m-Y');
         
         $tabungan = Tabungan::where('id_siswa', $id)
             ->orderBy('created_at', 'desc')
@@ -206,6 +208,7 @@ class TabunganController extends Controller
             'tanggal' => now()->format('d F Y')
         ])->setPaper('a4', 'portrait');
 
-        return $pdf->download('Laporan-Tabungan-'.$siswa->nisn.'-'.$siswa->nama.'.pdf');
+        $namaFile = 'Laporan-Tabungan-' . $pembayaran->siswa->nama.'-'.$siswa->nama. '-' . $tanggal . '.pdf';
+        return $pdf->download($namaFile);
     }
 }
