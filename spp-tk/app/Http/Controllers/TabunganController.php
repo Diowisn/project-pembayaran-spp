@@ -193,22 +193,45 @@ class TabunganController extends Controller
         
         $tabungan = Tabungan::where('id_siswa', $id)
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->get(); 
 
-        $saldo = $tabungan->last()->saldo ?? 0;
+        if (!$tabungan) {
+            abort(404, 'Tidak ada transaksi tabungan untuk siswa ini');
+        }
+
+        $saldo = $tabungan->first()->saldo;
 
         $logoPath = public_path('img/amanah31.png');
-        $logoData = base64_encode(file_get_contents($logoPath));
+        $websitePath = public_path('img/icons/website.png');
+        $instagramPath = public_path('img/icons/instagram.png');
+        $facebookPath = public_path('img/icons/facebook.png');
+        $youtubePath = public_path('img/icons/youtube.png');
+        $whatsappPath = public_path('img/icons/whatsapp.png');
+        $barcodePath = public_path('img/barcode/barcode-ita.png');
 
-        $pdf = PDF::loadView('pdf.laporan-tabungan', [
+        $logoData = base64_encode(file_get_contents($logoPath));
+        $websiteData = base64_encode(file_get_contents($websitePath));
+        $instagramData = base64_encode(file_get_contents($instagramPath));
+        $facebookData = base64_encode(file_get_contents($facebookPath));
+        $youtubeData = base64_encode(file_get_contents($youtubePath));
+        $whatsappData = base64_encode(file_get_contents($whatsappPath));
+        $barcodeData = base64_encode(file_get_contents($barcodePath));
+
+        $pdf = PDF::loadView('pdf.tabungan', [
             'siswa' => $siswa,
             'tabungan' => $tabungan,
             'saldo' => $saldo,
             'logoData' => $logoData,
+            'websiteData' => $websiteData,
+            'instagramData' => $instagramData,
+            'facebookData' => $facebookData,
+            'youtubeData' => $youtubeData,
+            'whatsappData' => $whatsappData,
+            'barcodeData' => $barcodeData,
             'tanggal' => now()->format('d F Y')
         ])->setPaper('a4', 'portrait');
 
-        $namaFile = 'Laporan-Tabungan-' . $pembayaran->siswa->nama.'-'.$siswa->nama. '-' . $tanggal . '.pdf';
+        $namaFile = 'Laporan-Tabungan-' . $siswa->nama . '-' . $tanggal . '.pdf';
         return $pdf->download($namaFile);
     }
 }

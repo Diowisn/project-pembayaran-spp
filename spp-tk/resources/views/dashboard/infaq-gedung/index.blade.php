@@ -140,7 +140,6 @@
 @endsection
 
 @section('sweet')
-    <script>
         function deleteData(id) {
             Swal.fire({
                 title: 'PERINGATAN!',
@@ -157,5 +156,4 @@
                 }
             });
         }
-    </script>
 @endsection
