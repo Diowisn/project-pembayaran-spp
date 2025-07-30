@@ -105,6 +105,7 @@ Route::get('/login/siswa', [SiswaLoginController::class, 'siswaLogin'])->name('l
 Route::post('/login/siswa/proses', [SiswaLoginController::class, 'login']);
 Route::get('/siswa/logout', [SiswaLoginController::class, 'logout']);
 
+Route::get('/dashboard/siswa', [SiswaLoginController::class, 'dashboard'])->name('siswa.dashboard');
 Route::get('/dashboard/siswa/histori', [SiswaLoginController::class, 'index']);
 Route::get('/dashboard/siswa/infaq', [SiswaLoginController::class, 'infaq']);
 

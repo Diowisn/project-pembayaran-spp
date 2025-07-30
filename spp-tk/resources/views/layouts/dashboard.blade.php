@@ -94,7 +94,7 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark pro-pic"
                                 href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img
-                                    src="{{ url('assets/images/users/d3.jpg') }}" alt="user" class="rounded-circle"
+                                    src="{{ url('assets/images/users/d4.png') }}" alt="user" class="rounded-circle"
                                     width="31"></a>
                         </li>
                         <!-- ============================================================== -->
@@ -120,7 +120,7 @@
                         <li>
                             <!-- User Profile-->
                             <div class="user-profile d-flex no-block dropdown m-t-20">
-                                <div class="user-pic"><img src="{{ url('assets/images/users/d3.jpg') }}" alt="users"
+                                <div class="user-pic"><img src="{{ url('assets/images/users/d4.png') }}" alt="users"
                                         class="rounded-circle" width="40" /></div>
                                 <div class="user-content hide-menu m-l-10">
                                     <a href="javascript:void(0)" class="" id="Userdd" role="button"

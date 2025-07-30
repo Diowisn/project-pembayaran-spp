@@ -15,7 +15,7 @@ class AngsuranInfaq extends Model
         'tgl_bayar' => 'date'
     ];
 
-public function siswa()
+    public function siswa()
     {
         return $this->belongsTo(Siswa::class, 'id_siswa');
     }

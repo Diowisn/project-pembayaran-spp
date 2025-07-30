@@ -119,24 +119,29 @@ class PetugasController extends Controller
      */
     public function update(Request $req, $id)
     {
-        if($update = User::find($id)) :
-            
-            if(Hash::check($req->old_pass, $update->password)) :
-                 
-               $update->update([
-                   'name' => $req->nama,
-                   'email' => $req->email,
-                   'level' => $req->level
-              ]);
-            
-              Alert::success('Berhasil!', 'Data Berhasil di Edit');
-              return redirect('dashboard/data-petugas');
-            
-           else :
-               Alert::error('Terjadi Kesalahan!', 'Password Anda tidak Cocok');
-            endif;
-         endif;
+        $update = User::find($id);
         
+        if ($update && Hash::check($req->old_pass, $update->password)) {
+
+            // Siapkan data yang akan diupdate
+            $data = [
+                'name' => $req->nama,
+                'email' => $req->email,
+                'level' => $req->level
+            ];
+
+            // Cek jika user ingin mengubah password
+            if ($req->filled('password_baru')) {
+                $data['password'] = Hash::make($req->password_baru);
+            }
+
+            $update->update($data);
+
+            Alert::success('Berhasil!', 'Data Berhasil di Edit');
+            return redirect('dashboard/data-petugas');
+        }
+
+        Alert::error('Terjadi Kesalahan!', 'Password Anda tidak Cocok');
         return back();
     }
 

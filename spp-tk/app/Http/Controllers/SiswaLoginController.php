@@ -19,7 +19,7 @@ class SiswaLoginController extends Controller
     public function siswaLogin()
     {
         if (session('nisn') != null) {  
-            return redirect('dashboard/siswa/histori');
+            return redirect('dashboard/siswa');
         }
     
         return view('auth.siswa-login');
@@ -44,7 +44,7 @@ class SiswaLoginController extends Controller
                 Session::put('nomor_telp', $siswa->nomor_telp);
                 Session::put('alamat', $siswa->alamat);
                 
-                return redirect('dashboard/siswa/histori');
+                return redirect('dashboard/siswa');
             } else {
                 Alert::error('Gagal Login!', 'Password salah');
                 return back();
@@ -169,5 +169,86 @@ class SiswaLoginController extends Controller
             Alert::error('Error!', 'Terjadi kesalahan: '.$e->getMessage());
             return back()->withInput();
         }
+    }
+
+    public function dashboard()
+    {
+        if (session('nisn') == null) {  
+            return redirect('login/siswa');
+        }
+        
+        $siswa = Siswa::with(['kelas', 'spp', 'tabungan', 'infaqGedung', 'angsuranInfaq'])->find(Session::get('id'));
+        
+        $bulanIndo = [
+            'January' => 'Januari',
+            'February' => 'Februari',
+            'March' => 'Maret',
+            'April' => 'April',
+            'May' => 'Mei',
+            'June' => 'Juni',
+            'July' => 'Juli',
+            'August' => 'Agustus',
+            'September' => 'September',
+            'October' => 'Oktober',
+            'November' => 'November',
+            'December' => 'Desember'
+        ];
+        
+        $currentMonthName = $bulanIndo[now()->format('F')];
+        $currentYear = now()->format('Y');
+        
+        // Data pembayaran terakhir siswa
+        $pembayaranTerakhir = Pembayaran::where('id_siswa', $siswa->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(3)
+            ->get();
+        
+        // Data infaq terakhir siswa
+        $infaqTerakhir = AngsuranInfaq::where('id_siswa', $siswa->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(3)
+            ->get();
+        
+        // Status pembayaran bulan ini
+        $statusPembayaran = Pembayaran::where('id_siswa', $siswa->id)
+            ->where('bulan', strtolower($currentMonthName))
+            ->where('tahun', $currentYear)
+            ->first();
+        
+        // Total yang sudah dibayarkan untuk SPP
+        $totalDibayarkan = Pembayaran::where('id_siswa', $siswa->id)
+            ->whereYear('created_at', $currentYear)
+            ->sum('jumlah_bayar');
+        
+        // Data tabungan siswa
+        $tabungan = $siswa->tabungan()->orderBy('created_at', 'desc')->limit(3)->get();
+        $saldoTabungan = $siswa->tabungan()->sum('debit') - $siswa->tabungan()->sum('kredit');
+        $totalSetoran = $siswa->tabungan()->sum('debit');
+        $totalPenarikan = $siswa->tabungan()->sum('kredit');
+        
+        // Data infaq gedung
+        $totalDibayarInfaq = $siswa->angsuranInfaq->sum('jumlah_bayar');
+        $totalTagihanInfaq = $siswa->infaqGedung->nominal ?? 0;
+        $sisaPembayaranInfaq = max($totalTagihanInfaq - $totalDibayarInfaq, 0);
+        $persentaseInfaq = $totalTagihanInfaq > 0 ? ($totalDibayarInfaq / $totalTagihanInfaq) * 100 : 0;
+        
+        return view('dashboard.siswa.dashboard', [
+            'siswa' => $siswa,
+            'pembayaranTerakhir' => $pembayaranTerakhir,
+            'infaqTerakhir' => $infaqTerakhir,
+            'statusPembayaran' => $statusPembayaran,
+            'currentMonthName' => $currentMonthName,
+            'currentYear' => $currentYear,
+            'totalDibayarkan' => $totalDibayarkan,
+            'spp' => $siswa->spp,
+            'tabungan' => $tabungan,
+            'saldoTabungan' => $saldoTabungan,
+            'totalSetoran' => $totalSetoran,
+            'totalPenarikan' => $totalPenarikan,
+            'totalDibayarInfaq' => $totalDibayarInfaq,
+            'totalTagihanInfaq' => $totalTagihanInfaq,
+            'sisaPembayaranInfaq' => $sisaPembayaranInfaq,
+            'persentaseInfaq' => $persentaseInfaq
+        ]);
     }
 }

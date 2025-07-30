@@ -7,6 +7,7 @@ use App\Models\Spp;
 use App\Models\User;
 use App\Models\Kelas;
 use App\Models\InfaqGedung;
+use App\Models\Pembayaran;
 use Alert;
 
 class SppController extends Controller
@@ -57,7 +58,7 @@ class SppController extends Controller
             'nominal_spp' => 'required|integer',
             'nominal_konsumsi' => 'nullable|integer',
             'nominal_fullday' => 'nullable|integer',
-            'id_infaq_gedung' => 'nullable|exists:infaq_gedung,id'
+            // 'id_infaq_gedung' => 'nullable|exists:infaq_gedung,id'
         ], $messages);
         
         // Bersihkan nominal dari format Rupiah
@@ -72,7 +73,7 @@ class SppController extends Controller
                 'nominal_spp' => $nominal_spp,
                 'nominal_konsumsi' => $nominal_konsumsi,
                 'nominal_fullday' => $nominal_fullday,
-                'id_infaq_gedung' => $request->id_infaq_gedung
+                // 'id_infaq_gedung' => $request->id_infaq_gedung
             ]);
             
             if($store) :
@@ -102,62 +103,62 @@ class SppController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-public function edit($id)
-{
-    $data = [
-        'edit' => Spp::with(['kelas', 'infaqGedung'])->find($id),
-        'kelas' => Kelas::all(),
-        'infaqGedung' => InfaqGedung::all(),
-        'user' => User::find(auth()->user()->id)
-    ];
-  
-    return view('dashboard.data-spp.edit', $data);
-}
+    public function edit($id)
+    {
+        $data = [
+            'edit' => Spp::with(['kelas', 'infaqGedung'])->find($id),
+            'kelas' => Kelas::all(),
+            'infaqGedung' => InfaqGedung::all(),
+            'user' => User::find(auth()->user()->id)
+        ];
+    
+        return view('dashboard.data-spp.edit', $data);
+    }
 
-public function update(Request $req, $id)
-{
-    $messages = [
-        'required' => ':attribute tidak boleh kosong!',
-        'numeric' => ':attribute harus berupa angka!',
-        'min' => ':attribute minimal harus :min angka!',
-        'max' => ':attribute maksimal harus :max angka!',
-        'integer' => ':attribute harus berupa nilai uang tanpa titik!'
-    ];
-    
-    $validasi = $req->validate([
-        'tahun' => 'required|min:4|max:4',
-        'id_kelas' => 'required|exists:kelas,id',
-        'nominal_spp' => 'required|integer',
-        'nominal_konsumsi' => 'nullable|integer',
-        'nominal_fullday' => 'nullable|integer',
-        'id_infaq_gedung' => 'nullable|exists:infaq_gedung,id'
-    ], $messages);
-    
-    // Bersihkan nominal dari format Rupiah
-    $nominal_spp = str_replace('.', '', $req->nominal_spp);
-    $nominal_konsumsi = $req->nominal_konsumsi ? str_replace('.', '', $req->nominal_konsumsi) : null;
-    $nominal_fullday = $req->nominal_fullday ? str_replace('.', '', $req->nominal_fullday) : null;
-    
-    if($update = Spp::find($id)) :         
-        $stat = $update->update([
-            'tahun' => $req->tahun,
-            'id_kelas' => $req->id_kelas,
-            'nominal_spp' => $nominal_spp,
-            'nominal_konsumsi' => $nominal_konsumsi,
-            'nominal_fullday' => $nominal_fullday,
-            'id_infaq_gedung' => $req->id_infaq_gedung
-        ]);
+    public function update(Request $req, $id)
+    {
+        $messages = [
+            'required' => ':attribute tidak boleh kosong!',
+            'numeric' => ':attribute harus berupa angka!',
+            'min' => ':attribute minimal harus :min angka!',
+            'max' => ':attribute maksimal harus :max angka!',
+            'integer' => ':attribute harus berupa nilai uang tanpa titik!'
+        ];
         
-        if($stat) :
-            Alert::success('Berhasil!', 'Data Berhasil di Edit');
-        else :
-            Alert::error('Terjadi Kesalahan!', 'Data Gagal di Edit');
-            return back();
+        $validasi = $req->validate([
+            'tahun' => 'required|min:4|max:4',
+            'id_kelas' => 'required|exists:kelas,id',
+            'nominal_spp' => 'required|integer',
+            'nominal_konsumsi' => 'nullable|integer',
+            'nominal_fullday' => 'nullable|integer',
+            // 'id_infaq_gedung' => 'nullable|exists:infaq_gedung,id'
+        ], $messages);
+        
+        // Bersihkan nominal dari format Rupiah
+        $nominal_spp = str_replace('.', '', $req->nominal_spp);
+        $nominal_konsumsi = $req->nominal_konsumsi ? str_replace('.', '', $req->nominal_konsumsi) : null;
+        $nominal_fullday = $req->nominal_fullday ? str_replace('.', '', $req->nominal_fullday) : null;
+        
+        if($update = Spp::find($id)) :         
+            $stat = $update->update([
+                'tahun' => $req->tahun,
+                'id_kelas' => $req->id_kelas,
+                'nominal_spp' => $nominal_spp,
+                'nominal_konsumsi' => $nominal_konsumsi,
+                'nominal_fullday' => $nominal_fullday,
+                // 'id_infaq_gedung' => $req->id_infaq_gedung
+            ]);
+            
+            if($stat) :
+                Alert::success('Berhasil!', 'Data Berhasil di Edit');
+            else :
+                Alert::error('Terjadi Kesalahan!', 'Data Gagal di Edit');
+                return back();
+            endif;
         endif;
-    endif;
-    
-    return redirect('dashboard/data-spp');
-}
+        
+        return redirect('dashboard/data-spp');
+    }
 
     /**
      * Remove the specified resource from storage.
@@ -167,12 +168,23 @@ public function update(Request $req, $id)
      */
     public function destroy($id)
     {
-        if(Spp::find($id)->delete()) :
-            Alert::success('Berhasil!', 'Data Berhasil Dihapus');
-        else :
-            Alert::error('Berhasil!', 'Data Gagal Dihapus');
-        endif;
-      
+        try {
+            $spp = Spp::findOrFail($id);
+            
+            if ($spp->pembayaran()->exists()) {
+                Alert::error('Gagal!', 'Tidak dapat menghapus SPP karena sudah ada data pembayaran terkait');
+                return back();
+            }
+            
+            if ($spp->delete()) {
+                Alert::success('Berhasil!', 'Data SPP berhasil dihapus');
+            } else {
+                Alert::error('Gagal!', 'Data SPP gagal dihapus');
+            }
+        } catch (\Exception $e) {
+            Alert::error('Error!', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+        
         return back();
     }
 }
