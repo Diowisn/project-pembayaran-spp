@@ -11,6 +11,7 @@ use App\Models\AngsuranInfaq;
 use App\Models\Kelas;
 use App\Models\InfaqGedung;
 use App\Models\Spp;
+use App\Models\Tabungan;
 use Illuminate\Support\Facades\Hash;
 
 class SiswaLoginController extends Controller
@@ -169,6 +170,29 @@ class SiswaLoginController extends Controller
             Alert::error('Error!', 'Terjadi kesalahan: '.$e->getMessage());
             return back()->withInput();
         }
+    }
+
+    public function tabungan()
+    {
+        if (session('nisn') == null) {  
+            return redirect('login/siswa');
+        }
+        
+        $siswa = Siswa::find(Session::get('id'));
+        
+        $data = [
+            'tabunganHistori' => Tabungan::with(['siswa.kelas', 'petugas'])
+                                ->where('id_siswa', $siswa->id)
+                                ->orderBy('created_at', 'DESC')
+                                ->paginate(10),
+            'siswa' => $siswa,
+            'saldo' => Tabungan::where('id_siswa', $siswa->id)
+                        ->latest()
+                        ->first()
+                        ->saldo ?? 0
+        ];
+        
+        return view('dashboard.siswa.tabungan', $data);
     }
 
     public function dashboard()

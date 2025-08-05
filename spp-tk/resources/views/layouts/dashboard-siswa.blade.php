@@ -161,6 +161,11 @@
                                     class="mdi mdi-note-multiple"></i><span class="hide-menu">Histori Pembayaran
                                     Infaq</span></a>
                         </li>
+                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                href="{{ url('dashboard/siswa/tabungan') }}" aria-expanded="false"><i
+                                    class="mdi mdi-note-multiple"></i><span class="hide-menu">Histori Tabungan
+                                        </span></a>
+                        </li>
 
                     </ul>
 

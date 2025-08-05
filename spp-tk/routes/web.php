@@ -92,6 +92,7 @@ Route::resource('/dashboard/infaq-gedung', InfaqGedungController::class)->names(
 
 Route::get('histori', [HistoryController::class, 'index'])->name('histori.spp');
 Route::get('histori-infaq', [HistoryController::class, 'infaq'])->name('histori.infaq');
+Route::get('/history-tabungan', [TabunganController::class, 'histori'])->name('histori.tabungan');
 
 // Laporan Routes
 Route::get('/dashboard/laporan', [LaporanController::class, 'index']);
@@ -108,9 +109,11 @@ Route::get('/siswa/logout', [SiswaLoginController::class, 'logout']);
 Route::get('/dashboard/siswa', [SiswaLoginController::class, 'dashboard'])->name('siswa.dashboard');
 Route::get('/dashboard/siswa/histori', [SiswaLoginController::class, 'index']);
 Route::get('/dashboard/siswa/infaq', [SiswaLoginController::class, 'infaq']);
+Route::get('/dashboard/siswa/tabungan', [SiswaLoginController::class, 'tabungan'])->name('siswa.tabungan');
 
 Route::get('/siswa/pembayaran/{id}/cetak', [SiswaInfaqController::class, 'generateSpp'])->name('siswa.pembayaran.cetak');
 Route::get('/siswa/infaq/{id}/cetak', [SiswaInfaqController::class, 'generateInfaq'])->name('siswa.infaq.cetak');
+Route::get('/siswa/tabungan/cetak', [SiswaInfaqController::class, 'generateTabungan'])->name('siswa.tabungan.cetak');
 
 Route::put('/profile/update', [SiswaLoginController::class, 'updateProfile'])->name('siswa.profile.update');
 Route::get('/get-data', [SiswaLoginController::class, 'getData'])->name('siswa.get-data');
@@ -121,7 +124,6 @@ Route::post('/dashboard/tabungan/store-manual', [TabunganController::class, 'sto
 Route::get('/dashboard/tabungan/{id}', [TabunganController::class, 'show'])->name('tabungan.show');
 Route::post('/dashboard/tabungan/tarik/{id}', [TabunganController::class, 'tarik'])->name('tabungan.tarik');
 Route::get('/dashboard/tabungan/report/{id}', [TabunganController::class, 'generateReport'])->name('tabungan.report');
-Route::get('/history-tabungan', [TabunganController::class, 'histori'])->name('histori.tabungan');
 
 // Di routes/web.php tambahkan sementara:
 // Route::get('/test-tabungan', function() {
