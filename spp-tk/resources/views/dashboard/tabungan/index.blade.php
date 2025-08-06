@@ -59,9 +59,24 @@
                                         <td>{{ $item->created_at->format('d/m/Y H:i') }}</td>
                                         <td>
                                             <a href="{{ route('tabungan.show', $item->id_siswa) }}"
-                                                class="btn btn-sm btn-info">
-                                                <i class="mdi mdi-eye"></i> Detail
+                                                class="btn btn-sm btn-info" title="Detail Tabungan">
+                                                <i class="mdi mdi-eye"></i>
                                             </a>
+                                            <a href="{{ route('tabungan.edit', $item->id) }}"
+                                                class="btn btn-sm btn-warning" title="Edit Tabungan">
+                                                <i class="mdi mdi-pencil"></i>
+                                            </a>
+                                            @if (auth()->user()->level == 'admin')
+                                                <form method="post" action="{{ route('tabungan.destroy', $item->id) }}"
+                                                    id="delete{{ $item->id }}" style="display: inline">
+                                                    @csrf
+                                                    @method('delete')
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                        onclick="deleteData({{ $item->id }})" title="Hapus Tabungan">
+                                                        <i class="mdi mdi-delete"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -69,7 +84,25 @@
                         </table>
                     </div>
 
-                    {{ $tabungan->appends(request()->query())->links() }}
+                    <!-- Pagination -->
+                    @if ($tabungan->lastPage() != 1)
+                        <div class="btn-group float-right">
+                            <a href="{{ $tabungan->appends(request()->query())->previousPageUrl() }}"
+                                class="btn btn-success">
+                                <i class="mdi mdi-chevron-left"></i>
+                            </a>
+                            @for ($i = 1; $i <= $tabungan->lastPage(); $i++)
+                                <a class="btn btn-success {{ $i == $tabungan->currentPage() ? 'active' : '' }}"
+                                    href="{{ $tabungan->appends(request()->query())->url($i) }}">
+                                    {{ $i }}
+                                </a>
+                            @endfor
+                            <a href="{{ $tabungan->appends(request()->query())->nextPageUrl() }}" class="btn btn-success">
+                                <i class="mdi mdi-chevron-right"></i>
+                            </a>
+                        </div>
+                    @endif
+                    <!-- End Pagination -->
 
                     @if (count($tabungan) == 0)
                         <div class="alert alert-warning text-center">
@@ -80,4 +113,23 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('sweet')
+    function deleteData(id) {
+    Swal.fire({
+    title: 'PERINGATAN!',
+    text: "Yakin ingin menghapus data SPP?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yakin',
+    cancelButtonText: 'Batal',
+    }).then((result) => {
+    if (result.value) {
+    $('#delete' + id).submit();
+    }
+    })
+    }
 @endsection

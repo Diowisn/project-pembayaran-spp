@@ -110,6 +110,96 @@ class TabunganController extends Controller
     }
 
     /**
+     * Show the form for editing the specified savings transaction.
+     */
+    public function edit($id)
+    {
+        $tabungan = Tabungan::with('siswa')->findOrFail($id);
+        $siswaList = Siswa::orderBy('nama')->get();
+        
+        return view('dashboard.tabungan.edit', [
+            'tabungan' => $tabungan,
+            'siswaList' => $siswaList,
+            'user' => auth()->user()
+        ]);
+    }
+
+    /**
+     * Update the specified savings transaction in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'id_siswa' => 'required|exists:siswa,id',
+            'jumlah' => 'required|numeric|min:1',
+            'keterangan' => 'required|string|max:255',
+            'tipe' => 'required|in:debit,kredit'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $tabungan = Tabungan::findOrFail($id);
+            $siswa = Siswa::findOrFail($request->id_siswa);
+            
+            // Simpan data lama untuk perhitungan ulang
+            $oldAmount = $tabungan->debit > 0 ? $tabungan->debit : $tabungan->kredit;
+            $oldType = $tabungan->debit > 0 ? 'debit' : 'kredit';
+            $oldSiswaId = $tabungan->id_siswa;
+            
+            // Update data transaksi
+            if ($request->tipe === 'debit') {
+                $tabungan->debit = $request->jumlah;
+                $tabungan->kredit = 0;
+            } else {
+                $tabungan->kredit = $request->jumlah;
+                $tabungan->debit = 0;
+            }
+            
+            $tabungan->id_siswa = $request->id_siswa;
+            $tabungan->keterangan = $request->keterangan;
+            $tabungan->save();
+            
+            // Hitung ulang saldo untuk siswa yang lama dan yang baru
+            $this->recalculateSaldo($oldSiswaId);
+            if ($oldSiswaId != $request->id_siswa) {
+                $this->recalculateSaldo($request->id_siswa);
+            }
+
+            DB::commit();
+
+            Alert::success('Berhasil!', 'Transaksi tabungan berhasil diperbarui');
+            return redirect()->route('tabungan.index');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating savings transaction: '.$e->getMessage());
+            Alert::error('Gagal!', 'Terjadi kesalahan saat memperbarui transaksi');
+            return back()->withInput();
+        }
+    }
+
+    /**
+     * Helper method to recalculate saldo for a student
+     */
+    private function recalculateSaldo($siswaId)
+    {
+        $transactions = Tabungan::where('id_siswa', $siswaId)
+            ->orderBy('created_at')
+            ->get();
+        
+        $saldo = 0;
+        
+        foreach ($transactions as $transaction) {
+            $saldo += $transaction->debit;
+            $saldo -= $transaction->kredit;
+            
+            $transaction->saldo = $saldo;
+            $transaction->save();
+        }
+    }
+
+    /**
      * Show detail savings for a specific student
      */
     public function show($id)
@@ -180,6 +270,41 @@ class TabunganController extends Controller
             Log::error('Error withdrawing savings: '.$e->getMessage());
             Alert::error('Gagal!', 'Terjadi kesalahan saat melakukan penarikan');
             return back()->withInput();
+        }
+    }
+
+    /**
+     * Remove the specified savings transaction from storage.
+     */
+    public function destroy($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Temukan transaksi yang akan dihapus
+            $tabungan = Tabungan::findOrFail($id);
+            $siswaId = $tabungan->id_siswa;
+            
+            // Simpan data untuk perhitungan ulang
+            $isDebit = $tabungan->debit > 0;
+            $amount = $isDebit ? $tabungan->debit : $tabungan->kredit;
+            
+            // Hapus transaksi
+            $tabungan->delete();
+            
+            // Hitung ulang saldo untuk siswa ini
+            $this->recalculateSaldo($siswaId);
+
+            DB::commit();
+
+            Alert::success('Berhasil!', 'Transaksi tabungan berhasil dihapus');
+            return back();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error deleting savings transaction: '.$e->getMessage());
+            Alert::error('Gagal!', 'Terjadi kesalahan saat menghapus transaksi');
+            return back();
         }
     }
 

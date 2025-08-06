@@ -122,8 +122,11 @@ Route::get('/dashboard/tabungan', [TabunganController::class, 'index'])->name('t
 Route::get('/dashboard/tabungan/create', [TabunganController::class, 'create'])->name('tabungan.create');
 Route::post('/dashboard/tabungan/store-manual', [TabunganController::class, 'storeManual'])->name('tabungan.store-manual');
 Route::get('/dashboard/tabungan/{id}', [TabunganController::class, 'show'])->name('tabungan.show');
+Route::get('/dashboard/tabungan/{id}/edit', [TabunganController::class, 'edit'])->name('tabungan.edit');
+Route::put('/dashboard/tabungan/{id}/update', [TabunganController::class, 'update'])->name('tabungan.update');
 Route::post('/dashboard/tabungan/tarik/{id}', [TabunganController::class, 'tarik'])->name('tabungan.tarik');
 Route::get('/dashboard/tabungan/report/{id}', [TabunganController::class, 'generateReport'])->name('tabungan.report');
+Route::delete('/dashboard/tabungan/{id}', [TabunganController::class, 'destroy'])->name('tabungan.destroy');
 
 // Di routes/web.php tambahkan sementara:
 // Route::get('/test-tabungan', function() {
