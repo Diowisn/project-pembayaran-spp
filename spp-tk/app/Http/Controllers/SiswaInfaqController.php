@@ -7,6 +7,7 @@ use App\Models\AngsuranInfaq;
 use App\Models\Pembayaran;
 use App\Models\Tabungan;
 use App\Models\Siswa;
+use App\Models\UangTahunan;
 use PDF;
 use Carbon\Carbon;
 
@@ -54,7 +55,7 @@ class SiswaInfaqController extends Controller
                       'dpi' => 150
                   ]);
 
-        $namaFile = 'Bukti-Pembayaran-SPP-' . $pembayaran->siswa->nama . '-' . $tanggal . '.pdf';
+        $namaFile = 'Bukti-Pembayaran-SPP-' . $angsuran->siswa->nama . '-' . $tanggal . '.pdf';
         return $pdf->download($namaFile);
     }
 
@@ -161,6 +162,64 @@ class SiswaInfaqController extends Controller
         ]);
 
         $namaFile = 'Rekap-Tabungan-' . $siswa->nama . '-' . $tanggal . '.pdf';
+        return $pdf->download($namaFile);
+    }
+
+    public function generateUangTahunan(Request $request)
+    {
+        $nisn = session('nisn');
+        $tanggal = Carbon::now()->format('d-m-Y');
+
+        if (!$nisn) {
+            abort(403, 'Akses ditolak - Silakan login terlebih dahulu');
+        }
+
+        $siswa = Siswa::with('kelas')->where('nisn', $nisn)->firstOrFail();
+        
+        // Ambil tahun dari request atau gunakan tahun sekarang
+        $tahun = $request->input('tahun', Carbon::now()->year);
+
+        $uangTahunan = UangTahunan::with('petugas')
+                        ->where('id_siswa', $siswa->id)
+                        ->where('tahun_ajaran', $tahun) // Filter berdasarkan tahun
+                        ->orderBy('created_at', 'ASC')
+                        ->get();
+
+        $saldo = UangTahunan::where('id_siswa', $siswa->id)
+                    ->where('tahun_ajaran', $tahun) // Filter berdasarkan tahun
+                    ->latest()
+                    ->first()
+                    ->saldo ?? 0;
+
+        $logoData = base64_encode(file_get_contents(public_path('img/amanah31.png')));
+        $websiteData = base64_encode(file_get_contents(public_path('img/icons/website.png')));
+        $instagramData = base64_encode(file_get_contents(public_path('img/icons/instagram.png')));
+        $facebookData = base64_encode(file_get_contents(public_path('img/icons/facebook.png')));
+        $youtubeData = base64_encode(file_get_contents(public_path('img/icons/youtube.png')));
+        $whatsappData = base64_encode(file_get_contents(public_path('img/icons/whatsapp.png')));
+        $barcodeData = base64_encode(file_get_contents(public_path('img/barcode/barcode-ita.png')));
+
+        $pdf = PDF::loadView('pdf.uang-tahunan', compact(
+            'siswa',
+            'uangTahunan',
+            'saldo',
+            'tahun', // Tambahkan variabel tahun ke view
+            'logoData',
+            'websiteData',
+            'instagramData',
+            'facebookData',
+            'youtubeData',
+            'whatsappData',
+            'barcodeData'
+        ))
+        ->setPaper('a5', 'portrait')
+        ->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'dpi' => 150
+        ]);
+
+        $namaFile = 'Rekap-Uang-Tahunan-' . $siswa->nama . '-' . $tahun . '.pdf';
         return $pdf->download($namaFile);
     }
 }

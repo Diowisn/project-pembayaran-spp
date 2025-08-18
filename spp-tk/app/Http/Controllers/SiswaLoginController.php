@@ -12,6 +12,7 @@ use App\Models\Kelas;
 use App\Models\InfaqGedung;
 use App\Models\Spp;
 use App\Models\Tabungan;
+use App\Models\UangTahunan;
 use Illuminate\Support\Facades\Hash;
 
 class SiswaLoginController extends Controller
@@ -101,6 +102,29 @@ class SiswaLoginController extends Controller
         ];
         
         return view('dashboard.siswa.infaq', $data);
+    }
+
+    public function uangTahunan()
+    {
+        if (session('nisn') == null) {  
+            return redirect('login/siswa');
+        }
+        
+        $siswa = Siswa::find(Session::get('id'));
+        
+        $data = [
+            'uangTahunanHistori' => UangTahunan::with(['siswa.kelas', 'petugas'])
+                                ->where('id_siswa', $siswa->id)
+                                ->orderBy('created_at', 'DESC')
+                                ->paginate(10),
+            'siswa' => $siswa,
+            'saldo' => UangTahunan::where('id_siswa', $siswa->id)
+                        ->latest()
+                        ->first()
+                        ->saldo ?? 0
+        ];
+        
+        return view('dashboard.siswa.uang-tahunan', $data);
     }
 
     // Method untuk mendapatkan data siswa (AJAX)

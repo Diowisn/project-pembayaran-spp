@@ -14,6 +14,7 @@ use App\Http\Controllers\InfaqGedungController;
 use App\Http\Controllers\InfaqController;
 use App\Http\Controllers\SiswaInfaqController;
 use App\Http\Controllers\TabunganController;
+use App\Http\Controllers\UangTahunanController;
 // use App\Models\Tabungan;
 
 /*
@@ -42,7 +43,6 @@ Route::get('/login/admin', [App\Http\Controllers\Auth\LoginController::class, 's
 
 Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
 
-// Resource Routes
 Route::resource('/dashboard/data-siswa', SiswaController::class)->names([
     'index' => 'data-siswa.index',
     'create' => 'data-siswa.create',
@@ -93,6 +93,7 @@ Route::resource('/dashboard/infaq-gedung', InfaqGedungController::class)->names(
 Route::get('histori', [HistoryController::class, 'index'])->name('histori.spp');
 Route::get('histori-infaq', [HistoryController::class, 'infaq'])->name('histori.infaq');
 Route::get('/history-tabungan', [TabunganController::class, 'histori'])->name('histori.tabungan');
+Route::get('/dashboard/history/uang-tahunan', [HistoryController::class, 'uangTahunan'])->name('history.uang-tahunan');
 
 // Laporan Routes
 Route::get('/dashboard/laporan', [LaporanController::class, 'index']);
@@ -110,10 +111,12 @@ Route::get('/dashboard/siswa', [SiswaLoginController::class, 'dashboard'])->name
 Route::get('/dashboard/siswa/histori', [SiswaLoginController::class, 'index']);
 Route::get('/dashboard/siswa/infaq', [SiswaLoginController::class, 'infaq']);
 Route::get('/dashboard/siswa/tabungan', [SiswaLoginController::class, 'tabungan'])->name('siswa.tabungan');
+Route::get('dashboard/siswa/uang-tahunan', [SiswaLoginController::class, 'uangTahunan'])->name('siswa.uang-tahunan');
 
 Route::get('/siswa/pembayaran/{id}/cetak', [SiswaInfaqController::class, 'generateSpp'])->name('siswa.pembayaran.cetak');
 Route::get('/siswa/infaq/{id}/cetak', [SiswaInfaqController::class, 'generateInfaq'])->name('siswa.infaq.cetak');
 Route::get('/siswa/tabungan/cetak', [SiswaInfaqController::class, 'generateTabungan'])->name('siswa.tabungan.cetak');
+Route::get('/siswa/uang-tahunan/cetak', [SiswaInfaqController::class, 'generateUangTahunan'])->name('siswa.uang-tahunan.cetak');
 
 Route::put('/profile/update', [SiswaLoginController::class, 'updateProfile'])->name('siswa.profile.update');
 Route::get('/get-data', [SiswaLoginController::class, 'getData'])->name('siswa.get-data');
@@ -127,6 +130,17 @@ Route::put('/dashboard/tabungan/{id}/update', [TabunganController::class, 'updat
 Route::post('/dashboard/tabungan/tarik/{id}', [TabunganController::class, 'tarik'])->name('tabungan.tarik');
 Route::get('/dashboard/tabungan/report/{id}', [TabunganController::class, 'generateReport'])->name('tabungan.report');
 Route::delete('/dashboard/tabungan/{id}', [TabunganController::class, 'destroy'])->name('tabungan.destroy');
+
+Route::get('/dashboard/uang-tahunan', [UangTahunanController::class, 'index'])->name('uang-tahunan.index');
+// Route::get('/dashboard/uang-tahunan/create', [UangTahunanController::class, 'create'])->name('uang-tahunan.create');
+Route::post('/dashboard/uang-tahunan/store-manual', [UangTahunanController::class, 'storeManual'])->name('uang-tahunan.store-manual');
+Route::get('/dashboard/uang-tahunan/{id}', [UangTahunanController::class, 'show'])->name('uang-tahunan.show');
+Route::get('/dashboard/uang-tahunan/{id}/edit', [UangTahunanController::class, 'edit'])->name('uang-tahunan.edit');
+Route::put('/dashboard/uang-tahunan/{id}/update', [UangTahunanController::class, 'update'])->name('uang-tahunan.update');
+Route::post('/dashboard/uang-tahunan/tarik/{id}', [UangTahunanController::class, 'tarik'])->name('uang-tahunan.tarik');
+Route::get('/dashboard/uang-tahunan/report/{id}/{tahun}', [UangTahunanController::class, 'generateReport'])->name('uang-tahunan.report');
+Route::delete('/dashboard/uang-tahunan/{id}', [UangTahunanController::class, 'destroy'])->name('uang-tahunan.destroy');
+Route::get('/dashboard/uang-tahunan/cari', [UangTahunanController::class, 'cariSiswa'])->name('uang-tahunan.cari-siswa');
 
 // Di routes/web.php tambahkan sementara:
 // Route::get('/test-tabungan', function() {

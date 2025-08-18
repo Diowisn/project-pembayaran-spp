@@ -72,11 +72,39 @@ class InfaqGedungController extends Controller
         return redirect()->route('infaq-gedung.index');
     }
 
-    public function destroy($id)
+    public function destroy($id) 
     {
-        InfaqGedung::findOrFail($id)->delete();
-
-        Alert::success('Berhasil!', 'Data berhasil dihapus');
-        return back();
+        \Log::info("Attempting to delete infaq gedung with ID: {$id}");
+        \Log::info("Request URL: " . request()->fullUrl());
+        \Log::info("Request Method: " . request()->method());
+        
+        try {
+            $infaq = InfaqGedung::withCount('siswa')->find($id);
+            
+            if (!$infaq) {
+                \Log::error("Infaq gedung not found with ID: {$id}");
+                Alert::error('Error!', 'Data tidak ditemukan');
+                return back();
+            }
+            
+            \Log::info("Found infaq gedung: " . json_encode($infaq->toArray()));
+            
+            if ($infaq->siswa_count > 0) {
+                \Log::error("Cannot delete - has related siswa data");
+                Alert::error('Gagal!', 'Tidak dapat menghapus karena data terkait dengan siswa');
+                return back();
+            }
+            
+            $infaq->delete();
+            
+            \Log::info("Successfully deleted infaq gedung with ID: {$id}");
+            
+            Alert::success('Berhasil!', 'Data berhasil dihapus');
+            return redirect()->route('infaq-gedung.index');
+        } catch (\Exception $e) {
+            \Log::error("Delete error: " . $e->getMessage());
+            Alert::error('Error!', 'Gagal menghapus data: ' . $e->getMessage());
+            return back();
+        }
     }
 }

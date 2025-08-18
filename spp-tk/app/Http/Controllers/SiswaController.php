@@ -249,4 +249,38 @@ class SiswaController extends Controller
       
       return back();
     }
+
+    // public function search(Request $request)
+    // {
+    //     $search = $request->q;
+    //     $perPage = 10;
+
+    //     $query = Siswa::with('kelas')->orderBy('nama');
+
+    //     if (!empty($search)) {
+    //         $query->where(function($q) use ($search) {
+    //             $q->where('nisn', 'like', '%'.$search.'%')
+    //             ->orWhere('nama', 'like', '%'.$search.'%');
+    //         });
+    //     } else {
+    //         $query->limit(50);
+    //     }
+
+    //     $siswa = $query->paginate($perPage);
+
+    //     $formattedResults = $siswa->map(function($item) {
+    //         return [
+    //             'id' => $item->id,
+    //             'nama' => $item->nama,
+    //             'nisn' => $item->nisn,
+    //             'kelas' => $item->kelas,
+    //             'text' => $item->nama . ' (NISN: ' . $item->nisn . ')'
+    //         ];
+    //     });
+
+    //     return response()->json([
+    //         "total" => $siswa->total(),
+    //         "data" => $formattedResults
+    //     ]);
+    // }
 }

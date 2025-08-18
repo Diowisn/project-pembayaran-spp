@@ -15,6 +15,8 @@
     {{-- <link href="{{ asset('assets/libs/chartist/dist/chartist.min.css') }}" rel="stylesheet"> --}}
     <!-- Custom CSS -->
     <link href="{{ asset('dist/css/style.min.css') }}" rel="stylesheet">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -149,85 +151,112 @@
                                     class="mdi mdi-view-dashboard"></i><span class="hide-menu">Dashboard</span></a></li>
                         @if (auth()->user()->level == 'admin')
                             <li class="sidebar-item">
-                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
-                                    href="{{ url('dashboard/data-siswa') }}" aria-expanded="false">
-                                    <i class="mdi mdi-account-outline"></i>
-                                    <span class="hide-menu">Data Siswa</span>
+                                <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)"
+                                    aria-expanded="false">
+                                    <i class="mdi mdi-database"></i>
+                                    <span class="hide-menu">Master Data</span>
                                 </a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
-                                    href="{{ url('dashboard/data-petugas') }}" aria-expanded="false">
-                                    <i class="mdi mdi-account-multiple"></i>
-                                    <span class="hide-menu">Data Petugas</span>
-                                </a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
-                                    href="{{ url('dashboard/data-kelas') }}" aria-expanded="false">
-                                    <i class="mdi mdi-home-variant"></i>
-                                    <span class="hide-menu">Data Kelas</span>
-                                </a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
-                                    href="{{ url('dashboard/data-spp') }}" aria-expanded="false">
-                                    <i class="mdi mdi-cash-usd"></i>
-                                    <span class="hide-menu">Data SPP</span>
-                                </a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
-                                    href="{{ url('dashboard/infaq-gedung') }}" aria-expanded="false">
-                                    <i class="mdi mdi-cash-usd"></i>
-                                    <span class="hide-menu">Data Infaq Gedung</span>
-                                </a>
-                            </li>
-                        @endif
-                        @if (auth()->user()->level == 'admin' || auth()->user()->level == 'petugas')
-                            <li class="sidebar-item">
-                                <a class="sidebar-liauth()->user()->level == 'admin'nk waves-effect waves-dark sidebar-link"
-                                    href="{{ url('dashboard/pembayaran') }}" aria-expanded="false">
-                                    <i class="mdi mdi-cash"></i>
-                                    <span class="hide-menu">Entri Transaksi SPP</span>
-                                </a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a class="sidebar-liauth()->user()->level == 'admin'nk waves-effect waves-dark sidebar-link"
-                                    href="{{ url('dashboard/infaq') }}" aria-expanded="false">
-                                    <i class="mdi mdi-cash"></i>
-                                    <span class="hide-menu">Entri Transaksi Infaq</span>
-                                </a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a class="sidebar-liauth()->user()->level == 'admin'nk waves-effect waves-dark sidebar-link"
-                                    href="{{ route('tabungan.index') }}" aria-expanded="false">
-                                    <i class="mdi mdi-cash"></i>
-                                    <span class="hide-menu">Entri Tabungan</span>
-                                </a>
+                                <ul aria-expanded="false" class="collapse first-level">
+                                    <li class="sidebar-item">
+                                        <a href="{{ url('dashboard/data-siswa') }}" class="sidebar-link">
+                                            <i class="mdi mdi-account-outline"></i>
+                                            <span class="hide-menu">Data Siswa</span>
+                                        </a>
+                                    </li>
+                                    <li class="sidebar-item">
+                                        <a href="{{ url('dashboard/data-petugas') }}" class="sidebar-link">
+                                            <i class="mdi mdi-account-multiple"></i>
+                                            <span class="hide-menu">Data Petugas</span>
+                                        </a>
+                                    </li>
+                                    <li class="sidebar-item">
+                                        <a href="{{ url('dashboard/data-kelas') }}" class="sidebar-link">
+                                            <i class="mdi mdi-home-variant"></i>
+                                            <span class="hide-menu">Data Kelas</span>
+                                        </a>
+                                    </li>
+                                    <li class="sidebar-item">
+                                        <a href="{{ url('dashboard/data-spp') }}" class="sidebar-link">
+                                            <i class="mdi mdi-cash-usd"></i>
+                                            <span class="hide-menu">Data SPP</span>
+                                        </a>
+                                    </li>
+                                    <li class="sidebar-item">
+                                        <a href="{{ url('dashboard/infaq-gedung') }}" class="sidebar-link">
+                                            <i class="mdi mdi-cash-usd"></i>
+                                            <span class="hide-menu">Data Infaq Gedung</span>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                         @endif
                         @if (auth()->user()->level == 'admin' || auth()->user()->level == 'petugas')
                             <li class="sidebar-item">
-                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
-                                    href="{{ route('histori.spp') }}" aria-expanded="false">
-                                    <i class="mdi mdi-note-multiple"></i>
-                                    <span class="hide-menu">History Pembayaran SPP</span>
+                                <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)"
+                                    aria-expanded="false">
+                                    <i class="mdi mdi-cash-multiple"></i>
+                                    <span class="hide-menu">Transaksi</span>
                                 </a>
+                                <ul aria-expanded="false" class="collapse first-level">
+                                    <li class="sidebar-item">
+                                        <a href="{{ url('dashboard/pembayaran') }}" class="sidebar-link">
+                                            <i class="mdi mdi-cash"></i>
+                                            <span class="hide-menu">Entri SPP</span>
+                                        </a>
+                                    </li>
+                                    <li class="sidebar-item">
+                                        <a href="{{ url('dashboard/infaq') }}" class="sidebar-link">
+                                            <i class="mdi mdi-cash"></i>
+                                            <span class="hide-menu">Entri Infaq</span>
+                                        </a>
+                                    </li>
+                                    <li class="sidebar-item">
+                                        <a href="{{ route('tabungan.index') }}" class="sidebar-link">
+                                            <i class="mdi mdi-cash"></i>
+                                            <span class="hide-menu">Entri Tabungan</span>
+                                        </a>
+                                    </li>
+                                    <li class="sidebar-item">
+                                        <a href="{{ route('uang-tahunan.index') }}" class="sidebar-link">
+                                            <i class="mdi mdi-cash"></i>
+                                            <span class="hide-menu">Entri Uang Kegiatan Tahunan</span>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
+
                             <li class="sidebar-item">
-                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
-                                    href="{{ route('histori.infaq') }}" aria-expanded="false">
-                                    <i class="mdi mdi-note-multiple"></i>
-                                    <span class="hide-menu">History Pembayaran Infaq</span>
+                                <a class="sidebar-link has-arrow waves-effect waves-dark" href="javascript:void(0)"
+                                    aria-expanded="false">
+                                    <i class="mdi mdi-history"></i>
+                                    <span class="hide-menu">Riwayat</span>
                                 </a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a class="sidebar-link waves-effect waves-dark sidebar-link"
-                                    href="{{ route('histori.tabungan') }}" aria-expanded="false">
-                                    <i class="mdi mdi-note-multiple"></i>
-                                    <span class="hide-menu">History Pembayaran Tabungan</span>
-                                </a>
+                                <ul aria-expanded="false" class="collapse first-level">
+                                    <li class="sidebar-item">
+                                        <a href="{{ route('histori.spp') }}" class="sidebar-link">
+                                            <i class="mdi mdi-note-multiple"></i>
+                                            <span class="hide-menu">History SPP</span>
+                                        </a>
+                                    </li>
+                                    <li class="sidebar-item">
+                                        <a href="{{ route('histori.infaq') }}" class="sidebar-link">
+                                            <i class="mdi mdi-note-multiple"></i>
+                                            <span class="hide-menu">History Infaq</span>
+                                        </a>
+                                    </li>
+                                    <li class="sidebar-item">
+                                        <a href="{{ route('histori.tabungan') }}" class="sidebar-link">
+                                            <i class="mdi mdi-note-multiple"></i>
+                                            <span class="hide-menu">History Tabungan</span>
+                                        </a>
+                                    </li>
+                                    <li class="sidebar-item">
+                                        <a href="{{ route('history.uang-tahunan') }}" class="sidebar-link">
+                                            <i class="mdi mdi-note-multiple"></i>
+                                            <span class="hide-menu">History Kegiatan Tahunan</span>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                         @endif
                         @if (auth()->user()->level == 'admin')
@@ -330,6 +359,8 @@
     {{-- <script src="{{ asset('assets/libs/chartist/dist/chartist.min.js') }}"></script> --}}
     {{-- <script src="{{ asset('assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js') }}"></script> --}}
     {{-- <script src="{{ asset('dist/js/pages/dashboards/dashboard1.js') }}"></script> --}}
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </body>
 
 </html>

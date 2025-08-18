@@ -22,3 +22,9 @@ class Kelas extends Model
         return $this->hasMany(Spp::class, 'id_kelas');
     }
 }
+
+// menambahkan kolom untuk status
+// terus dipanggil dibagian siswa sebagai tanda untuk naik kelas
+// ketika siswa sudah lulus, maka statusnya akan diubah menjadi 'lulus', dan otomatis masuk ke tingkat kelas selanjutnya
+// jadi saat melakukan input kelas, ditambahkan seperti ini untuk tahap 1,2,3, dan seterusnya
+// 'status' => 'aktif', // atau 'lulus' jika sudah lulus (jadi ada 4 enum, aktif, lulus, tidak aktif, dan tinggal kelas)

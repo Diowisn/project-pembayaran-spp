@@ -166,7 +166,11 @@
                                     class="mdi mdi-note-multiple"></i><span class="hide-menu">Histori Tabungan
                                         </span></a>
                         </li>
-
+                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                href="{{ url('dashboard/siswa/uang-tahunan') }}" aria-expanded="false"><i
+                                    class="mdi mdi-note-multiple"></i><span class="hide-menu">Histori Uang Kegiatan Tahunan
+                                        </span></a>
+                        </li>
                     </ul>
 
                 </nav>

@@ -16,51 +16,43 @@
                     <form method="post" action="{{ route('infaq-gedung.store') }}">
                         @csrf
 
-                        <div class="form-group">
-                            <label>Paket</label>
-                            <input type="text" name="paket" maxlength="1"
-                                class="form-control @error('paket') is-invalid @enderror" value="{{ old('paket') }}">
-                            <span class="text-danger">
-                                @error('paket')
-                                    {{ $message }}
-                                @enderror
-                            </span>
-                        </div>
+<div class="form-group">
+    <label for="paket_input">Paket</label>
+    <input type="text" id="paket_input" name="paket" maxlength="1"
+        class="form-control @error('paket') is-invalid @enderror" value="{{ old('paket') }}">
+    @error('paket')
+        <span class="text-danger">{{ $message }}</span>
+    @enderror
+</div>
 
-                        <div class="form-group">
-                            <label>Nominal Total</label>
-                            <input type="number" name="nominal" class="form-control @error('nominal') is-invalid @enderror"
-                                value="{{ old('nominal') }}">
-                            <span class="text-danger">
-                                @error('nominal')
-                                    {{ $message }}
-                                @enderror
-                            </span>
-                        </div>
+<div class="form-group">
+    <label for="nominal_input">Nominal Total</label>
+    <input type="number" id="nominal_input" name="nominal" 
+        class="form-control @error('nominal') is-invalid @enderror" value="{{ old('nominal') }}">
+    @error('nominal')
+        <span class="text-danger">{{ $message }}</span>
+    @enderror
+</div>
 
-                        <div class="form-group">
-                            <label>Jumlah Angsuran</label>
-                            <input type="number" name="jumlah_angsuran"
-                                class="form-control @error('jumlah_angsuran') is-invalid @enderror"
-                                value="{{ old('jumlah_angsuran', 12) }}">
-                            <span class="text-danger">
-                                @error('jumlah_angsuran')
-                                    {{ $message }}
-                                @enderror
-                            </span>
-                        </div>
+<div class="form-group">
+    <label for="jumlah_angsuran_input">Jumlah Angsuran</label>
+    <input type="number" id="jumlah_angsuran_input" name="jumlah_angsuran"
+        class="form-control @error('jumlah_angsuran') is-invalid @enderror"
+        value="{{ old('jumlah_angsuran', 12) }}">
+    @error('jumlah_angsuran')
+        <span class="text-danger">{{ $message }}</span>
+    @enderror
+</div>
 
-                        <div class="form-group">
-                            <label>Nominal per Angsuran</label>
-                            <input type="number" name="nominal_per_angsuran"
-                                class="form-control @error('nominal_per_angsuran') is-invalid @enderror"
-                                value="{{ old('nominal_per_angsuran') }}">
-                            <span class="text-danger">
-                                @error('nominal_per_angsuran')
-                                    {{ $message }}
-                                @enderror
-                            </span>
-                        </div>
+<div class="form-group">
+    <label for="nominal_per_angsuran_input">Nominal per Angsuran</label>
+    <input type="number" id="nominal_per_angsuran_input" name="nominal_per_angsuran"
+        class="form-control @error('nominal_per_angsuran') is-invalid @enderror"
+        value="{{ old('nominal_per_angsuran') }}">
+    @error('nominal_per_angsuran')
+        <span class="text-danger">{{ $message }}</span>
+    @enderror
+</div>
 
                         <button type="submit" class="btn btn-success btn-rounded float-right">
                             <i class="mdi mdi-check"></i> Simpan
@@ -95,32 +87,28 @@
                                         <td>{{ $item->jumlah_angsuran }}x</td>
                                         <td>Rp {{ number_format($item->nominal_per_angsuran, 0, ',', '.') }}</td>
                                         <td>{{ $item->created_at->format('d M Y') }}</td>
-                                        <td>
-                                            <div class="hide-menu">
-                                                <a href="javascript:void(0)" class="text-dark" data-toggle="dropdown">
-                                                    <i class="mdi mdi-dots-vertical"></i>
-                                                </a>
-                                                <div class="dropdown-menu dropdown-menu-right">
-                                                    <a class="dropdown-item"
-                                                        href="{{ route('infaq-gedung.edit', $item->id) }}"><i
-                                                            class="ti-pencil"></i> Edit
-                                                    </a>
+<td>
+    <div class="hide-menu">
+        <a href="javascript:void(0)" class="text-dark dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+            <i class="mdi mdi-dots-vertical"></i>
+        </a>
+        <div class="dropdown-menu dropdown-menu-right">
+            <a class="dropdown-item" href="{{ route('infaq-gedung.edit', $item->id) }}">
+                <i class="ti-pencil"></i> Edit
+            </a>
 
-                                                    @if (auth()->user()->level == 'admin')
-                                                        <form method="post"
-                                                            action="{{ route('infaq-gedung.destroy', $item->id) }}"
-                                                            id="delete{{ $item->id }}">
-                                                            @csrf
-                                                            @method('delete')
-                                                            <button type="button" class="dropdown-item"
-                                                                onclick="deleteData({{ $item->id }})">
-                                                                <i class="ti-trash"></i> Hapus
-                                                            </button>
-                                                        </form>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </td>
+            @if (auth()->user()->level == 'admin')
+                <form method="POST" action="{{ route('infaq-gedung.destroy', $item->id) }}" id="delete-form-{{ $item->id }}" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="button" class="dropdown-item" onclick="handleDelete({{ $item->id }}, event)">
+                        <i class="ti-trash"></i> Hapus
+                    </button>
+                </form>
+            @endif
+        </div>
+    </div>
+</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -140,20 +128,37 @@
 @endsection
 
 @section('sweet')
-        function deleteData(id) {
-            Swal.fire({
-                title: 'PERINGATAN!',
-                text: "Yakin ingin menghapus data Infaq Gedung?",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yakin',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $('#delete' + id).submit();
-                }
-            });
+{{-- <script> --}}
+    function handleDelete(id, event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Pastikan form yang benar ditemukan
+        const form = document.getElementById(`delete-form-${id}`);
+        
+        if (!form) {
+            console.error(`Form with ID delete-form-${id} not found`);
+            return;
         }
+
+        // Debug: Tampilkan action form
+        console.log('Form action:', form.action);
+        
+        Swal.fire({
+            title: 'PERINGATAN!',
+            text: "Yakin ingin menghapus data Infaq Gedung?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yakin',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Submit form secara langsung
+                form.submit();
+            }
+        });
+    }
+{{-- </script> --}}
 @endsection
