@@ -76,6 +76,17 @@
                             </span>
                         </div>
 
+                        <div class="form-group">
+                            <label>Nominal Inklusi (Rp)</label>
+                            <input type="text" class="form-control @error('nominal_inklusi') is-invalid @enderror"
+                                name="nominal_inklusi" value="{{ old('nominal_inklusi') }}" id="nominal-inklusi">
+                            <span class="text-danger">
+                                @error('nominal_inklusi')
+                                    {{ $message }}
+                                @enderror
+                            </span>
+                        </div>
+
                         {{-- <div class="form-group" id="infaq-container">
                             <label>Infaq Gedung (Opsional)</label>
                             <select class="form-control @error('id_infaq_gedung') is-invalid @enderror" name="id_infaq_gedung">
@@ -113,6 +124,7 @@
                         formatRupiahInput('nominal-spp');
                         formatRupiahInput('nominal-konsumsi');
                         formatRupiahInput('nominal-fullday');
+                        formatRupiahInput('nominal-inklusi');
 
                         // Set nilai default untuk tahun
                         document.querySelector('input[name="tahun"]').value = new Date().getFullYear();
@@ -158,6 +170,9 @@
                                         @if ($value->nominal_fullday)
                                             <br><small class="text-muted">+ Fullday</small>
                                         @endif
+                                        @if ($value->nominal_inklusi)
+                                            <br><small class="text-muted">+ Inklusi</small>
+                                        @endif
                                     </td>
                                     <td>{{ $value->kelas->nama_kelas }}</td>
                                     <td>
@@ -165,7 +180,10 @@
                                             <span class="badge badge-info">Konsumsi</span>
                                         @endif
                                         @if ($value->kelas->has_fullday)
-                                            <span class="badge badge-primary">Fullday</span>
+                                            <span class="badge badge-primary">Fullday</span> <br>
+                                        @endif
+                                        @if ($value->kelas->has_inklusi)
+                                            <span class="badge badge-warning">Inklusi</span>
                                         @endif
                                     </td>
                                     <td>
@@ -177,7 +195,11 @@
                                         @endif
                                         @if ($value->nominal_fullday)
                                             <strong>Fullday:</strong> Rp
-                                            {{ number_format($value->nominal_fullday, 0, ',', '.') }}
+                                            {{ number_format($value->nominal_fullday, 0, ',', '.') }} <br>
+                                        @endif
+                                        @if ($value->nominal_inklusi)
+                                            <strong>Inklusi:</strong> Rp
+                                            {{ number_format($value->nominal_inklusi, 0, ',', '.') }}
                                         @endif
                                     </td>
                                     <td>{{ $value->created_at->format('d M Y') }}</td>

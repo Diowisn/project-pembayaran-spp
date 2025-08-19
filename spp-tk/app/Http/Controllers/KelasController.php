@@ -48,34 +48,36 @@ class KelasController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-public function store(Request $request)
-{
-    $messages = [
-        'required' => ':attribute tidak boleh kosong!',
-    ];
-    
-    $validasi = $request->validate([
-        'nama_kelas' => 'required',
-        'has_konsumsi' => 'sometimes|boolean',
-        'has_fullday' => 'sometimes|boolean',
-    ], $messages);
-
-    if($validasi) :
-        $create = Kelas::create([
-            'nama_kelas' => $request->nama_kelas,
-            'has_konsumsi' => $request->has_konsumsi ?? false,
-            'has_fullday' => $request->has_fullday ?? false
-        ]);
+    public function store(Request $request)
+    {
+        $messages = [
+            'required' => ':attribute tidak boleh kosong!',
+        ];
         
-        if($create) :
-            Alert::success('Berhasil!', 'Data Berhasil Ditambahkan');
-        else :
-            Alert::error('Gagal!', 'Data Gagal Ditambahkan');
-        endif;
-    endif;
+        $validasi = $request->validate([
+            'nama_kelas' => 'required',
+            'has_konsumsi' => 'sometimes|boolean',
+            'has_fullday' => 'sometimes|boolean',
+            'has_inklusi' => 'sometimes|boolean'
+        ], $messages);
 
-    return back();
-}
+        if($validasi) :
+            $create = Kelas::create([
+                'nama_kelas' => $request->nama_kelas,
+                'has_konsumsi' => $request->has_konsumsi ?? false,
+                'has_fullday' => $request->has_fullday ?? false,
+                'has_inklusi' => $request->has_inklusi ?? false
+            ]);
+            
+            if($create) :
+                Alert::success('Berhasil!', 'Data Berhasil Ditambahkan');
+            else :
+                Alert::error('Gagal!', 'Data Gagal Ditambahkan');
+            endif;
+        endif;
+
+        return back();
+    }
 
     /**
      * Display the specified resource.
@@ -112,24 +114,25 @@ public function store(Request $request)
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-public function update(Request $req, $id)
-{
-    if($update = Kelas::find($id)) :
-        $stat = $update->update([
-            'nama_kelas' => $req->nama_kelas,
-            'has_konsumsi' => $req->has_konsumsi ?? false,
-            'has_fullday' => $req->has_fullday ?? false
-        ]);
-        if($stat) :
-            Alert::success('Berhasil!', 'Data Berhasil di Edit!');
-        else :
-            Alert::success('Terjadi Kesalahan!', 'Data Gagal di Edit!');
-            return back();
+    public function update(Request $req, $id)
+    {
+        if($update = Kelas::find($id)) :
+            $stat = $update->update([
+                'nama_kelas' => $req->nama_kelas,
+                'has_konsumsi' => $req->has_konsumsi ?? false,
+                'has_fullday' => $req->has_fullday ?? false,
+                'has_inklusi' => $req->has_inklusi ?? false
+            ]);
+            if($stat) :
+                Alert::success('Berhasil!', 'Data Berhasil di Edit!');
+            else :
+                Alert::success('Terjadi Kesalahan!', 'Data Gagal di Edit!');
+                return back();
+            endif;
         endif;
-    endif;
-    
-    return redirect('dashboard/data-kelas');
-}
+        
+        return redirect('dashboard/data-kelas');
+    }
 
     /**
      * Remove the specified resource from storage.
@@ -141,10 +144,10 @@ public function update(Request $req, $id)
     {
         if(Kelas::find($id)->delete()) :
             Alert::success('Berhasil!', 'Data Berhasil Dihapus');
-         else :
+        else :
             Alert::error('Terjadi Kesalahan!', 'Data Gagal Dihapus');
-         endif;
+        endif;
          
-         return back();
+        return back();
     }
 }

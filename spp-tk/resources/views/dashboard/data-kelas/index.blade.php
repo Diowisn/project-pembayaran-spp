@@ -43,6 +43,14 @@
                             </div>
                         </div>
 
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="has_inklusi" id="has_inklusi"
+                                    value="1" {{ old('has_inklusi') ? 'checked' : '' }}>
+                                <label class="form-check-label" for="has_inklusi">Biaya Pendampingan Inklusi</label>
+                            </div>
+                        </div>
+
                         <button type="submit" class="btn btn-success btn-rounded">
                             <i class="mdi mdi-check"></i> Simpan
                         </button>
@@ -66,6 +74,7 @@
                                     <th scope="col">KELAS</th>
                                     <th scope="col">KONSUMSI</th>
                                     <th scope="col">FULLDAY</th>
+                                    <th scope="col">INKLUSI</th>
                                     <th scope="col">DIBUAT</th>
                                     <th scope="col"></th>
                                 </tr>
@@ -78,6 +87,7 @@
                                         <td>{{ $value->nama_kelas }}</td>
                                         <td>{{ $value->has_konsumsi ? 'Ya' : 'Tidak' }}</td>
                                         <td>{{ $value->has_fullday ? 'Ya' : 'Tidak' }}</td>
+                                        <td>{{ $value->has_inklusi ? 'Ya' : 'Tidak' }}</td>
                                         <td>{{ $value->created_at->format('d M, Y') }}</td>
 
                                         <td>

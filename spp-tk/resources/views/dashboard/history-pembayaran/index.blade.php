@@ -27,6 +27,7 @@
                             <div>Nominal SPP Rp. {{ $spp = $value->siswa->spp->nominal_spp ?? '-' }}</div>
                             <div>Nominal Konsumsi Rp. {{ $spp = $value->siswa->spp->nominal_konsumsi ?? '-' }}</div>
                             <div>Nominal Fullday Rp. {{ $spp = $value->siswa->spp->nominal_fullday ?? '-' }}</div>
+                            <div>Nominal Inklusi Rp. {{ $spp = $value->siswa->spp->nominal_inklusi ?? '-' }}</div>
                             <div>=========================</div>
                             <div>Bayar Rp. {{ $bayar = $value->jumlah_bayar }}</div>
                             <div>Sisa Rp. {{ $spp = $value->kembalian }}</div>

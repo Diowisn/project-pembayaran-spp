@@ -58,6 +58,7 @@ class SppController extends Controller
             'nominal_spp' => 'required|integer',
             'nominal_konsumsi' => 'nullable|integer',
             'nominal_fullday' => 'nullable|integer',
+            'nominal_inklusi' => 'nullable|integer',
             // 'id_infaq_gedung' => 'nullable|exists:infaq_gedung,id'
         ], $messages);
         
@@ -65,6 +66,7 @@ class SppController extends Controller
         $nominal_spp = str_replace('.', '', $request->nominal_spp);
         $nominal_konsumsi = $request->nominal_konsumsi ? str_replace('.', '', $request->nominal_konsumsi) : null;
         $nominal_fullday = $request->nominal_fullday ? str_replace('.', '', $request->nominal_fullday) : null;
+        $nominal_inklusi = $request->nominal_inklusi ? str_replace('.', '', $request->nominal_inklusi) : null;
         
         if($validasi) :
             $store = Spp::create([
@@ -73,6 +75,7 @@ class SppController extends Controller
                 'nominal_spp' => $nominal_spp,
                 'nominal_konsumsi' => $nominal_konsumsi,
                 'nominal_fullday' => $nominal_fullday,
+                'nominal_inklusi' => $nominal_inklusi,
                 // 'id_infaq_gedung' => $request->id_infaq_gedung
             ]);
             
@@ -131,6 +134,7 @@ class SppController extends Controller
             'nominal_spp' => 'required|integer',
             'nominal_konsumsi' => 'nullable|integer',
             'nominal_fullday' => 'nullable|integer',
+            'nominal_inklusi' => 'nullable|integer',
             // 'id_infaq_gedung' => 'nullable|exists:infaq_gedung,id'
         ], $messages);
         
@@ -138,6 +142,7 @@ class SppController extends Controller
         $nominal_spp = str_replace('.', '', $req->nominal_spp);
         $nominal_konsumsi = $req->nominal_konsumsi ? str_replace('.', '', $req->nominal_konsumsi) : null;
         $nominal_fullday = $req->nominal_fullday ? str_replace('.', '', $req->nominal_fullday) : null;
+        $nominal_inklusi = $req->nominal_inklusi ? str_replace('.', '', $req->nominal_inklusi) : null;
         
         if($update = Spp::find($id)) :         
             $stat = $update->update([
@@ -146,6 +151,7 @@ class SppController extends Controller
                 'nominal_spp' => $nominal_spp,
                 'nominal_konsumsi' => $nominal_konsumsi,
                 'nominal_fullday' => $nominal_fullday,
+                'nominal_inklusi' => $nominal_inklusi,
                 // 'id_infaq_gedung' => $req->id_infaq_gedung
             ]);
             

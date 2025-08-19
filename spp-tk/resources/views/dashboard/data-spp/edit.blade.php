@@ -57,6 +57,13 @@
                                    name="nominal_fullday" value="{{ old('nominal_fullday', $edit->nominal_fullday ? number_format($edit->nominal_fullday, 0, ',', '.') : '') }}" id="nominal-fullday">
                             <span class="text-danger">@error('nominal_fullday') {{ $message }} @enderror</span>
                         </div>
+
+                        <div class="form-group">
+                            <label>Nominal Inklusi (Rp)</label>
+                            <input type="text" class="form-control @error('nominal_inklusi') is-invalid @enderror" 
+                                name="nominal_inklusi" value="{{ old('nominal_inklusi', $edit->nominal_inklusi ? number_format($edit->nominal_inklusi, 0, ',', '.') : '') }}" id="nominal-inklusi">
+                            <span class="text-danger">@error('nominal_inklusi') {{ $message }} @enderror</span>
+                        </div>
                         
                         {{-- <div class="form-group" id="infaq-container">
                             <label>Infaq Gedung (Opsional)</label>
@@ -104,5 +111,6 @@
     formatRupiahInput('nominal-spp');
     formatRupiahInput('nominal-konsumsi');
     formatRupiahInput('nominal-fullday');
+    formatRupiahInput('nominal-inklusi');
 </script>
 @endsection

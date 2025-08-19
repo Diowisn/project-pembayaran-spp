@@ -73,14 +73,28 @@
                                         </div>
                                     </div>
                                 @endif
+                            
+                                @if (isset($siswa) && $siswa->spp->nominal_inklusi > 0)
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Nominal Inklusi</label>
+                                            <input type="text" class="form-control"
+                                                value="{{ 'Rp ' . number_format($siswa->spp->nominal_inklusi, 0, ',', '.') }}"
+                                                disabled>
+                                            <input type="hidden" name="nominal_inklusi"
+                                                value="{{ $siswa->spp->nominal_inklusi }}">
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
 
                             @if ($siswa)
                                 @php
                                     $total_bayar =
-                                        $siswa->spp->nominal_spp +
-                                        $siswa->spp->nominal_konsumsi +
-                                        $siswa->spp->nominal_fullday;
+                                            $siswa->spp->nominal_spp +
+                                            ($siswa->spp->nominal_konsumsi ?? 0) +
+                                            ($siswa->spp->nominal_fullday ?? 0) +
+                                            ($siswa->spp->nominal_inklusi ?? 0);
                                 @endphp
 
                                 <div class="form-group">
@@ -222,7 +236,10 @@
                                         <td>{{ $value->siswa->nama }}</td>
                                         <td>Rp
                                             {{ number_format(
-                                                $value->nominal_spp + ($value->nominal_konsumsi ?? 0) + ($value->nominal_fullday ?? 0),
+                                                $value->nominal_spp + 
+                                                ($value->nominal_konsumsi ?? 0) + 
+                                                ($value->nominal_fullday ?? 0) +
+                                                ($value->nominal_inklusi ?? 0),
                                                 0,
                                                 ',',
                                                 '.',

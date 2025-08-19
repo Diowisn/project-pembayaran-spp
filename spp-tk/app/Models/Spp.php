@@ -14,7 +14,8 @@ class Spp extends Model
         'nominal_spp',
         'nominal_konsumsi',
         'nominal_fullday',
-        'id_infaq_gedung'
+        'nominal_inklusi',
+        'id_infaq_gedung' 
     ];
 
     public function kelas()

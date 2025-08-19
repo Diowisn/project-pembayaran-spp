@@ -143,7 +143,7 @@ class PembayaranController extends Controller
             
             $total_tagihan = $request->jumlah_tagihan;
             $kembalian = $request->nominal_pembayaran - $total_tagihan;
-            $is_lunas = $kembalian >= 0; // Ini yang harus ditambahkan
+            $is_lunas = $kembalian >= 0; 
 
             $pembayaran = Pembayaran::create([
                 'id_petugas' => auth()->id(),
@@ -155,10 +155,11 @@ class PembayaranController extends Controller
                 'nominal_spp' => $siswa->spp->nominal_spp,
                 'nominal_konsumsi' => $siswa->spp->nominal_konsumsi ?? 0,
                 'nominal_fullday' => $siswa->spp->nominal_fullday ?? 0,
+                'nominal_inklusi' => $siswa->spp->nominal_inklusi ?? 0,
                 'jumlah_bayar' => $request->nominal_pembayaran,
                 'kembalian' => $is_lunas ? $kembalian : 0,
                 'tgl_bayar' => now(),
-                'is_lunas' => $is_lunas, // Gunakan variabel ini
+                'is_lunas' => $is_lunas, 
             ]);
 
             if ($is_lunas && $kembalian > 0) {
@@ -245,7 +246,8 @@ class PembayaranController extends Controller
             'bulan' => 'required',
             'jumlah_bayar' => 'required|numeric|min:'.($pembayaran->nominal_spp + 
                             ($pembayaran->nominal_konsumsi ?? 0) + 
-                            ($pembayaran->nominal_fullday ?? 0)),
+                            ($pembayaran->nominal_fullday ?? 0) +
+                            ($pembayaran->nominal_inklusi ?? 0)),
             'tgl_bayar' => 'required|date',
             'is_lunas' => 'required|boolean'
         ], $messages);
@@ -262,7 +264,8 @@ class PembayaranController extends Controller
 
             $total_tagihan = $pembayaran->nominal_spp + 
                             ($pembayaran->nominal_konsumsi ?? 0) + 
-                            ($pembayaran->nominal_fullday ?? 0);
+                            ($pembayaran->nominal_fullday ?? 0) +
+                            ($pembayaran->nominal_inklusi ?? 0);
             
             $kembalian = $request->jumlah_bayar - $total_tagihan;
             $is_lunas = $kembalian >= 0; 

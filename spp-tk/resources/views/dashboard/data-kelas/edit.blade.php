@@ -40,6 +40,14 @@
                                 <label class="form-check-label" for="has_fullday">Program Fullday</label>
                             </div>
                         </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="has_inklusi" id="has_inklusi" 
+                                    value="1" {{ $edit->has_inklusi ? 'checked' : '' }}>
+                                <label class="form-check-label" for="has_inklusi">Biaya Pendampingan Inklusi</label>
+                            </div>
+                        </div>
                         
                         <button type="submit" class="btn btn-success btn-rounded">
                             <i class="mdi mdi-check"></i> Simpan

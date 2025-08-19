@@ -9,7 +9,7 @@ class Kelas extends Model
     protected $table = 'kelas';
     protected $primaryKey = 'id';
     protected $fillable = [
-        'nama_kelas', 'has_konsumsi', 'has_fullday'
+        'nama_kelas', 'has_konsumsi', 'has_fullday', 'has_inklusi'
     ];
 
     public function siswa()

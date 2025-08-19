@@ -79,6 +79,10 @@
                                                                     <small>Fullday: Rp
                                                                         {{ number_format($data['target_fullday'], 0, ',', '.') }}</small>
                                                                 </li>
+                                                                <li>
+                                                                    <small>Inklusi: Rp
+                                                                        {{ number_format($data['target_inklusi'], 0, ',', '.') }}</small>
+                                                                </li>
                                                             </ul>
                                                         </div>
                                                     </div>
@@ -268,6 +272,8 @@
                                                 Rp. {{ $history->siswa->spp->nominal_konsumsi ?? '-' }}</li>
                                             <li class="list-group-item">Nominal Fullday Rp.
                                                 {{ $history->siswa->spp->nominal_fullday ?? '-' }}</li>
+                                            <li class="list-group-item">Nominal Inklusi Rp.
+                                                {{ $history->siswa->spp->nominal_inklusi ?? '-' }}</li>
                                             <li class="list-group-item">Jumlah Bayar: Rp
                                                 {{ number_format($history->jumlah_bayar, 0, ',', '.') }}</li>
                                             <li class="list-group-item">Kembalian: Rp

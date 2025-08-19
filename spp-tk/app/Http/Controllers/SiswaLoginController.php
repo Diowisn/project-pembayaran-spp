@@ -279,6 +279,7 @@ class SiswaLoginController extends Controller
         $totalTagihanInfaq = $siswa->infaqGedung->nominal ?? 0;
         $sisaPembayaranInfaq = max($totalTagihanInfaq - $totalDibayarInfaq, 0);
         $persentaseInfaq = $totalTagihanInfaq > 0 ? ($totalDibayarInfaq / $totalTagihanInfaq) * 100 : 0;
+        $nominal_inklusi = $siswa->spp->nominal_inklusi ?? 0;
         
         return view('dashboard.siswa.dashboard', [
             'siswa' => $siswa,
@@ -296,7 +297,8 @@ class SiswaLoginController extends Controller
             'totalDibayarInfaq' => $totalDibayarInfaq,
             'totalTagihanInfaq' => $totalTagihanInfaq,
             'sisaPembayaranInfaq' => $sisaPembayaranInfaq,
-            'persentaseInfaq' => $persentaseInfaq
+            'persentaseInfaq' => $persentaseInfaq,
+            'nominal_inklusi' => $nominal_inklusi
         ]);
     }
 }

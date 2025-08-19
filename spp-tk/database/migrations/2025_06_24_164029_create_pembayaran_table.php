@@ -13,27 +13,27 @@ class CreatePembayaranTable extends Migration
      */
     public function up()
     {
-Schema::create('pembayaran', function (Blueprint $table) {
-    $table->bigIncrements('id');
-    $table->bigInteger('id_petugas')->unsigned();
-    $table->foreign('id_petugas')->references('id')->on('users');
-    $table->bigInteger('id_siswa')->unsigned();
-    $table->foreign('id_siswa')->references('id')->on('siswa')->onDelete('cascade');
-    $table->bigInteger('id_spp')->unsigned();
-    $table->foreign('id_spp')->references('id')->on('spp');
-    
-    // Data pembayaran
-    $table->string('bulan', 10);
-    $table->integer('tahun');
-    $table->integer('nominal_spp');
-    $table->integer('nominal_konsumsi')->default(0);
-    $table->integer('nominal_fullday')->default(0);
-    $table->integer('jumlah_bayar');
-    $table->integer('kembalian')->default(0);
-    $table->boolean('is_lunas')->default(false);
-    $table->date('tgl_bayar')->nullable();
-    $table->timestamps();
-});
+        Schema::create('pembayaran', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->bigInteger('id_petugas')->unsigned();
+            $table->foreign('id_petugas')->references('id')->on('users');
+            $table->bigInteger('id_siswa')->unsigned();
+            $table->foreign('id_siswa')->references('id')->on('siswa')->onDelete('cascade');
+            $table->bigInteger('id_spp')->unsigned();
+            $table->foreign('id_spp')->references('id')->on('spp');
+            
+            // Data pembayaran
+            $table->string('bulan', 10);
+            $table->integer('tahun');
+            $table->integer('nominal_spp');
+            $table->integer('nominal_konsumsi')->default(0);
+            $table->integer('nominal_fullday')->default(0);
+            $table->integer('jumlah_bayar');
+            $table->integer('kembalian')->default(0);
+            $table->boolean('is_lunas')->default(false);
+            $table->date('tgl_bayar')->nullable();
+            $table->timestamps();
+        });
     }
 
     /**

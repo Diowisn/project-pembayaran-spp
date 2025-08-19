@@ -10,7 +10,7 @@ class Pembayaran extends Model
     protected $primaryKey = 'id';
     protected $fillable = [
         'id_petugas', 'name', 'id_siswa', 'id_spp', 'bulan', 'tahun',
-        'nominal_spp', 'nominal_konsumsi', 'nominal_fullday',
+        'nominal_spp', 'nominal_konsumsi', 'nominal_fullday', 'nominal_inklusi',
         'jumlah_bayar', 'kembalian', 'is_lunas', 'tgl_bayar'
     ];
 
