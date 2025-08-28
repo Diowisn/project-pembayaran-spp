@@ -15,6 +15,8 @@ use App\Http\Controllers\InfaqController;
 use App\Http\Controllers\SiswaInfaqController;
 use App\Http\Controllers\TabunganController;
 use App\Http\Controllers\UangTahunanController;
+use App\Http\Controllers\KegiatanController;
+use App\Http\Controllers\KegiatanSiswaController;
 // use App\Models\Tabungan;
 
 /*
@@ -89,6 +91,15 @@ Route::resource('/dashboard/infaq-gedung', InfaqGedungController::class)->names(
     'update' => 'infaq-gedung.update',
     'destroy' => 'infaq-gedung.destroy',
 ]);
+
+Route::resource('/dashboard/kegiatan', KegiatanController::class);
+Route::get('/dashboard/entri-kegiatan', [KegiatanSiswaController::class, 'index'])->name('entri-kegiatan.index');
+Route::get('/dashboard/entri-kegiatan/cari-siswa', [KegiatanSiswaController::class, 'cariSiswa'])->name('entri-kegiatan.cari-siswa');
+Route::post('/dashboard/entri-kegiatan/{siswaId}/update-partisipasi', [KegiatanSiswaController::class, 'updatePartisipasi'])->name('entri-kegiatan.update-partisipasi');
+Route::post('/dashboard/entri-kegiatan/{id}/update-status-bayar', [KegiatanSiswaController::class, 'updateStatusBayar'])->name('entri-kegiatan.update-status-bayar');
+Route::get('/dashboard/entri-kegiatan/{id}/edit', [KegiatanSiswaController::class, 'edit'])->name('entri-kegiatan.edit');
+Route::put('/dashboard/entri-kegiatan/{id}', [KegiatanSiswaController::class, 'update'])->name('entri-kegiatan.update');
+Route::delete('/dashboard/entri-kegiatan/{id}', [KegiatanSiswaController::class, 'destroy'])->name('entri-kegiatan.destroy');
 
 Route::get('histori', [HistoryController::class, 'index'])->name('histori.spp');
 Route::get('histori-infaq', [HistoryController::class, 'infaq'])->name('histori.infaq');

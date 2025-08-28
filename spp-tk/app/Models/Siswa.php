@@ -43,4 +43,16 @@ class Siswa extends Model
     {
         return $this->hasMany(Tabungan::class, 'id_siswa');
     }
+
+    public function kegiatan()
+    {
+        return $this->belongsToMany(Kegiatan::class, 'kegiatan_siswa', 'siswa_id', 'kegiatan_id')
+                    ->withPivot('ikut', 'status_bayar')
+                    ->withTimestamps();
+    }
+
+    public function kegiatanSiswa()
+    {
+        return $this->hasMany(KegiatanSiswa::class, 'siswa_id');
+    }
 }
