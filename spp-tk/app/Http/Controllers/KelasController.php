@@ -58,7 +58,7 @@ class KelasController extends Controller
             'nama_kelas' => 'required',
             'has_konsumsi' => 'sometimes|boolean',
             'has_fullday' => 'sometimes|boolean',
-            'has_inklusi' => 'sometimes|boolean'
+            // 'has_inklusi' => 'sometimes|boolean'
         ], $messages);
 
         if($validasi) :
@@ -66,7 +66,7 @@ class KelasController extends Controller
                 'nama_kelas' => $request->nama_kelas,
                 'has_konsumsi' => $request->has_konsumsi ?? false,
                 'has_fullday' => $request->has_fullday ?? false,
-                'has_inklusi' => $request->has_inklusi ?? false
+                // 'has_inklusi' => $request->has_inklusi ?? false
             ]);
             
             if($create) :
@@ -121,7 +121,7 @@ class KelasController extends Controller
                 'nama_kelas' => $req->nama_kelas,
                 'has_konsumsi' => $req->has_konsumsi ?? false,
                 'has_fullday' => $req->has_fullday ?? false,
-                'has_inklusi' => $req->has_inklusi ?? false
+                // 'has_inklusi' => $req->has_inklusi ?? false
             ]);
             if($stat) :
                 Alert::success('Berhasil!', 'Data Berhasil di Edit!');

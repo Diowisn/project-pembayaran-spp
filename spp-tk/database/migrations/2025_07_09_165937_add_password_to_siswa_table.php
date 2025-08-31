@@ -11,7 +11,7 @@ class AddPasswordToSiswaTable extends Migration
         Schema::table('siswa', function (Blueprint $table) {
             $table->string('password')
                   ->after('nama')
-                  ->default('$2y$12$nykLZDBC2.QWbth5Rp9BcOiZcZqeH9w5/LlIGwckycfc6.UUW1Ou6'); // Hash dari "123456"
+                  ->default('$2y$12$nykLZDBC2.QWbth5Rp9BcOiZcZqeH9w5/LlIGwckycfc6.UUW1Ou6');
         });
     }
 

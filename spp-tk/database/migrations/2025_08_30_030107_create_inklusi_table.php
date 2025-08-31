@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('pembayaran', function (Blueprint $table) {
-            $table->integer('nominal_inklusi')->default(0)->after('nominal_fullday');
+        Schema::create('inklusi', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('nama_paket', 50);
+            $table->integer('nominal');
+            $table->text('keterangan')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -21,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('pembayaran', function (Blueprint $table) {
-            $table->dropColumn('nominal_inklusi');
-        });
+        Schema::dropIfExists('inklusi');
     }
 };

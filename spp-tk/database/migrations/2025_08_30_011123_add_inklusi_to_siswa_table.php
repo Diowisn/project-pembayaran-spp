@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('spp', function (Blueprint $table) {
-            $table->integer('nominal_inklusi')->nullable()->after('nominal_fullday');
+        Schema::table('siswa', function (Blueprint $table) {
+            $table->boolean('inklusi')->default(false)->after('id_kelas');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('spp', function (Blueprint $table) {
-            $table->dropColumn('nominal_inklusi');
+        Schema::table('siswa', function (Blueprint $table) {
+            $table->dropColumn('inklusi');
         });
     }
 };

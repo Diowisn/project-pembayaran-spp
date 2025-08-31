@@ -187,6 +187,12 @@
                                             <span class="hide-menu">Data Infaq Gedung</span>
                                         </a>
                                     </li>
+                                    <li class="sidebar-item">
+                                        <a href="{{ url('dashboard/data-inklusi') }}" class="sidebar-link">
+                                            <i class="mdi mdi-cash-usd"></i>
+                                            <span class="hide-menu">Data Inklusi</span>
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
                         @endif

@@ -72,32 +72,13 @@ class PembayaranController extends Controller
         //
     }
 
-    // public function getSiswaByNisn($nisn)
-    // {
-    //     $siswa = Siswa::with('spp')->where('nisn', $nisn)->first();
-
-    //     if (!$siswa) {
-    //         return response()->json(['message' => 'Siswa tidak ditemukan'], 404);
-    //     }
-
-    //     return response()->json([
-    //         'data' => [
-    //             'id_siswa' => $siswa->id,
-    //             'nama' => $siswa->nama,
-    //             'nominal_spp' => $siswa->spp->nominal_spp ?? 0,
-    //             'nominal_konsumsi' => $siswa->spp->nominal_konsumsi ?? 0,
-    //             'nominal_fullday' => $siswa->spp->nominal_fullday ?? 0,
-    //         ]
-    //     ]);
-    // }
-
     public function cariSiswa(Request $request)
     {
         $request->validate([
             'nisn' => 'required|exists:siswa,nisn'
         ]);
 
-        $siswa = Siswa::with('spp')->where('nisn', $request->nisn)->first();
+        $siswa = Siswa::with('spp', 'paketInklusi')->where('nisn', $request->nisn)->first();
 
         return view('dashboard.entri-pembayaran.index', [
             'pembayaran' => Pembayaran::with(['petugas'])->orderBy('id', 'DESC')->paginate(10),
@@ -118,7 +99,8 @@ class PembayaranController extends Controller
             'id_siswa' => 'required|exists:siswa,id',
             'nisn' => 'required|exists:siswa,nisn',
             'bulan' => 'required|string',
-            'nominal_pembayaran' => 'required|numeric|min:'.$request->jumlah_tagihan,
+            'nominal_konsumsi' => 'nullable|numeric|min:0',
+            'nominal_pembayaran' => 'required|numeric|min:0',
             'jumlah_tagihan' => 'required|numeric'
         ], [
             'bulan.required' => 'Bulan pembayaran harus dipilih',
@@ -136,12 +118,24 @@ class PembayaranController extends Controller
         try {
             DB::beginTransaction();
 
-            $siswa = Siswa::with('spp')->findOrFail($request->id_siswa);
+            $siswa = Siswa::with(['spp', 'paketInklusi'])->findOrFail($request->id_siswa);
             
             $bulan = strtolower($request->bulan);
             $tahun = $request->tahun ?? date('Y');
             
-            $total_tagihan = $request->jumlah_tagihan;
+            $nominal_inklusi = 0;
+            if ($siswa->inklusi && $siswa->paketInklusi) {
+                $nominal_inklusi = $siswa->paketInklusi->nominal;
+            }
+
+            $nominal_konsumsi = $request->nominal_konsumsi ?? $siswa->spp->nominal_konsumsi ?? 0;
+            
+            $total_tagihan = $siswa->spp->nominal_spp + 
+                            // ($siswa->spp->nominal_konsumsi ?? 0) + 
+                            $nominal_konsumsi +
+                            ($siswa->spp->nominal_fullday ?? 0) +
+                            $nominal_inklusi;
+
             $kembalian = $request->nominal_pembayaran - $total_tagihan;
             $is_lunas = $kembalian >= 0; 
 
@@ -153,9 +147,10 @@ class PembayaranController extends Controller
                 'bulan' => $bulan,
                 'tahun' => $tahun,
                 'nominal_spp' => $siswa->spp->nominal_spp,
-                'nominal_konsumsi' => $siswa->spp->nominal_konsumsi ?? 0,
+                // 'nominal_konsumsi' => $siswa->spp->nominal_konsumsi ?? 0,
+                'nominal_konsumsi' => $nominal_konsumsi,
                 'nominal_fullday' => $siswa->spp->nominal_fullday ?? 0,
-                'nominal_inklusi' => $siswa->spp->nominal_inklusi ?? 0,
+                'nominal_inklusi' => $nominal_inklusi,
                 'jumlah_bayar' => $request->nominal_pembayaran,
                 'kembalian' => $is_lunas ? $kembalian : 0,
                 'tgl_bayar' => now(),
@@ -244,10 +239,8 @@ class PembayaranController extends Controller
 
         $validator = Validator::make($request->all(), [
             'bulan' => 'required',
-            'jumlah_bayar' => 'required|numeric|min:'.($pembayaran->nominal_spp + 
-                            ($pembayaran->nominal_konsumsi ?? 0) + 
-                            ($pembayaran->nominal_fullday ?? 0) +
-                            ($pembayaran->nominal_inklusi ?? 0)),
+            'nominal_konsumsi' => 'nullable|numeric|min:0',
+            'jumlah_bayar' => 'required|numeric|min:'.($request->jumlah_tagihan),
             'tgl_bayar' => 'required|date',
             'is_lunas' => 'required|boolean'
         ], $messages);
@@ -262,10 +255,12 @@ class PembayaranController extends Controller
         try {
             DB::beginTransaction();
 
+            $nominal_konsumsi = $request->nominal_konsumsi ?? $pembayaran->nominal_konsumsi;
+            
             $total_tagihan = $pembayaran->nominal_spp + 
-                            ($pembayaran->nominal_konsumsi ?? 0) + 
-                            ($pembayaran->nominal_fullday ?? 0) +
-                            ($pembayaran->nominal_inklusi ?? 0);
+                            $nominal_konsumsi + 
+                            $pembayaran->nominal_fullday +
+                            $pembayaran->nominal_inklusi;
             
             $kembalian = $request->jumlah_bayar - $total_tagihan;
             $is_lunas = $kembalian >= 0; 
@@ -273,6 +268,7 @@ class PembayaranController extends Controller
 
             $pembayaran->update([
                 'bulan' => $request->bulan,
+                'nominal_konsumsi' => $nominal_konsumsi,
                 'jumlah_bayar' => $request->jumlah_bayar,
                 'tgl_bayar' => $request->tgl_bayar,
                 'is_lunas' => $request->is_lunas,
@@ -290,7 +286,6 @@ class PembayaranController extends Controller
                     ]);
                 } else {
                     $saldo_terakhir = Tabungan::where('id_siswa', $pembayaran->id_siswa)
-                        ->where('id', '!=', $tabungan ? $tabungan->id : null)
                         ->latest()
                         ->first();
                     

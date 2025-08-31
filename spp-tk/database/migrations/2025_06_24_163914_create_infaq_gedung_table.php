@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-Schema::create('infaq_gedung', function (Blueprint $table) {
-    $table->bigIncrements('id');
-    $table->string('paket', 1); // A, B, C
-    $table->integer('nominal');
-    $table->integer('jumlah_angsuran')->default(12); // default 1 tahun
-    $table->integer('nominal_per_angsuran');
-    $table->timestamps();
-});
+        Schema::create('infaq_gedung', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('paket', 1); // A, B, C
+            $table->integer('nominal');
+            $table->integer('jumlah_angsuran')->default(12); // default 1 tahun
+            $table->integer('nominal_per_angsuran');
+            $table->timestamps();
+        });
     }
 
     /**

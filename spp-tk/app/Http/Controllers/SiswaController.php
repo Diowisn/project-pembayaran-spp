@@ -8,6 +8,7 @@ use App\Models\Siswa;
 use App\Models\Kelas;
 use App\Models\Spp;
 use App\Models\InfaqGedung;
+use App\Models\Inklusi;
 use Illuminate\Support\Facades\Log;
 use Alert;
 
@@ -29,7 +30,10 @@ class SiswaController extends Controller
     public function index(Request $request)
     {
         $query = Siswa::with(['kelas', 'spp', 'infaqGedung']);
-
+        
+        // Menentukan jumlah item per halaman (default 10)
+        $perPage = $request->get('per_page', 10);
+        
         if ($request->filled('kelas_id')) {
             $query->where('id_kelas', $request->kelas_id);
         }
@@ -50,38 +54,10 @@ class SiswaController extends Controller
 
         return view('dashboard.data-siswa.index', [
             'user' => User::find(auth()->user()->id),
-            'siswa' => $query->paginate(10)->appends($request->all()),
+            'siswa' => $query->paginate($perPage)->appends($request->all()),
             'allKelas' => Kelas::all(),
         ]);
     }
-
-// public function getSppByKelas($id_kelas)
-// {
-//     try {
-//         $spp = Spp::with('kelas')
-//             ->where('id_kelas', $id_kelas)
-//             ->select('id', 'nominal_spp', 'tahun', 'nominal_konsumsi', 'nominal_fullday', 'id_kelas')
-//             ->get();
-            
-//         if($spp->isEmpty()) {
-//             return response()->json([
-//                 'status' => 'empty',
-//                 'message' => 'Tidak ada SPP tersedia untuk kelas ini'
-//             ]);
-//         }
-        
-//         return response()->json([
-//             'status' => 'success',
-//             'data' => $spp
-//         ]);
-        
-//     } catch (\Exception $e) {
-//         return response()->json([
-//             'status' => 'error',
-//             'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-//         ], 500);
-//     }
-// }
 
     /**
      * Show the form for creating a new resource.
@@ -95,6 +71,7 @@ class SiswaController extends Controller
             'kelas' => Kelas::all(),
             'spp' => Spp::with('kelas')->get(),
             'infaq' => InfaqGedung::all(), 
+            'inklusi' => Inklusi::all(),
         ];
     
         return view('dashboard.data-siswa.create', $data);
@@ -119,9 +96,10 @@ class SiswaController extends Controller
         
         $validasi = $request->validate([
             'nisn' => 'required|numeric|unique:siswa,nisn|digits:8',
-            // 'nis' => 'required|numeric|unique:siswa,nis|digits:8',
             'nama' => 'required|max:35',
             'id_kelas' => 'required|integer|exists:kelas,id',
+            'inklusi' => 'nullable|boolean',
+            'id_inklusi' => 'nullable|integer|exists:inklusi,id',
             'nomor_telp' => 'required|numeric',
             'alamat' => 'required',
             'id_infaq_gedung' => 'nullable|integer|exists:infaq_gedung,id',
@@ -131,9 +109,10 @@ class SiswaController extends Controller
         try {
             $siswa = Siswa::create([
                 'nisn' => $request->nisn,
-                // 'nis' => $request->nis,
                 'nama' => $request->nama,
                 'id_kelas' => $request->id_kelas, 
+                'inklusi' => $request->has('inklusi'),
+                'id_inklusi' => $request->id_inklusi,
                 'nomor_telp' => $request->nomor_telp,
                 'alamat' => $request->alamat,
                 'id_infaq_gedung' => $request->id_infaq_gedung,
@@ -173,6 +152,7 @@ class SiswaController extends Controller
             'kelas' => Kelas::all(),
             'spp' => Spp::all(),
             'infaq' => InfaqGedung::all(),
+            'inklusi' => Inklusi::all(),
         ];
       
         return view('dashboard.data-siswa.edit', $data);
@@ -198,9 +178,10 @@ class SiswaController extends Controller
         
         $validasi = $request->validate([
             'nisn' => 'required|numeric|digits:8|unique:siswa,nisn,'.$id,
-            // 'nis' => 'required|numeric|digits:8|unique:siswa,nis,'.$id,
             'nama' => 'required|max:50',
             'id_kelas' => 'required|integer|exists:kelas,id',
+            'inklusi' => 'nullable|boolean',
+            'id_inklusi' => 'nullable|integer|exists:inklusi,id',
             'nomor_telp' => 'required|numeric',
             'alamat' => 'required',
             'id_infaq_gedung' => 'nullable|integer|exists:infaq_gedung,id',
@@ -211,9 +192,10 @@ class SiswaController extends Controller
             $siswa = Siswa::findOrFail($id);
             $update = $siswa->update([
                 'nisn' => $request->nisn,
-                // 'nis' => $request->nis,
                 'nama' => $request->nama,
                 'id_kelas' => $request->id_kelas,
+                'inklusi' => $request->has('inklusi'),
+                'id_inklusi' => $request->id_inklusi,
                 'nomor_telp' => $request->nomor_telp,
                 'alamat' => $request->alamat,
                 'id_infaq_gedung' => $request->id_infaq_gedung,
@@ -249,38 +231,4 @@ class SiswaController extends Controller
       
       return back();
     }
-
-    // public function search(Request $request)
-    // {
-    //     $search = $request->q;
-    //     $perPage = 10;
-
-    //     $query = Siswa::with('kelas')->orderBy('nama');
-
-    //     if (!empty($search)) {
-    //         $query->where(function($q) use ($search) {
-    //             $q->where('nisn', 'like', '%'.$search.'%')
-    //             ->orWhere('nama', 'like', '%'.$search.'%');
-    //         });
-    //     } else {
-    //         $query->limit(50);
-    //     }
-
-    //     $siswa = $query->paginate($perPage);
-
-    //     $formattedResults = $siswa->map(function($item) {
-    //         return [
-    //             'id' => $item->id,
-    //             'nama' => $item->nama,
-    //             'nisn' => $item->nisn,
-    //             'kelas' => $item->kelas,
-    //             'text' => $item->nama . ' (NISN: ' . $item->nisn . ')'
-    //         ];
-    //     });
-
-    //     return response()->json([
-    //         "total" => $siswa->total(),
-    //         "data" => $formattedResults
-    //     ]);
-    // }
 }

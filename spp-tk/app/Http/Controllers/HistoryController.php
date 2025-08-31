@@ -21,7 +21,7 @@ class HistoryController extends Controller
     public function index()
     {
         $data = [
-            'pembayaran' => Pembayaran::with(['siswa.kelas', 'siswa.spp'])
+            'pembayaran' => Pembayaran::with(['siswa.kelas', 'siswa.spp', 'siswa.paketInklusi' ])
                             ->orderBy('created_at', 'DESC')
                             ->paginate(15),
             'user' => User::find(auth()->user()->id)

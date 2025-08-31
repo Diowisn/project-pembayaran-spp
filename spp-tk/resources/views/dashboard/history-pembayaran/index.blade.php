@@ -6,16 +6,14 @@
 @endsection
 
 @section('content')
-
     <div class="row">
         <div class="col-md-12">
-
             <div class="card">
                 <div class="card-body">
                     <div class="card-title">Histori Pembayaran SPP</div>
 
                     @foreach ($pembayaran as $value)
-                        <div class="border-top">
+                        <div class="border-top mb-3 p-3">
                             <div class="float-right">
                                 <i class="mdi mdi-check text-success"></i> {{ $value->created_at->format('d M, Y') }}
                             </div>
@@ -24,15 +22,39 @@
                             </div>
                             <div>SPP Bulan <b class="text-capitalize">{{ $value->bulan }}</b></div>
                             <div>=========================</div>
-                            <div>Nominal SPP Rp. {{ $spp = $value->siswa->spp->nominal_spp ?? '-' }}</div>
-                            <div>Nominal Konsumsi Rp. {{ $spp = $value->siswa->spp->nominal_konsumsi ?? '-' }}</div>
-                            <div>Nominal Fullday Rp. {{ $spp = $value->siswa->spp->nominal_fullday ?? '-' }}</div>
-                            <div>Nominal Inklusi Rp. {{ $spp = $value->siswa->spp->nominal_inklusi ?? '-' }}</div>
+                            <div>Nominal SPP: Rp. {{ number_format($value->nominal_spp, 0, ',', '.') }}</div>
+                            
+                            @if($value->nominal_konsumsi > 0)
+                                <div>Nominal Konsumsi: Rp. {{ number_format($value->nominal_konsumsi, 0, ',', '.') }}</div>
+                            @endif
+                            
+                            @if($value->nominal_fullday > 0)
+                                <div>Nominal Fullday: Rp. {{ number_format($value->nominal_fullday, 0, ',', '.') }}</div>
+                            @endif
+                            
+                            @if($value->nominal_inklusi > 0)
+                                <div>Nominal Inklusi: Rp. {{ number_format($value->nominal_inklusi, 0, ',', '.') }}</div>
+                                @if($value->siswa->paketInklusi)
+                                    <small class="text-muted">
+                                        (Paket: {{ $value->siswa->paketInklusi->nama_paket }})
+                                    </small>
+                                @endif
+                            @endif
+                            
                             <div>=========================</div>
-                            <div>Bayar Rp. {{ $bayar = $value->jumlah_bayar }}</div>
-                            <div>Sisa Rp. {{ $spp = $value->kembalian }}</div>
+                            <div>Total Bayar: Rp. {{ number_format($value->jumlah_bayar, 0, ',', '.') }}</div>
+                            <div>Kembalian: Rp. {{ number_format($value->kembalian, 0, ',', '.') }}</div>
+                            <div>Status: 
+                                @if ($value->is_lunas)
+                                    <span class="badge badge-success">Lunas</span>
+                                @else
+                                    <span class="badge badge-warning">Belum Lunas</span>
+                                @endif
+                            </div>
+                            <div>Petugas: {{ $value->petugas->name }}</div>
                         </div>
                     @endforeach
+
                     <!-- Pagination -->
                     @if ($pembayaran->lastPage() != 1)
                         <div class="btn-group float-right">
@@ -53,11 +75,8 @@
                     @if (count($pembayaran) == 0)
                         <div class="text-center">Tidak ada histori pembayaran</div>
                     @endif
-
                 </div>
             </div>
-
         </div>
     </div>
-
 @endsection

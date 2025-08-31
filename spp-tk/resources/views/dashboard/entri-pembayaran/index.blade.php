@@ -55,8 +55,19 @@
                                             <input type="text" class="form-control"
                                                 value="{{ 'Rp ' . number_format($siswa->spp->nominal_konsumsi, 0, ',', '.') }}"
                                                 disabled>
-                                            <input type="hidden" name="nominal_konsumsi"
+                                            <input type="hidden" name="nominal_konsumsi_awal"
                                                 value="{{ $siswa->spp->nominal_konsumsi }}">
+                                            <input type="number" name="nominal_konsumsi"
+                                                class="form-control @error('nominal_konsumsi') is-invalid @enderror"
+                                                value="{{ old('nominal_konsumsi', $siswa->spp->nominal_konsumsi) }}"
+                                                min="0" max="{{ $siswa->spp->nominal_konsumsi }}"
+                                                onchange="hitungTotal()">
+                                            <small class="text-muted">Bisa dikurangi jika ada pengembalian</small>
+                                            <span class="text-danger">
+                                                @error('nominal_konsumsi')
+                                                    {{ $message }}
+                                                @enderror
+                                            </span>
                                         </div>
                                     </div>
                                 @endif
@@ -73,16 +84,16 @@
                                         </div>
                                     </div>
                                 @endif
-                            
-                                @if (isset($siswa) && $siswa->spp->nominal_inklusi > 0)
+
+                                @if (isset($siswa) && $siswa->inklusi && $siswa->paketInklusi)
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Nominal Inklusi</label>
                                             <input type="text" class="form-control"
-                                                value="{{ 'Rp ' . number_format($siswa->spp->nominal_inklusi, 0, ',', '.') }}"
+                                                value="{{ 'Rp ' . number_format($siswa->paketInklusi->nominal, 0, ',', '.') }}"
                                                 disabled>
                                             <input type="hidden" name="nominal_inklusi"
-                                                value="{{ $siswa->spp->nominal_inklusi }}">
+                                                value="{{ $siswa->paketInklusi->nominal }}">
                                         </div>
                                     </div>
                                 @endif
@@ -90,11 +101,16 @@
 
                             @if ($siswa)
                                 @php
+
+                                    $nominal_inklusi = 0;
+                                    if ($siswa->inklusi && $siswa->paketInklusi) {
+                                        $nominal_inklusi = $siswa->paketInklusi->nominal;
+                                    }
                                     $total_bayar =
-                                            $siswa->spp->nominal_spp +
-                                            ($siswa->spp->nominal_konsumsi ?? 0) +
-                                            ($siswa->spp->nominal_fullday ?? 0) +
-                                            ($siswa->spp->nominal_inklusi ?? 0);
+                                        $siswa->spp->nominal_spp +
+                                        ($siswa->spp->nominal_konsumsi ?? 0) +
+                                        ($siswa->spp->nominal_fullday ?? 0) +
+                                        $nominal_inklusi;
                                 @endphp
 
                                 <div class="form-group">
@@ -110,19 +126,19 @@
                                         required>
                                         <option value="">Pilih Bulan</option>
                                         @foreach ([
-                                            'januari' => 'Januari',
-                                            'februari' => 'Februari',
-                                            'maret' => 'Maret',
-                                            'april' => 'April',
-                                            'mei' => 'Mei',
-                                            'juni' => 'Juni',
-                                            'juli' => 'Juli',
-                                            'agustus' => 'Agustus',
-                                            'september' => 'September',
-                                            'oktober' => 'Oktober',
-                                            'november' => 'November',
-                                            'desember' => 'Desember'
-                                        ]  as $bulan)
+                                                    'januari' => 'Januari',
+                                                    'februari' => 'Februari',
+                                                    'maret' => 'Maret',
+                                                    'april' => 'April',
+                                                    'mei' => 'Mei',
+                                                    'juni' => 'Juni',
+                                                    'juli' => 'Juli',
+                                                    'agustus' => 'Agustus',
+                                                    'september' => 'September',
+                                                    'oktober' => 'Oktober',
+                                                    'november' => 'November',
+                                                    'desember' => 'Desember',
+                                                ] as $bulan)
                                             <option value="{{ $bulan }}"
                                                 {{ old('bulan') == $bulan ? 'selected' : '' }}>
                                                 {{ ucfirst($bulan) }}
@@ -140,8 +156,8 @@
                                     <label>Jumlah Uang Dibayarkan</label>
                                     <input type="number"
                                         class="form-control @error('nominal_pembayaran') is-invalid @enderror"
-                                        name="nominal_pembayaran" value="{{ old('nominal_pembayaran') }}" required
-                                        min="{{ $total_bayar }}">
+                                        name="nominal_pembayaran" value="{{ old('nominal_pembayaran') }}" required>
+                                    <small class="text-muted">Pembayaran harus sesuai dengan nominal atau lebih dari nominal</small>
                                     <span class="text-danger">
                                         @error('nominal_pembayaran')
                                             {{ $message }}
@@ -166,8 +182,8 @@
             <div class="card mb-3">
                 <div class="card-body">
                     <form method="GET" action="{{ route('entry-pembayaran.index') }}" class="form-inline">
-                        <input type="text" name="search" class="form-control mr-2" placeholder="Cari NISN / Nama Siswa"
-                            value="{{ request('search') }}">
+                        <input type="text" name="search" class="form-control mr-2"
+                            placeholder="Cari NISN / Nama Siswa" value="{{ request('search') }}">
                         <button type="submit" class="btn btn-primary mr-2">Cari</button>
 
                         @if (request()->has('search'))
@@ -236,10 +252,10 @@
                                         <td>{{ $value->siswa->nama }}</td>
                                         <td>Rp
                                             {{ number_format(
-                                                $value->nominal_spp + 
-                                                ($value->nominal_konsumsi ?? 0) + 
-                                                ($value->nominal_fullday ?? 0) +
-                                                ($value->nominal_inklusi ?? 0),
+                                                $value->nominal_spp +
+                                                    ($value->nominal_konsumsi ?? 0) +
+                                                    ($value->nominal_fullday ?? 0) +
+                                                    ($value->nominal_inklusi ?? 0),
                                                 0,
                                                 ',',
                                                 '.',
@@ -249,10 +265,26 @@
                                         <td>Rp {{ number_format($value->kembalian, 0, ',', '.') }}</td>
                                         <td> {{ ucfirst($value->bulan) }}</td>
                                         <td>
+                                            @php
+                                                $total_tagihan = $value->nominal_spp + 
+                                                                ($value->nominal_konsumsi ?? 0) + 
+                                                                ($value->nominal_fullday ?? 0) +
+                                                                ($value->nominal_inklusi ?? 0);
+                                                $kekurangan = max(0, $total_tagihan - $value->jumlah_bayar);
+                                                $kelebihan = max(0, $value->jumlah_bayar - $total_tagihan);
+                                            @endphp
+                                            
                                             @if ($value->is_lunas)
-                                                <span class="badge badge-success">Lunas</span>
+                                                @if ($kelebihan > 0)
+                                                    {{-- <span class="badge badge-info">Lunas (+Rp {{ number_format($kelebihan, 0, ',', '.') }})</span> --}}
+                                                    <span class="badge badge-info">Lunas</span>
+                                                @else
+                                                    <span class="badge badge-success">Lunas</span>
+                                                @endif
                                             @else
                                                 <span class="badge badge-warning">Belum Lunas</span>
+                                                <br>
+                                                <small class="text-danger">Kurang: Rp {{ number_format($kekurangan, 0, ',', '.') }}</small>
                                             @endif
                                         </td>
                                         <td>{{ $value->created_at->format('d M, Y') }}</td>
@@ -350,5 +382,36 @@
             form.action = "{{ route('pembayaran.cari-siswa', ['nisn' => '']) }}/" + nisn;
             form.submit();
         }
+
+        function hitungTotal() {
+            const nominalSpp = parseFloat(document.querySelector('input[name="nominal_spp"]').value) || 0;
+            const nominalKonsumsi = parseFloat(document.querySelector('input[name="nominal_konsumsi"]').value) || 0;
+            const nominalFullday = parseFloat(document.querySelector('input[name="nominal_fullday"]').value) || 0;
+            const nominalInklusi = parseFloat(document.querySelector('input[name="nominal_inklusi"]').value) || 0;
+
+            const totalTagihan = nominalSpp + nominalKonsumsi + nominalFullday + nominalInklusi;
+
+            document.getElementById('total_tagihan').value = 'Rp ' + totalTagihan.toLocaleString('id-ID');
+            document.getElementById('jumlah_tagihan').value = totalTagihan;
+
+            // Update minimum payment
+            const nominalPembayaran = document.getElementById('nominal_pembayaran');
+            nominalPembayaran.min = totalTagihan;
+
+            if (parseFloat(nominalPembayaran.value) < totalTagihan) {
+                nominalPembayaran.value = totalTagihan;
+            }
+        }
+
+        // Inisialisasi saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            hitungTotal();
+
+            // Event listener untuk input konsumsi
+            const konsumsiInput = document.querySelector('input[name="nominal_konsumsi"]');
+            if (konsumsiInput) {
+                konsumsiInput.addEventListener('input', hitungTotal);
+            }
+        });
     </script>
 @endsection

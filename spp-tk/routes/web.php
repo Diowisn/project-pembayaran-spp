@@ -17,6 +17,7 @@ use App\Http\Controllers\TabunganController;
 use App\Http\Controllers\UangTahunanController;
 use App\Http\Controllers\KegiatanController;
 use App\Http\Controllers\KegiatanSiswaController;
+use App\Http\Controllers\InklusiController;
 // use App\Models\Tabungan;
 
 /*
@@ -55,6 +56,7 @@ Route::resource('/dashboard/data-siswa', SiswaController::class)->names([
     'destroy' => 'data-siswa.destroy'
 ]);
 
+Route::resource('/dashboard/data-inklusi', InklusiController::class);
 Route::resource('/dashboard/data-kelas', KelasController::class);
 Route::resource('/dashboard/data-spp', SppController::class);
 Route::resource('/dashboard/data-petugas', PetugasController::class);

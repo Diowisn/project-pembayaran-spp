@@ -9,20 +9,20 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
-        Schema::table('kelas', function (Blueprint $table) {
-            $table->boolean('has_inklusi')->default(false)->after('has_fullday');
+        Schema::table('pembayaran', function (Blueprint $table) {
+            $table->integer('nominal_inklusi')->default(0)->after('nominal_fullday');
         });
     }
 
     /**
      * Reverse the migrations.
      */
-    public function down()
+    public function down(): void
     {
-        Schema::table('kelas', function (Blueprint $table) {
-            $table->dropColumn('has_inklusi');
+        Schema::table('pembayaran', function (Blueprint $table) {
+            //
         });
     }
 };

@@ -102,6 +102,33 @@
                         </select>
                     </div>
 
+                    <div class="form-group">
+                        <label>Status Inklusi</label>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="inklusi" name="inklusi" value="1"
+                                {{ old('inklusi', $siswa->inklusi ?? 0) == 1 ? 'checked' : '' }}>
+                            <label class="custom-control-label" for="inklusi">
+                                Siswa Inklusi (Anak Berkebutuhan Khusus)
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">
+                            Centang jika siswa termasuk anak berkebutuhan khusus
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Paket Inklusi (Opsional)</label>
+                        <select name="id_inklusi" class="form-control">
+                            <option value="">Pilih Paket Inklusi (Jika Siswa Inklusi)</option>
+                            @foreach ($inklusi as $item)
+                                <option value="{{ $item->id }}"
+                                    {{ $siswa->id_inklusi == $item->id ? 'selected' : '' }}>
+                                    {{ $item->nama_paket }} - Rp {{ number_format($item->nominal, 0, ',', '.') }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <div class="border-top">
                         <button type="submit" class="btn btn-success btn-rounded float-right mt-3">
                             <i class="mdi mdi-check"></i> {{ __('Simpan') }}

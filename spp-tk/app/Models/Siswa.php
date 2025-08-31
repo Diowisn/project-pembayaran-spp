@@ -10,8 +10,7 @@ class Siswa extends Model
     protected $primaryKey = 'id';
     protected $fillable = [
         'nisn', 'nama', 'password', 'id_kelas', 'id_spp',
-        'alamat', 'nomor_telp', 'id_infaq_gedung'
-        //  'nis', 
+        'alamat', 'nomor_telp', 'id_infaq_gedung', 'inklusi', 'id_inklusi'
     ];
 
     public function kelas()
@@ -54,5 +53,10 @@ class Siswa extends Model
     public function kegiatanSiswa()
     {
         return $this->hasMany(KegiatanSiswa::class, 'siswa_id');
+    }
+
+    public function paketInklusi()
+    {
+        return $this->belongsTo(Inklusi::class, 'id_inklusi');
     }
 }

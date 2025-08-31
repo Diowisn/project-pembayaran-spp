@@ -14,7 +14,7 @@ class Spp extends Model
         'nominal_spp',
         'nominal_konsumsi',
         'nominal_fullday',
-        'nominal_inklusi',
+        // 'nominal_inklusi',
         'id_infaq_gedung' 
     ];
 

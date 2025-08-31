@@ -13,9 +13,13 @@
                 <div class="card-body">
                     <div class="card-title">Edit Pembayaran</div>
 
-                    <form method="post" action="{{ route('entry-pembayaran.update', $edit->id) }}">
+                    <form method="post" action="{{ route('entry-pembayaran.update', $edit->id) }}" id="pembayaranForm">
                         @csrf
                         @method('put')
+
+                        <input type="hidden" name="nominal_spp" value="{{ $edit->nominal_spp }}">
+                        <input type="hidden" name="nominal_fullday" value="{{ $edit->nominal_fullday }}">
+                        <input type="hidden" name="nominal_inklusi" value="{{ $edit->nominal_inklusi }}">
 
                         <div class="form-group">
                             <label>NISN Siswa</label>
@@ -41,12 +45,26 @@
                                         value="Rp {{ number_format($edit->nominal_spp, 0, ',', '.') }}" readonly>
                                 </div>
                             </div>
-                            @if ($edit->nominal_konsumsi > 0)
+                            @if ($edit->siswa->spp->nominal_konsumsi > 0)
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Konsumsi</label>
-                                        <input type="text" class="form-control"
-                                            value="Rp {{ number_format($edit->nominal_konsumsi, 0, ',', '.') }}" readonly>
+                                        <input type="text" class="form-control mb-2"
+                                            value="Rp {{ number_format($edit->siswa->spp->nominal_konsumsi, 0, ',', '.') }}" 
+                                            readonly>
+                                        <small class="text-muted">Nominal Awal</small>
+                                        
+                                        <input type="number" name="nominal_konsumsi" 
+                                            class="form-control @error('nominal_konsumsi') is-invalid @enderror"
+                                            value="{{ old('nominal_konsumsi', $edit->nominal_konsumsi) }}"
+                                            min="0" max="{{ $edit->siswa->spp->nominal_konsumsi }}"
+                                            onchange="hitungTotal()">
+                                        <small class="text-muted">Bisa dikurangi jika ada pengembalian</small>
+                                        <span class="text-danger">
+                                            @error('nominal_konsumsi')
+                                                {{ $message }}
+                                            @enderror
+                                        </span>
                                     </div>
                                 </div>
                             @endif
@@ -72,17 +90,19 @@
 
                         <div class="form-group">
                             <label>Total Tagihan</label>
-                            <input type="text" class="form-control"
+                            <input type="text" class="form-control" id="total_tagihan"
                                 value="Rp {{ number_format(
                                     $edit->nominal_spp + 
-                                    ($edit->nominal_konsumsi ?? 0) + 
-                                    ($edit->nominal_fullday ?? 0) +
-                                    ($edit->nominal_inklusi ?? 0),
+                                    $edit->nominal_konsumsi + 
+                                    $edit->nominal_fullday +
+                                    $edit->nominal_inklusi,
                                     0,
                                     ',',
                                     '.',
                                 ) }}"
                                 readonly>
+                            <input type="hidden" name="jumlah_tagihan" id="jumlah_tagihan" 
+                                value="{{ $edit->nominal_spp + $edit->nominal_konsumsi + $edit->nominal_fullday + $edit->nominal_inklusi }}">
                         </div>
 
                         <div class="form-group">
@@ -106,14 +126,23 @@
                         <div class="form-group">
                             <label>Jumlah Bayar</label>
                             <input type="number" class="form-control @error('jumlah_bayar') is-invalid @enderror"
-                                name="jumlah_bayar" value="{{ old('jumlah_bayar', $edit->jumlah_bayar) }}"
-                                min="{{ $edit->nominal_spp + ($edit->nominal_konsumsi ?? 0) + ($edit->nominal_fullday ?? 0) }}"
+                                name="jumlah_bayar" id="jumlah_bayar" 
+                                value="{{ old('jumlah_bayar', $edit->jumlah_bayar) }}"
+                                min="{{ $edit->nominal_spp + $edit->nominal_konsumsi + $edit->nominal_fullday + $edit->nominal_inklusi }}"
+                                oninput="hitungKembalian()"
                                 required>
                             <span class="text-danger">
                                 @error('jumlah_bayar')
                                     {{ $message }}
                                 @enderror
                             </span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Kembalian</label>
+                            <input type="text" class="form-control" id="kembalian"
+                                value="Rp {{ number_format($edit->kembalian, 0, ',', '.') }}" readonly>
+                            <input type="hidden" name="kembalian" id="kembalian_value" value="{{ $edit->kembalian }}">
                         </div>
 
                         <div class="form-group">
@@ -130,7 +159,7 @@
 
                         <div class="form-group">
                             <label>Status</label>
-                            <select class="form-control @error('is_lunas') is-invalid @enderror" name="is_lunas">
+                            <select class="form-control @error('is_lunas') is-invalid @enderror" name="is_lunas" id="is_lunas">
                                 <option value="1" {{ old('is_lunas', $edit->is_lunas) ? 'selected' : '' }}>Lunas
                                 </option>
                                 <option value="0" {{ !old('is_lunas', $edit->is_lunas) ? 'selected' : '' }}>Belum
@@ -154,4 +183,62 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script>
+    function hitungTotal() {
+        const nominalSpp = parseFloat(document.querySelector('input[name="nominal_spp"]').value) || 0;
+        const nominalKonsumsi = parseFloat(document.querySelector('input[name="nominal_konsumsi"]').value) || 0;
+        const nominalFullday = parseFloat(document.querySelector('input[name="nominal_fullday"]').value) || 0;
+        const nominalInklusi = parseFloat(document.querySelector('input[name="nominal_inklusi"]').value) || 0;
+        
+        const totalTagihan = nominalSpp + nominalKonsumsi + nominalFullday + nominalInklusi;
+        
+        document.getElementById('total_tagihan').value = 'Rp ' + totalTagihan.toLocaleString('id-ID');
+        document.getElementById('jumlah_tagihan').value = totalTagihan;
+        
+        // Update minimum payment
+        const jumlahBayar = document.getElementById('jumlah_bayar');
+        jumlahBayar.min = totalTagihan;
+        
+        if (parseFloat(jumlahBayar.value) < totalTagihan) {
+            jumlahBayar.value = totalTagihan;
+        }
+        
+        // Hitung kembalian
+        hitungKembalian();
+    }
+
+    function hitungKembalian() {
+        const totalTagihan = parseFloat(document.getElementById('jumlah_tagihan').value) || 0;
+        const jumlahBayar = parseFloat(document.getElementById('jumlah_bayar').value) || 0;
+        
+        const kembalian = Math.max(0, jumlahBayar - totalTagihan);
+        
+        document.getElementById('kembalian').value = 'Rp ' + kembalian.toLocaleString('id-ID');
+        document.getElementById('kembalian_value').value = kembalian;
+        
+        // Update status lunas
+        const isLunas = document.getElementById('is_lunas');
+        isLunas.value = jumlahBayar >= totalTagihan ? '1' : '0';
+    }
+
+    // Inisialisasi saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        hitungTotal();
+        
+        // Event listener untuk input konsumsi
+        const konsumsiInput = document.querySelector('input[name="nominal_konsumsi"]');
+        if (konsumsiInput) {
+            konsumsiInput.addEventListener('input', hitungTotal);
+        }
+        
+        // Event listener untuk input jumlah bayar
+        const jumlahBayarInput = document.getElementById('jumlah_bayar');
+        if (jumlahBayarInput) {
+            jumlahBayarInput.addEventListener('input', hitungKembalian);
+        }
+    });
+    </script>
 @endsection
