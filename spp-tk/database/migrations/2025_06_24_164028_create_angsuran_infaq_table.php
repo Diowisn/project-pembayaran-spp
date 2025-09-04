@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-Schema::create('angsuran_infaq', function (Blueprint $table) {
-    $table->bigIncrements('id');
-    $table->bigInteger('id_siswa')->unsigned();
-    $table->foreign('id_siswa')->references('id')->on('siswa');
-    $table->integer('angsuran_ke');
-    $table->integer('jumlah_bayar');
-    $table->date('tgl_bayar');
-    $table->timestamps();
-});
+        Schema::create('angsuran_infaq', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->bigInteger('id_siswa')->unsigned();
+            $table->foreign('id_siswa')->references('id')->on('siswa');
+            $table->integer('angsuran_ke');
+            $table->integer('jumlah_bayar');
+            $table->date('tgl_bayar');
+            $table->timestamps();
+        });
     }
 
     /**

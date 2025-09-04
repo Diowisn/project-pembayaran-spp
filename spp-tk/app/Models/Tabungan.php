@@ -26,4 +26,9 @@ class Tabungan extends Model
     {
         return $this->belongsTo(User::class, 'id_petugas');
     }
+
+    public function pembayaranKegiatan()
+    {
+        return $this->belongsTo(SiswaKegiatan::class, 'id_pembayaran_kegiatan');
+    }
 }

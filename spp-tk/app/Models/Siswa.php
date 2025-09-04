@@ -52,7 +52,14 @@ class Siswa extends Model
 
     public function kegiatanSiswa()
     {
-        return $this->hasMany(KegiatanSiswa::class, 'siswa_id');
+        return $this->hasMany(SiswaKegiatan::class, 'id_siswa');
+    }
+
+    public function kegiatanTahunan()
+    {
+        return $this->belongsToMany(KegiatanTahunan::class, 'siswa_kegiatan', 'id_siswa', 'id_kegiatan')
+                    ->withPivot('angsuran_ke', 'jumlah_bayar', 'tgl_bayar', 'is_lunas')
+                    ->withTimestamps();
     }
 
     public function paketInklusi()

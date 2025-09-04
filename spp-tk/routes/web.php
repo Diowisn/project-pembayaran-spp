@@ -18,6 +18,7 @@ use App\Http\Controllers\UangTahunanController;
 use App\Http\Controllers\KegiatanController;
 use App\Http\Controllers\KegiatanSiswaController;
 use App\Http\Controllers\InklusiController;
+use App\Http\Controllers\KegiatanTahunanController;
 // use App\Models\Tabungan;
 
 /*
@@ -94,6 +95,41 @@ Route::resource('/dashboard/infaq-gedung', InfaqGedungController::class)->names(
     'destroy' => 'infaq-gedung.destroy',
 ]);
 
+Route::resource('/dashboard/data-kegiatan-tahunan', KegiatanTahunanController::class)->names([
+    'index' => 'data-kegiatan-tahunan.index',
+    'create' => 'data-kegiatan-tahunan.create',
+    'store' => 'data-kegiatan-tahunan.store',
+    'edit' => 'data-kegiatan-tahunan.edit',
+    'update' => 'data-kegiatan-tahunan.update',
+    'destroy' => 'data-kegiatan-tahunan.destroy',
+]);
+
+// Routes untuk Kegiatan Siswa
+Route::resource('/dashboard/entri-kegiatan', KegiatanSiswaController::class)->names([
+    'index' => 'entri-kegiatan.index',
+    'store' => 'entri-kegiatan.store',
+    // 'edit' => 'entri-kegiatan.edit',
+    // 'update' => 'entri-kegiatan.update',
+    'destroy' => 'entri-kegiatan.destroy',
+])->except(['create', 'show', 'edit', 'update']);
+
+Route::get('entri-kegiatan/{id}/edit', [KegiatanSiswaController::class, 'edit'])->name('entri-kegiatan.edit');
+Route::put('entri-kegiatan/{id}', [KegiatanSiswaController::class, 'update'])->name('entri-kegiatan.update');
+Route::get('/dashboard/entri-kegiatan/cari-siswa', [KegiatanSiswaController::class, 'cariSiswa'])
+    ->name('entri-kegiatan.cari-siswa');
+Route::post('/dashboard/entri-kegiatan/{siswaId}/toggle-partisipasi', [KegiatanSiswaController::class, 'togglePartisipasi'])
+    ->name('entri-kegiatan.toggle-partisipasi');
+Route::post('/entri-kegiatan/bayar-semua', [KegiatanSiswaController::class, 'bayarSemua'])
+    ->name('entri-kegiatan.bayar-semua');
+Route::get('/entri-kegiatan/generate-pdf/{id}', [KegiatanSiswaController::class, 'generatePDF'])
+    ->name('entri-kegiatan.generate-pdf');
+Route::get('/entri-kegiatan/generate-rekap-siswa-pdf', [KegiatanSiswaController::class, 'generateRekapSiswaPDF'])
+    ->name('entri-kegiatan.generate-rekap-siswa-pdf');
+
+Route::get('history-kegiatan', [HistoryController::class, 'kegiatan'])->name('history-kegiatan.index');
+Route::get('history-kegiatan/{id}', [HistoryController::class, 'showKegiatan'])->name('history-kegiatan.show');
+Route::delete('history-kegiatan/{id}', [HistoryController::class, 'destroyKegiatan'])->name('history-kegiatan.destroy');
+    
 Route::resource('/dashboard/kegiatan', KegiatanController::class);
 Route::get('/dashboard/entri-kegiatan', [KegiatanSiswaController::class, 'index'])->name('entri-kegiatan.index');
 Route::get('/dashboard/entri-kegiatan/cari-siswa', [KegiatanSiswaController::class, 'cariSiswa'])->name('entri-kegiatan.cari-siswa');

@@ -193,6 +193,12 @@
                                             <span class="hide-menu">Data Inklusi</span>
                                         </a>
                                     </li>
+                                    <li class="sidebar-item">
+                                        <a href="{{ url('dashboard/data-kegiatan-tahunan') }}" class="sidebar-link">
+                                            <i class="mdi mdi-cash-usd"></i>
+                                            <span class="hide-menu">Data Kegiatan Tahunan</span>
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
                         @endif
@@ -223,9 +229,9 @@
                                         </a>
                                     </li>
                                     <li class="sidebar-item">
-                                        <a href="{{ route('uang-tahunan.index') }}" class="sidebar-link">
+                                        <a href="{{ route('entri-kegiatan.index') }}" class="sidebar-link">
                                             <i class="mdi mdi-cash"></i>
-                                            <span class="hide-menu">Entri Uang Kegiatan Tahunan</span>
+                                            <span class="hide-menu">Entri Kegiatan Tahunan</span>
                                         </a>
                                     </li>
                                 </ul>
@@ -256,8 +262,14 @@
                                             <span class="hide-menu">History Tabungan</span>
                                         </a>
                                     </li>
-                                    <li class="sidebar-item">
+                                    {{-- <li class="sidebar-item">
                                         <a href="{{ route('history.uang-tahunan') }}" class="sidebar-link">
+                                            <i class="mdi mdi-note-multiple"></i>
+                                            <span class="hide-menu">History Kegiatan Tahunan</span>
+                                        </a>
+                                    </li> --}}
+                                    <li class="sidebar-item">
+                                        <a href="{{ route('history-kegiatan.index') }}" class="sidebar-link">
                                             <i class="mdi mdi-note-multiple"></i>
                                             <span class="hide-menu">History Kegiatan Tahunan</span>
                                         </a>
