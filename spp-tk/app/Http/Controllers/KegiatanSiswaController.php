@@ -31,7 +31,6 @@ class KegiatanSiswaController extends Controller
         $query = SiswaKegiatan::with(['siswa', 'kegiatan'])
             ->where('partisipasi', 'ikut');
 
-        // Fitur Pencarian
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('siswa', function($q) use ($search) {
@@ -40,7 +39,6 @@ class KegiatanSiswaController extends Controller
             });
         }
 
-        // Fitur Sorting
         if ($request->filled('sort_by') && $request->filled('order')) {
             $validColumns = ['created_at', 'jumlah_bayar', 'angsuran_ke', 'kembalian', 'tgl_bayar'];
             $sortBy = in_array($request->sort_by, $validColumns) ? $request->sort_by : 'created_at';
@@ -148,14 +146,12 @@ class KegiatanSiswaController extends Controller
             
             $siswa = Siswa::where('nisn', $request->nisn)->firstOrFail();
             
-            // Cek apakah siswaId dari route sesuai dengan nisn
             if ($siswa->id != $siswaId) {
                 \Log::error('Siswa ID mismatch: route=' . $siswaId . ', nisn=' . $siswa->id);
                 Alert::error('Error!', 'Data siswa tidak sesuai');
                 return redirect()->route('entri-kegiatan.cari-siswa', ['nisn' => $request->nisn]);
             }
 
-            // Gunakan updateOrCreate untuk memastikan data tersimpan dengan benar
             $siswaKegiatan = SiswaKegiatan::updateOrCreate(
                 [
                     'id_siswa' => $siswa->id,
@@ -187,6 +183,11 @@ class KegiatanSiswaController extends Controller
 
     public function bayarSemua(Request $request)
     {
+        if (!auth()->check()) {
+            Alert::error('Error!', 'User tidak terautentikasi');
+            return redirect()->back();
+        }
+
         $validator = Validator::make($request->all(), [
             'id_siswa' => 'required|exists:siswa,id',
             'nisn' => 'required|exists:siswa,nisn',
@@ -213,25 +214,20 @@ class KegiatanSiswaController extends Controller
             $totalBayar = $request->jumlah_bayar_semua;
             $totalSisa = $request->total_sisa;
             
-            // Hitung kembalian
             $kembalian = max(0, $totalBayar - $totalSisa);
             $sisaDibayarkan = $totalBayar - $kembalian;
 
-            // Distribusikan pembayaran ke setiap kegiatan yang belum lunas
             foreach ($semuaKegiatan as $kegiatan) {
-                // Cek status partisipasi
                 $partisipasi = $siswa->kegiatanSiswa
                     ->where('id_kegiatan', $kegiatan->id)
                     ->first();
                 
                 $statusPartisipasi = $partisipasi ? $partisipasi->partisipasi : 'ikut';
                 
-                // Skip jika tidak ikut
                 if ($statusPartisipasi === 'tidak_ikut') {
                     continue;
                 }
 
-                // Hitung sisa pembayaran untuk kegiatan ini
                 $totalDibayar = $siswa->kegiatanSiswa
                     ->where('id_kegiatan', $kegiatan->id)
                     ->where('partisipasi', 'ikut')
@@ -239,24 +235,19 @@ class KegiatanSiswaController extends Controller
                 
                 $sisaPembayaran = max($kegiatan->nominal - $totalDibayar, 0);
                 
-                // Jika sudah lunas, skip
                 if ($sisaPembayaran <= 0) {
                     continue;
                 }
 
-                // Jika masih ada sisa dana untuk dibayarkan
                 if ($sisaDibayarkan > 0) {
                     $jumlahBayarKegiatan = min($sisaPembayaran, $sisaDibayarkan);
                     
-                    // Hitung angsuran keberapa
                     $angsuranKe = SiswaKegiatan::where('id_siswa', $siswa->id)
                         ->where('id_kegiatan', $kegiatan->id)
                         ->count() + 1;
 
-                    // Tentukan apakah lunas untuk pembayaran ini
                     $isLunasPembayaran = ($jumlahBayarKegiatan >= $sisaPembayaran);
 
-                    // Buat pembayaran
                     $pembayaran = SiswaKegiatan::create([
                         'id_siswa' => $siswa->id,
                         'id_kegiatan' => $kegiatan->id,
@@ -265,17 +256,16 @@ class KegiatanSiswaController extends Controller
                         'jumlah_bayar' => $jumlahBayarKegiatan,
                         'tgl_bayar' => $request->tgl_bayar_semua,
                         'is_lunas' => $isLunasPembayaran,
-                        'kembalian' => 0, // Kembalian dihitung di akhir untuk semua
+                        'kembalian' => 0,
+                        'id_petugas' => auth()->id(),
                     ]);
 
-                    // Update status lunas untuk kegiatan ini
                     $this->updateLunasStatus($siswa->id, $kegiatan->id);
                     
                     $sisaDibayarkan -= $jumlahBayarKegiatan;
                 }
             }
 
-            // Jika ada kembalian, tambahkan ke tabungan dan TAMPILKAN ALERT
             if ($kembalian > 0) {
                 $saldo_terakhir = Tabungan::where('id_siswa', $siswa->id)
                     ->latest()
@@ -293,7 +283,6 @@ class KegiatanSiswaController extends Controller
                     'keterangan' => 'Kembalian pembayaran sekaligus semua kegiatan',
                 ]);
 
-                // TAMBAHKAN FLASH DATA UNTUK MENAMPILKAN KEMBALIAN
                 session()->flash('kembalian_info', [
                     'jumlah' => $kembalian,
                     'message' => 'Pembayaran berhasil! Kembalian Rp ' . number_format($kembalian, 0, ',', '.') . ' telah ditambahkan ke tabungan.'
@@ -341,14 +330,12 @@ class KegiatanSiswaController extends Controller
             $siswa = Siswa::findOrFail($request->id_siswa);
             $kegiatan = KegiatanTahunan::findOrFail($request->id_kegiatan);
             
-            // CEK DULU apakah sudah ada record untuk siswa dan kegiatan ini
             $existingRecord = SiswaKegiatan::where('id_siswa', $request->id_siswa)
                 ->where('id_kegiatan', $request->id_kegiatan)
                 ->where('partisipasi', 'ikut')
                 ->first();
 
             if ($existingRecord) {
-                // Jika sudah ada, UPDATE record yang existing
                 $totalDibayarSebelumnya = SiswaKegiatan::where('id_siswa', $request->id_siswa)
                     ->where('id_kegiatan', $request->id_kegiatan)
                     ->sum('jumlah_bayar');
@@ -356,16 +343,13 @@ class KegiatanSiswaController extends Controller
                 $totalDibayarSekarang = $totalDibayarSebelumnya + $request->jumlah_bayar;
                 $isLunas = ($totalDibayarSekarang >= $kegiatan->nominal);
                 
-                // Hitung kembalian
                 $kembalian = $request->jumlah_bayar - $request->jumlah_tagihan;
                 $isLunas = $kembalian >= 0;
 
-                // Hitung angsuran keberapa
                 $angsuranKe = SiswaKegiatan::where('id_siswa', $request->id_siswa)
                     ->where('id_kegiatan', $request->id_kegiatan)
                     ->count() + 1;
 
-                // Buat pembayaran baru (angsuran)
                 $pembayaran = SiswaKegiatan::create([
                     'id_siswa' => $request->id_siswa,
                     'id_kegiatan' => $request->id_kegiatan,
@@ -379,7 +363,6 @@ class KegiatanSiswaController extends Controller
                 ]);
 
             } else {
-                // Jika belum ada, buat record baru
                 $isLunas = ($request->jumlah_bayar >= $kegiatan->nominal);
                 $kembalian = $request->jumlah_bayar - $kegiatan->nominal;
                 
@@ -396,7 +379,6 @@ class KegiatanSiswaController extends Controller
                 ]);
             }
 
-            // Jika ada kembalian, tambahkan ke tabungan
             if ($isLunas && $kembalian > 0) {
                 $saldo_terakhir = Tabungan::where('id_siswa', $request->id_siswa)
                     ->latest()
@@ -416,7 +398,6 @@ class KegiatanSiswaController extends Controller
                 ]);
             }
 
-            // Update status lunas untuk semua record kegiatan ini
             $this->updateLunasStatus($request->id_siswa, $request->id_kegiatan);
 
             DB::commit();
@@ -471,7 +452,6 @@ class KegiatanSiswaController extends Controller
             DB::beginTransaction();
             \Log::info('Transaction started');
 
-            // Hitung jumlah_tagihan dari kegiatan, bukan dari input
             $jumlah_tagihan = $pembayaran->kegiatan->nominal;
             $kembalian = $request->jumlah_bayar - $jumlah_tagihan;
             $isLunas = $kembalian >= 0;
@@ -494,11 +474,9 @@ class KegiatanSiswaController extends Controller
 
             \Log::info('Pembayaran updated');
 
-            // Update status lunas
             $this->updateLunasStatus($pembayaran->id_siswa, $pembayaran->id_kegiatan);
             \Log::info('Lunas status updated');
 
-            // Kelola tabungan untuk kembalian
             $tabungan = Tabungan::where('id_pembayaran_kegiatan', $pembayaran->id)->first();
             $kembalian_lama = $pembayaran->getOriginal('kembalian') ?? 0;
             
@@ -581,13 +559,12 @@ class KegiatanSiswaController extends Controller
     public function destroy($id)
     {
         try {
-            DB::beginTransaction(); // Mulai transaction
+            DB::beginTransaction(); 
             
             $pembayaran = SiswaKegiatan::findOrFail($id);
             $idSiswa = $pembayaran->id_siswa;
             $idKegiatan = $pembayaran->id_kegiatan;
             
-            // Hapus data tabungan terkait jika ada
             $tabungan = Tabungan::where('id_pembayaran_kegiatan', $pembayaran->id)->first();
             if ($tabungan) {
                 $tabungan->delete();
@@ -601,10 +578,10 @@ class KegiatanSiswaController extends Controller
                 Alert::error('Terjadi Kesalahan!', 'Pembayaran kegiatan gagal dihapus!');
             }
             
-            DB::commit(); // Commit transaction
+            DB::commit(); 
             
         } catch (\Exception $e) {
-            DB::rollBack(); // Rollback transaction jika error
+            DB::rollBack(); 
             Alert::error('Terjadi Kesalahan!', 'Pembayaran kegiatan gagal dihapus!');
         }
         
@@ -619,7 +596,6 @@ class KegiatanSiswaController extends Controller
         $tanggal = Carbon::now()->format('d-m-Y');
         $pembayaran = SiswaKegiatan::with(['siswa', 'siswa.kelas', 'kegiatan'])->findOrFail($id);
 
-        // Pastikan path gambar sesuai dengan struktur project Anda
         $logoPath = public_path('img/amanah31.png');
         $websitePath = public_path('img/icons/website.png');
         $instagramPath = public_path('img/icons/instagram.png');
@@ -628,7 +604,6 @@ class KegiatanSiswaController extends Controller
         $whatsappPath = public_path('img/icons/whatsapp.png');
         $barcodePath = public_path('img/barcode/barcode-ita.png');
 
-        // Convert images to base64
         $logoData = base64_encode(file_get_contents($logoPath));
         $websiteData = base64_encode(file_get_contents($websitePath));
         $instagramData = base64_encode(file_get_contents($instagramPath));
@@ -667,12 +642,10 @@ class KegiatanSiswaController extends Controller
         $user = Auth::user();
         $tanggal = Carbon::now()->format('d-m-Y');
 
-        // Validasi NISN
         $request->validate([
             'nisn' => 'required|exists:siswa,nisn'
         ]);
 
-        // Ambil data siswa dan pembayaran
         $siswa = Siswa::with(['kelas', 'kegiatanSiswa.kegiatan'])->where('nisn', $request->nisn)->firstOrFail();
         
         $pembayaran = SiswaKegiatan::with(['kegiatan'])
@@ -681,12 +654,11 @@ class KegiatanSiswaController extends Controller
             ->orderBy('tgl_bayar', 'asc')
             ->get();
 
-        // Hitung total seperti di method cariSiswa
         $semuaKegiatan = KegiatanTahunan::all();
         $detailKegiatan = [];
-        $totalTagihanKegiatan = 0; // PERBAIKAN: Gunakan camelCase
-        $totalDibayarSemua = 0;    // PERBAIKAN: Gunakan camelCase
-        $sisaSemua = 0;            // PERBAIKAN: Gunakan camelCase
+        $totalTagihanKegiatan = 0; 
+        $totalDibayarSemua = 0;    
+        $sisaSemua = 0;            
 
         foreach ($semuaKegiatan as $kegiatan) {
             $partisipasi = $siswa->kegiatanSiswa

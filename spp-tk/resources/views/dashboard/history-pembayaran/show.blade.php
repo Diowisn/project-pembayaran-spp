@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
 
 @section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{ route('history-kegiatan.index') }}">Histori Kegiatan</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('history-pembayaran.index') }}">Histori Pembayaran</a></li>
     <li class="breadcrumb-item active">Detail Pembayaran</li>
 @endsection
 
@@ -10,7 +10,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
-                    <div class="card-title">Detail Pembayaran Kegiatan</div>
+                    <div class="card-title">Detail Pembayaran SPP</div>
 
                     <div class="row">
                         <div class="col-md-6">
@@ -27,21 +27,21 @@
                                     <th>Kelas</th>
                                     <td>{{ $pembayaran->siswa->kelas->nama_kelas ?? '-' }}</td>
                                 </tr>
+                                <tr>
+                                    <th>Bulan/Tahun</th>
+                                    <td>{{ ucfirst($pembayaran->bulan) }} {{ $pembayaran->tahun }}</td>
+                                </tr>
                             </table>
                         </div>
                         <div class="col-md-6">
                             <table class="table table-bordered">
                                 <tr>
-                                    <th width="40%">Kegiatan</th>
-                                    <td>{{ $pembayaran->kegiatan->nama_kegiatan }}</td>
+                                    <th width="40%">Tanggal Bayar</th>
+                                    <td>{{ $pembayaran->tgl_bayar ? $pembayaran->tgl_bayar->format('d/m/Y H:i') : '-' }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Tanggal Bayar</th>
-                                    <td>{{ $pembayaran->tgl_bayar ? $pembayaran->tgl_bayar->format('d/m/Y') : '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Angsuran Ke</th>
-                                    <td>{{ $pembayaran->angsuran_ke }}</td>
+                                    <th>Petugas</th>
+                                    <td>{{ $pembayaran->petugas->name ?? '-' }}</td>
                                 </tr>
                                 <tr>
                                     <th>Status</th>
@@ -52,10 +52,6 @@
                                             <span class="badge badge-warning">Belum Lunas</span>
                                         @endif
                                     </td>
-                                </tr>
-                                <tr>
-                                    <th>Petugas</th>
-                                    <td>{{ $pembayaran->petugas->name ?? '-' }}</td>
                                 </tr>
                             </table>
                         </div>
@@ -73,12 +69,30 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>Nominal Kegiatan</td>
-                                        <td class="text-right">Rp {{ number_format($pembayaran->kegiatan->nominal, 0, ',', '.') }}</td>
+                                        <td>SPP</td>
+                                        <td class="text-right">Rp {{ number_format($pembayaran->nominal_spp, 0, ',', '.') }}</td>
                                     </tr>
+                                    @if($pembayaran->nominal_konsumsi > 0)
+                                    <tr>
+                                        <td>Konsumsi</td>
+                                        <td class="text-right">Rp {{ number_format($pembayaran->nominal_konsumsi, 0, ',', '.') }}</td>
+                                    </tr>
+                                    @endif
+                                    @if($pembayaran->nominal_fullday > 0)
+                                    <tr>
+                                        <td>Fullday</td>
+                                        <td class="text-right">Rp {{ number_format($pembayaran->nominal_fullday, 0, ',', '.') }}</td>
+                                    </tr>
+                                    @endif
+                                    @if($pembayaran->nominal_inklusi > 0)
+                                    <tr>
+                                        <td>Inklusi</td>
+                                        <td class="text-right">Rp {{ number_format($pembayaran->nominal_inklusi, 0, ',', '.') }}</td>
+                                    </tr>
+                                    @endif
                                     <tr class="table-primary">
                                         <th>Total Tagihan</th>
-                                        <th class="text-right">Rp {{ number_format($pembayaran->kegiatan->nominal, 0, ',', '.') }}</th>
+                                        <th class="text-right">Rp {{ number_format($pembayaran->nominal_spp + $pembayaran->nominal_konsumsi + $pembayaran->nominal_fullday + $pembayaran->nominal_inklusi, 0, ',', '.') }}</th>
                                     </tr>
                                     <tr>
                                         <th>Jumlah Bayar</th>
@@ -88,31 +102,14 @@
                                         <th>Kembalian</th>
                                         <th class="text-right">Rp {{ number_format($pembayaran->kembalian, 0, ',', '.') }}</th>
                                     </tr>
-                                    <tr>
-                                        <th>Total Dibayar</th>
-                                        <th class="text-right">
-                                            @php
-                                                $totalDibayar = \App\Models\SiswaKegiatan::where('id_siswa', $pembayaran->id_siswa)
-                                                    ->where('id_kegiatan', $pembayaran->id_kegiatan)
-                                                    ->sum('jumlah_bayar');
-                                            @endphp
-                                            Rp {{ number_format($totalDibayar, 0, ',', '.') }}
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <th>Sisa Pembayaran</th>
-                                        <th class="text-right {{ ($pembayaran->kegiatan->nominal - $totalDibayar) > 0 ? 'text-danger' : 'text-success' }}">
-                                            Rp {{ number_format(max(0, $pembayaran->kegiatan->nominal - $totalDibayar), 0, ',', '.') }}
-                                        </th>
-                                    </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
                     <div class="mt-3">
-                        <a href="{{ route('history-kegiatan.index') }}" class="btn btn-secondary">Kembali</a>
-                        <a href="{{ route('entri-kegiatan.generate-pdf', $pembayaran->id) }}" class="btn btn-info" target="_blank">
+                        <a href="{{ route('history-pembayaran.index') }}" class="btn btn-secondary">Kembali</a>
+                        <a href="{{ route('pembayaran.generate', $pembayaran->id) }}" class="btn btn-info" target="_blank">
                             <i class="mdi mdi-file-pdf"></i> Download Bukti
                         </a>
                     </div>

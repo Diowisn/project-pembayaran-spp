@@ -13,6 +13,7 @@ use PDF;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PembayaranController extends Controller
 {
@@ -53,8 +54,10 @@ class PembayaranController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
+        $pembayaran = $query->paginate(10)->appends($request->all());
+
         return view('dashboard.entri-pembayaran.index', [
-            'pembayaran' => $query->paginate(10)->appends($request->all()),
+            'pembayaran' => $pembayaran, // Hasil pagination
             'user' => User::find(auth()->user()->id),
             'search' => $request->search ?? '',
             'sort_by' => $request->sort_by ?? 'created_at',
@@ -78,12 +81,68 @@ class PembayaranController extends Controller
             'nisn' => 'required|exists:siswa,nisn'
         ]);
 
-        $siswa = Siswa::with('spp', 'paketInklusi')->where('nisn', $request->nisn)->first();
+        $siswa = Siswa::with(['spp', 'paketInklusi', 'kelas'])->where('nisn', $request->nisn)->first();
+        
+        if (!$siswa) {
+            return redirect()->route('pembayaran.cari-siswa')
+                ->with('error', 'Siswa dengan NISN tersebut tidak ditemukan');
+        }
+        
+        // Hitung total pembayaran SPP per bulan
+        $bulanSekarang = strtolower(date('F'));
+        $tahunSekarang = date('Y');
+        
+        // Cek apakah sudah bayar SPP bulan ini
+        $pembayaranBulanIni = Pembayaran::where('id_siswa', $siswa->id)
+            ->where('bulan', $bulanSekarang)
+            ->where('tahun', $tahunSekarang)
+            ->first();
+        
+        $sudahBayarBulanIni = !is_null($pembayaranBulanIni);
+        
+        // Hitung riwayat pembayaran
+        $riwayatPembayaran = Pembayaran::where('id_siswa', $siswa->id)
+            ->orderBy('tahun', 'desc')
+            ->orderByRaw("FIELD(bulan, 'januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember') DESC")
+            ->get();
+        
+        // Hitung total yang sudah dibayar
+        $totalDibayar = $riwayatPembayaran->sum('jumlah_bayar');
+        
+        // Hitung total tagihan (12 bulan x nominal SPP)
+        $nominal_inklusi = 0;
+        if ($siswa->inklusi && $siswa->paketInklusi) {
+            $nominal_inklusi = $siswa->paketInklusi->nominal;
+        }
+        
+        $tagihanPerBulan = $siswa->spp->nominal_spp + 
+                        ($siswa->spp->nominal_konsumsi ?? 0) + 
+                        ($siswa->spp->nominal_fullday ?? 0) + 
+                        $nominal_inklusi;
+        
+        $totalTagihan = 12 * $tagihanPerBulan;
+        $sisaPembayaran = max(0, $totalTagihan - $totalDibayar);
+
+        // Query untuk data pembayaran (hanya siswa yang dicari)
+        $pembayaranQuery = Pembayaran::with(['petugas', 'siswa'])
+            ->where('id_siswa', $siswa->id)
+            ->orderBy('id', 'DESC');
+
+        $pembayaran = $pembayaranQuery->paginate(10);
 
         return view('dashboard.entri-pembayaran.index', [
-            'pembayaran' => Pembayaran::with(['petugas'])->orderBy('id', 'DESC')->paginate(10),
+            'pembayaran' => $pembayaran, // Ini sudah benar (object pagination)
             'siswa' => $siswa,
-            'user' => User::find(auth()->user()->id)
+            'user' => User::find(auth()->user()->id),
+            'sudah_bayar_bulan_ini' => $sudahBayarBulanIni,
+            'riwayat_pembayaran' => $riwayatPembayaran,
+            'total_dibayar' => $totalDibayar,
+            'total_tagihan' => $totalTagihan,
+            'sisa_pembayaran' => $sisaPembayaran,
+            'tagihan_per_bulan' => $tagihanPerBulan,
+            'pembayaran_bulan_ini' => $pembayaranBulanIni,
+            'nisn_search' => $request->nisn,
+            'show_payment_form' => true // Tambahkan flag untuk menampilkan form pembayaran
         ]);
     }
 
@@ -352,38 +411,104 @@ class PembayaranController extends Controller
 
     public function generate($id)
     {
-        ini_set('max_execution_time', 300);
-        
-        $user = Auth::user();
-        $tanggal = Carbon::now()->format('d-m-Y');
-        $pembayaran = Pembayaran::with(['siswa', 'siswa.kelas', 'petugas'])->findOrFail($id);
+        try {
+            $user = Auth::user();
+            $tanggal = Carbon::now()->format('d-m-Y');
+            $pembayaran = Pembayaran::with(['siswa', 'siswa.kelas', 'petugas'])->findOrFail($id);
 
-        $logoPath = public_path('img/amanah31.png');
-        $websitePath = public_path('img/icons/website.png');
-        $instagramPath = public_path('img/icons/instagram.png');
-        $facebookPath = public_path('img/icons/facebook.png');
-        $youtubePath = public_path('img/icons/youtube.png');
-        $whatsappPath = public_path('img/icons/whatsapp.png');
-        $barcodePath = public_path('img/barcode/barcode-ita.png');
+            // Load logo dan icon
+            $logoPath = public_path('img/amanah31.png');
+            $websitePath = public_path('img/icons/website.png');
+            $instagramPath = public_path('img/icons/instagram.png');
+            $facebookPath = public_path('img/icons/facebook.png');
+            $youtubePath = public_path('img/icons/youtube.png');
+            $whatsappPath = public_path('img/icons/whatsapp.png');
+            $barcodePath = public_path('img/barcode/barcode-ita.png');
 
-        $logoData = base64_encode(file_get_contents($logoPath));
-        $websiteData = base64_encode(file_get_contents($websitePath));
-        $instagramData = base64_encode(file_get_contents($instagramPath));
-        $facebookData = base64_encode(file_get_contents($facebookPath));
-        $youtubeData = base64_encode(file_get_contents($youtubePath));
-        $whatsappData = base64_encode(file_get_contents($whatsappPath));
-        $barcodeData = base64_encode(file_get_contents($barcodePath));
+            // Convert images to base64
+            $logoData = base64_encode(file_get_contents($logoPath));
+            $websiteData = base64_encode(file_get_contents($websitePath));
+            $instagramData = base64_encode(file_get_contents($instagramPath));
+            $facebookData = base64_encode(file_get_contents($facebookPath));
+            $youtubeData = base64_encode(file_get_contents($youtubePath));
+            $whatsappData = base64_encode(file_get_contents($whatsappPath));
+            $barcodeData = base64_encode(file_get_contents($barcodePath));
 
+            $pdf = PDF::loadView('pdf.bukti-pembayaran', compact(
+                'pembayaran', 
+                'logoData', 
+                'websiteData', 
+                'instagramData', 
+                'facebookData', 
+                'youtubeData', 
+                'whatsappData', 
+                'barcodeData', 
+                'user',
+                'tanggal'
+            ))
+            ->setPaper('a5', 'portrait')
+            ->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'dpi' => 150,
+            ]);
 
-        $pdf = PDF::loadView('pdf.bukti', compact('pembayaran', 'logoData', 'websiteData', 'instagramData', 'facebookData', 'youtubeData', 'whatsappData', 'barcodeData', 'user'))
-                ->setPaper('a5', 'portrait')
+            $namaFile = 'Bukti-Pembayaran-SPP-' . $pembayaran->siswa->nama . '-' . $tanggal . '.pdf';
+            
+            return $pdf->download($namaFile);
+            
+        } catch (\Exception $e) {
+            Log::error('Error generating PDF: ' . $e->getMessage());
+            Alert::error('Error', 'Gagal menghasilkan PDF: ' . $e->getMessage());
+            return back();
+        }
+    }
+
+    public function generateRiwayat($siswaId)
+    {
+        try {
+            $siswa = Siswa::with(['kelas'])->findOrFail($siswaId);
+            $riwayatPembayaran = Pembayaran::where('id_siswa', $siswaId)
+                ->with('petugas') // Eager load petugas
+                ->orderBy('tahun', 'desc')
+                ->orderByRaw("FIELD(bulan, 'januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember') DESC")
+                ->get();
+
+            $tanggal = Carbon::now()->format('d-m-Y');
+            
+            // Load logo dan icon
+            $logoPath = public_path('img/amanah31.png');
+            $websitePath = public_path('img/icons/website.png');
+            $instagramPath = public_path('img/icons/instagram.png');
+            $facebookPath = public_path('img/icons/facebook.png');
+            $youtubePath = public_path('img/icons/youtube.png');
+            $whatsappPath = public_path('img/icons/whatsapp.png');
+            $barcodePath = public_path('img/barcode/barcode-ita.png');
+
+            // Convert images to base64
+            $logoData = base64_encode(file_get_contents($logoPath));
+            $websiteData = base64_encode(file_get_contents($websitePath));
+            $instagramData = base64_encode(file_get_contents($instagramPath));
+            $facebookData = base64_encode(file_get_contents($facebookPath));
+            $youtubeData = base64_encode(file_get_contents($youtubePath));
+            $whatsappData = base64_encode(file_get_contents($whatsappPath));
+            $barcodeData = base64_encode(file_get_contents($barcodePath));
+
+            $pdf = PDF::loadView('pdf.rekap-pembayaran-spp', compact('siswa', 'riwayatPembayaran', 'logoData', 'tanggal', 'websiteData', 'instagramData', 'facebookData', 'youtubeData', 'whatsappData', 'barcodeData'))
+                ->setPaper('a4', 'portrait')
                 ->setOptions([
                     'isHtml5ParserEnabled' => true,
                     'isRemoteEnabled' => true,
                     'dpi' => 150,
                 ]);
 
-        $namaFile = 'Bukti-Pembayaran-SPP-' . $pembayaran->siswa->nama . '-' . $tanggal . '.pdf';
-        return $pdf->download($namaFile);
+            $namaFile = 'Rekap-Pembayaran-SPP-' . $siswa->nama . '-' . $tanggal . '.pdf';
+            return $pdf->download($namaFile);
+            
+        } catch (\Exception $e) {
+            Log::error('Error generating riwayat PDF: ' . $e->getMessage());
+            Alert::error('Error', 'Gagal menghasilkan PDF riwayat: ' . $e->getMessage());
+            return back();
+        }
     }
 }

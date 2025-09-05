@@ -245,7 +245,7 @@
                                 </a>
                                 <ul aria-expanded="false" class="collapse first-level">
                                     <li class="sidebar-item">
-                                        <a href="{{ route('histori.spp') }}" class="sidebar-link">
+                                        <a href="{{ route('history-pembayaran.index') }}" class="sidebar-link"> 
                                             <i class="mdi mdi-note-multiple"></i>
                                             <span class="hide-menu">History SPP</span>
                                         </a>

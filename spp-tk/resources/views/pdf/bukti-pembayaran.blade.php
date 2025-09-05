@@ -31,11 +31,6 @@
             margin-bottom: 5px;
         }
 
-        .header-left h2 {
-            margin: 2px 0;
-            font-size: 16px;
-        }
-
         .header-left p {
             margin: 2px 0;
             font-size: 11px;
@@ -93,12 +88,14 @@
             float: right;
             text-align: center;
         }
+
         .footer .right img {
             width: 100px;
             height: auto;
             margin: 0 auto 5px;
             display: block;
         }
+
         .clearfix::after {
             content: "";
             clear: both;
@@ -112,7 +109,6 @@
     <div class="header">
         <div class="header-left">
             <img src="data:image/png;base64,{{ $logoData }}" style="width: 200px; height: auto; display: block; margin-bottom: 10px;" alt="Logo Sekolah">
-            {{-- <h2>Assakiinah - SPP</h2> --}}
             <p style="font-size: 12px">Jl. Raya Ngawi-Solo KM 33 Dadung RT. 1/11, Sambirejo, Mantingan, Ngawi</p>
             <p style="margin-top: 6px; font-size: 12px; line-height: 1.6;">
                 <span style="margin-right: 3px;">
@@ -136,8 +132,7 @@
                         style="width:14px; height:14px; vertical-align: text-bottom; margin-right:4px;"> +62 851 6258 6667
                 </span>
             </p>
-            <br>
-            <br>
+            <br><br>
         </div>
         <div class="header-right">
             Bukti Pembayaran SPP
@@ -146,22 +141,32 @@
 
     <table class="info-table">
         <tr>
-            <td width="25%">NISN</td>
-            <td width="25%">: {{ $pembayaran->siswa->nisn }}</td>
             <td width="25%">Tanggal Pembayaran</td>
-            <td width="25%">: {{ $pembayaran->tgl_bayar->format('d F Y') }}</td>
+            <td width="25%">: {{ $pembayaran->tgl_bayar ? $pembayaran->tgl_bayar->format('d F Y') : $pembayaran->created_at->format('d F Y') }}</td>
+            <td width="25%">Status</td>
+            <td width="25%">:
+                @if ($pembayaran->is_lunas)
+                    <span class="status-lunas">LUNAS</span>
+                @else
+                    <span class="status-belum">BELUM LUNAS</span>
+                @endif
+            </td>
         </tr>
         <tr>
+            <td>NISN</td>
+            <td>: {{ $pembayaran->siswa->nisn }}</td>
             <td>Nama</td>
             <td>: {{ $pembayaran->siswa->nama }}</td>
-            <td>Tahun Ajaran</td>
-            <td>: {{ $pembayaran->tahun }}/{{ $pembayaran->tahun + 1 }}</td>
         </tr>
         <tr>
             <td>Kelas</td>
-            <td>: {{ $pembayaran->siswa->kelas->nama_kelas }}</td>
-            <td></td>
-            <td></td>
+            <td>: {{ $pembayaran->siswa->kelas->nama_kelas ?? '-' }}</td>
+            <td>Bulan</td>
+            <td>: {{ ucfirst($pembayaran->bulan) }} {{ $pembayaran->tahun }}</td>
+        </tr>
+        <tr>
+            <td>Petugas</td>
+            <td colspan="3">: {{ $pembayaran->petugas->name ?? 'Administrator' }}</td>
         </tr>
     </table>
 
@@ -179,8 +184,7 @@
         <tbody>
             <tr>
                 <td>1</td>
-                <td>SPP - T.A {{ $pembayaran->tahun }}/{{ $pembayaran->tahun + 1 }} - ({{ ucfirst($pembayaran->bulan) }}
-                    {{ $pembayaran->tahun }})</td>
+                <td>SPP - T.A {{ $pembayaran->tahun }}/{{ $pembayaran->tahun + 1 }} - ({{ ucfirst($pembayaran->bulan) }} {{ $pembayaran->tahun }})</td>
                 <td>Rp. {{ number_format($pembayaran->nominal_spp, 0, ',', '.') }}</td>
                 <td>Rp. {{ number_format($pembayaran->nominal_spp, 0, ',', '.') }}</td>
             </tr>
@@ -201,6 +205,14 @@
                     <td>Rp. {{ number_format($pembayaran->nominal_fullday, 0, ',', '.') }}</td>
                 </tr>
             @endif
+            @if ($pembayaran->nominal_inklusi > 0)
+                <tr>
+                    <td>{{ $no++ }}</td>
+                    <td>Inklusi - T.A {{ $pembayaran->tahun }}/{{ $pembayaran->tahun + 1 }}</td>
+                    <td>Rp. {{ number_format($pembayaran->nominal_inklusi, 0, ',', '.') }}</td>
+                    <td>Rp. {{ number_format($pembayaran->nominal_inklusi, 0, ',', '.') }}</td>
+                </tr>
+            @endif
         </tbody>
     </table>
 
@@ -218,5 +230,4 @@
     </div>
 
 </body>
-
 </html>

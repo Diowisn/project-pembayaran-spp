@@ -20,16 +20,63 @@ class HistoryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        $query = Pembayaran::with(['siswa.kelas', 'siswa.spp', 'siswa.paketInklusi', 'petugas'])
+                    ->orderBy('created_at', 'DESC');
+
+        // Filter berdasarkan pencarian
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->whereHas('siswa', function($q) use ($search) {
+                $q->where('nisn', 'like', "%{$search}%")
+                  ->orWhere('nama', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter berdasarkan kelas
+        if ($request->has('kelas') && !empty($request->kelas)) {
+            $query->whereHas('siswa.kelas', function($q) use ($request) {
+                $q->where('id', $request->kelas);
+            });
+        }
+
+        // Filter berdasarkan bulan
+        if ($request->has('bulan') && !empty($request->bulan)) {
+            $query->where('bulan', $request->bulan);
+        }
+
+        // Filter berdasarkan tahun
+        if ($request->has('tahun') && !empty($request->tahun)) {
+            $query->where('tahun', $request->tahun);
+        }
+
+        // Filter berdasarkan status
+        if ($request->has('status') && !empty($request->status)) {
+            if ($request->status == 'lunas') {
+                $query->where('is_lunas', true);
+            } elseif ($request->status == 'belum') {
+                $query->where('is_lunas', false);
+            }
+        }
+
         $data = [
-            'pembayaran' => Pembayaran::with(['siswa.kelas', 'siswa.spp', 'siswa.paketInklusi' ])
-                            ->orderBy('created_at', 'DESC')
-                            ->paginate(15),
-            'user' => User::find(auth()->user()->id)
+            'pembayaran' => $query->paginate(15),
+            'user' => User::find(auth()->user()->id),
+            'kelasList' => Kelas::all(),
         ];
          
         return view('dashboard.history-pembayaran.index', $data);
+    }
+
+    public function show($id)
+    {
+        $pembayaran = Pembayaran::with(['siswa.kelas', 'siswa.spp', 'siswa.paketInklusi', 'petugas'])->findOrFail($id);
+        
+        return view('dashboard.history-pembayaran.show', [
+            'pembayaran' => $pembayaran,
+            'user' => User::find(auth()->user()->id)
+        ]);
     }
 
     /**
@@ -164,39 +211,6 @@ class HistoryController extends Controller
     }
 
     /**
-     * Remove kegiatan payment
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroyKegiatan($id)
-    {
-        try {
-            $pembayaran = SiswaKegiatan::findOrFail($id);
-            
-            // Hapus data tabungan terkait jika ada
-            $tabungan = \App\Models\Tabungan::where('id_pembayaran_kegiatan', $pembayaran->id)->first();
-            if ($tabungan) {
-                $tabungan->delete();
-            }
-            
-            if($pembayaran->delete()) {
-                // Update status lunas
-                $this->updateLunasStatus($pembayaran->id_siswa, $pembayaran->id_kegiatan);
-                
-                Alert::success('Berhasil!', 'Pembayaran kegiatan berhasil dihapus!');
-            } else {
-                Alert::error('Terjadi Kesalahan!', 'Pembayaran kegiatan gagal dihapus!');
-            }
-            
-        } catch (\Exception $e) {
-            Alert::error('Terjadi Kesalahan!', 'Pembayaran kegiatan gagal dihapus!');
-        }
-        
-        return back();
-    }
-
-    /**
      * Update lunas status for kegiatan
      */
     private function updateLunasStatus($idSiswa, $idKegiatan)
@@ -243,17 +257,6 @@ class HistoryController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @param  int  $id
@@ -276,14 +279,4 @@ class HistoryController extends Controller
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
 }

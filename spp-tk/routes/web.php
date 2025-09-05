@@ -73,6 +73,8 @@ Route::resource('/dashboard/pembayaran', PembayaranController::class)->names([
     'update' => 'entry-pembayaran.update',
     'destroy' => 'entry-pembayaran.destroy'
 ]);
+Route::get('/pembayaran/{id}/generate-pdf', [PembayaranController::class, 'generate'])->name('pembayaran.generate-pdf');
+Route::get('/pembayaran/siswa/{siswaId}/rekap-pdf', [PembayaranController::class, 'generateRiwayat'])->name('pembayaran.rekap-siswa');
 
 Route::get('/dashboard/infaq/cari', [InfaqController::class, 'cariSiswa'])->name('infaq.cari-siswa');
 
@@ -139,7 +141,9 @@ Route::get('/dashboard/entri-kegiatan/{id}/edit', [KegiatanSiswaController::clas
 Route::put('/dashboard/entri-kegiatan/{id}', [KegiatanSiswaController::class, 'update'])->name('entri-kegiatan.update');
 Route::delete('/dashboard/entri-kegiatan/{id}', [KegiatanSiswaController::class, 'destroy'])->name('entri-kegiatan.destroy');
 
-Route::get('histori', [HistoryController::class, 'index'])->name('histori.spp');
+Route::get('/history-pembayaran', [HistoryController::class, 'index'])->name('history-pembayaran.index');
+Route::get('/history-pembayaran/{id}', [HistoryController::class, 'show'])->name('history-pembayaran.show');
+
 Route::get('histori-infaq', [HistoryController::class, 'infaq'])->name('histori.infaq');
 Route::get('/history-tabungan', [TabunganController::class, 'histori'])->name('histori.tabungan');
 Route::get('/dashboard/history/uang-tahunan', [HistoryController::class, 'uangTahunan'])->name('history.uang-tahunan');
