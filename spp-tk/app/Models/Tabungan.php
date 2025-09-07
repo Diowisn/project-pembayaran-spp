@@ -8,7 +8,7 @@ class Tabungan extends Model
 {
     protected $table = 'tabungan';
     protected $fillable = [
-        'id_siswa', 'id_pembayaran', 'id_petugas',
+        'id_siswa', 'id_pembayaran', 'id_pembayaran_infaq', 'id_petugas',
         'debit', 'kredit', 'saldo', 'keterangan'
     ];
 

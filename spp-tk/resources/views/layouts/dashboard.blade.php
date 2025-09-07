@@ -219,7 +219,7 @@
                                     <li class="sidebar-item">
                                         <a href="{{ url('dashboard/infaq') }}" class="sidebar-link">
                                             <i class="mdi mdi-cash"></i>
-                                            <span class="hide-menu">Entri Infaq</span>
+                                            <span class="hide-menu">Entri Infaq Gedung</span>
                                         </a>
                                     </li>
                                     <li class="sidebar-item">
@@ -251,9 +251,9 @@
                                         </a>
                                     </li>
                                     <li class="sidebar-item">
-                                        <a href="{{ route('histori.infaq') }}" class="sidebar-link">
+                                        <a href="{{ route('history-infaq.index') }}" class="sidebar-link">
                                             <i class="mdi mdi-note-multiple"></i>
-                                            <span class="hide-menu">History Infaq</span>
+                                            <span class="hide-menu">History Infaq Gedung</span>
                                         </a>
                                     </li>
                                     <li class="sidebar-item">

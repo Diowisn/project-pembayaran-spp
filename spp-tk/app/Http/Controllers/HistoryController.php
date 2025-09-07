@@ -80,21 +80,135 @@ class HistoryController extends Controller
     }
 
     /**
-     * Display infaq payment history
+     * Display infaq payment history with filters
      *
      * @return \Illuminate\Http\Response
      */
-    public function infaq()
+    public function infaq(Request $request)
     {
+        $query = AngsuranInfaq::with(['siswa.kelas', 'infaqGedung', 'petugas'])
+                    ->orderBy('created_at', 'DESC');
+
+        // Filter berdasarkan pencarian
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->whereHas('siswa', function($q) use ($search) {
+                $q->where('nisn', 'like', "%{$search}%")
+                ->orWhere('nama', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter berdasarkan kelas
+        if ($request->has('kelas') && !empty($request->kelas)) {
+            $query->whereHas('siswa.kelas', function($q) use ($request) {
+                $q->where('id', $request->kelas);
+            });
+        }
+
+        // Filter berdasarkan status
+        if ($request->has('status') && !empty($request->status)) {
+            if ($request->status == 'lunas') {
+                $query->where('is_lunas', true);
+            } elseif ($request->status == 'belum') {
+                $query->where('is_lunas', false);
+            }
+        }
+
+        // Filter berdasarkan tahun
+        if ($request->has('tahun') && !empty($request->tahun)) {
+            $query->whereYear('tgl_bayar', $request->tahun);
+        }
+
         $data = [
-            'infaqHistori' => AngsuranInfaq::with(['siswa.kelas', 'infaqGedung'])
-                            ->orderBy('created_at', 'DESC')
-                            ->paginate(15),
+            'infaqHistori' => $query->paginate(15)->appends($request->all()),
             'user' => User::find(auth()->user()->id),
-            'kelasList' => Kelas::all()
+            'kelasList' => Kelas::all(),
+            'search' => $request->search,
+            'kelas' => $request->kelas,
+            'status' => $request->status,
+            'tahun' => $request->tahun
         ];
         
         return view('dashboard.history-infaq.index', $data);
+    }
+
+    /**
+     * Show detail infaq payment
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function showInfaq($id)
+    {
+        $pembayaran = AngsuranInfaq::with(['siswa.kelas', 'infaqGedung', 'petugas'])
+                        ->findOrFail($id);
+        
+        // Hitung total pembayaran dan sisa
+        $totalDibayar = AngsuranInfaq::where('id_siswa', $pembayaran->id_siswa)->sum('jumlah_bayar');
+        $totalTagihan = $pembayaran->infaqGedung->nominal ?? 0;
+        $sisaPembayaran = max(0, $totalTagihan - $totalDibayar);
+        
+        return view('dashboard.history-infaq.show', [
+            'pembayaran' => $pembayaran,
+            'total_dibayar' => $totalDibayar,
+            'total_tagihan' => $totalTagihan,
+            'sisa_pembayaran' => $sisaPembayaran,
+            'user' => User::find(auth()->user()->id)
+        ]);
+    }
+
+    /**
+     * Remove infaq payment
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroyInfaq($id)
+    {
+        try {
+            DB::beginTransaction();
+            
+            $angsuran = AngsuranInfaq::findOrFail($id);
+            $idSiswa = $angsuran->id_siswa;
+            
+            // Hapus record tabungan terkait jika ada
+            $tabungan = Tabungan::where('id_pembayaran_infaq', $angsuran->id)->first();
+            if ($tabungan) {
+                $tabungan->delete();
+            }
+            
+            if($angsuran->delete()) {
+                // Update status lunas
+                $this->updateLunasStatusInfaq($idSiswa);
+                
+                Alert::success('Berhasil!', 'Pembayaran infaq berhasil dihapus!');
+            } else {
+                Alert::error('Terjadi Kesalahan!', 'Pembayaran infaq gagal dihapus!');
+            }
+            
+            DB::commit();
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Alert::error('Terjadi Kesalahan!', 'Pembayaran infaq gagal dihapus!');
+        }
+        
+        return back();
+    }
+
+    /**
+     * Update lunas status for infaq
+     */
+    private function updateLunasStatusInfaq($idSiswa)
+    {
+        $totalDibayar = AngsuranInfaq::where('id_siswa', $idSiswa)->sum('jumlah_bayar');
+        $siswa = Siswa::with('infaqGedung')->find($idSiswa);
+        $totalTagihan = $siswa->infaqGedung->nominal ?? 0;
+        $isLunas = ($totalDibayar >= $totalTagihan);
+        
+        AngsuranInfaq::where('id_siswa', $idSiswa)->update(['is_lunas' => $isLunas]);
+        
+        return $isLunas;
     }
 
     /**

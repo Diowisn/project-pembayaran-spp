@@ -77,6 +77,7 @@ Route::get('/pembayaran/{id}/generate-pdf', [PembayaranController::class, 'gener
 Route::get('/pembayaran/siswa/{siswaId}/rekap-pdf', [PembayaranController::class, 'generateRiwayat'])->name('pembayaran.rekap-siswa');
 
 Route::get('/dashboard/infaq/cari', [InfaqController::class, 'cariSiswa'])->name('infaq.cari-siswa');
+Route::get('/infaq/rekap/{siswaId}', [InfaqController::class, 'generateRiwayatInfaq'])->name('infaq.rekap');
 
 Route::resource('/dashboard/infaq', InfaqController::class)->names([
     'index' => 'infaq.index',
@@ -144,7 +145,10 @@ Route::delete('/dashboard/entri-kegiatan/{id}', [KegiatanSiswaController::class,
 Route::get('/history-pembayaran', [HistoryController::class, 'index'])->name('history-pembayaran.index');
 Route::get('/history-pembayaran/{id}', [HistoryController::class, 'show'])->name('history-pembayaran.show');
 
-Route::get('histori-infaq', [HistoryController::class, 'infaq'])->name('histori.infaq');
+Route::get('/history-infaq', [HistoryController::class, 'infaq'])->name('history-infaq.index');
+Route::get('/history-infaq/{id}', [HistoryController::class, 'showInfaq'])->name('history-infaq.show');
+Route::delete('/history-infaq/{id}', [HistoryController::class, 'destroyInfaq'])->name('history-infaq.destroy');
+
 Route::get('/history-tabungan', [TabunganController::class, 'histori'])->name('histori.tabungan');
 Route::get('/dashboard/history/uang-tahunan', [HistoryController::class, 'uangTahunan'])->name('history.uang-tahunan');
 

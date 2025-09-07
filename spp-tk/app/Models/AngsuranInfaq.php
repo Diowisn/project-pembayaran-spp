@@ -8,7 +8,7 @@ class AngsuranInfaq extends Model
 {
     protected $table = 'angsuran_infaq';
     protected $fillable = [
-        'id_siswa', 'angsuran_ke', 'jumlah_bayar', 'tgl_bayar'
+        'id_siswa', 'angsuran_ke', 'jumlah_bayar', 'tgl_bayar', 'kembalian', 'id_petugas'
     ];
 
     protected $casts = [
@@ -30,5 +30,10 @@ class AngsuranInfaq extends Model
             'id_siswa', // Local key on angsuran_infaq table
             'id_infaq_gedung' // Local key on siswa table
         );
+    }
+
+    public function petugas()
+    {
+        return $this->belongsTo(User::class, 'id_petugas');
     }
 }
