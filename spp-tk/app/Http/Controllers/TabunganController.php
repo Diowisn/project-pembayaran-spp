@@ -28,29 +28,55 @@ class TabunganController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+        $nisn_search = $request->input('nisn_search');
         
-        // Debug - tampilkan parameter search
-        Log::debug('Search parameter:', ['search' => $search]);
-        
-        $tabungan = Tabungan::with(['siswa', 'petugas', 'pembayaran'])
-            ->when($search, function($query) use ($search) {
-                return $query->whereHas('siswa', function($q) use ($search) {
-                    $q->where('nisn', 'like', "%{$search}%")
-                    ->orWhere('nama', 'like', "%{$search}%");
-                });
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        // Query untuk data tabungan semua siswa dengan saldo terakhir
+        $query = Siswa::with(['kelas'])
+            ->select('siswa.*')
+            ->leftJoinSub(
+                Tabungan::select('id_siswa', DB::raw('MAX(created_at) as last_transaction'), DB::raw('MAX(saldo) as last_balance'))
+                    ->groupBy('id_siswa'),
+                'last_tabungan',
+                function ($join) {
+                    $join->on('siswa.id', '=', 'last_tabungan.id_siswa');
+                }
+            );
 
-        // Debug - tampilkan data yang diambil
-        Log::debug('Tabungan data:', ['count' => $tabungan->count()]);
-        
+        // Filter berdasarkan pencarian umum
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('siswa.nisn', 'like', "%{$search}%")
+                  ->orWhere('siswa.nama', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter berdasarkan NISN spesifik (setelah pencarian dengan form NISN)
+        if ($nisn_search) {
+            $query->where('siswa.nisn', $nisn_search);
+        }
+
+        $tabunganAll = $query->orderBy('siswa.nama')->paginate(10);
+
+        // Tambahkan data saldo dan transaksi terakhir
+        $tabunganAll->getCollection()->transform(function ($siswa) {
+            $saldoTerakhir = Tabungan::where('id_siswa', $siswa->id)
+                ->latest()
+                ->first();
+                
+            $siswa->saldo_terakhir = $saldoTerakhir ? $saldoTerakhir->saldo : 0;
+            $siswa->transaksi_terakhir = $saldoTerakhir ? $saldoTerakhir->created_at : null;
+            
+            return $siswa;
+        });
+
         return view('dashboard.tabungan.index', [
-            'tabungan' => $tabungan,
+            'tabungan' => $tabunganAll,
             'search' => $search,
+            'nisn_search' => $nisn_search,
             'user' => auth()->user()
         ]);
     }
+
 
     /**
      * Show form for manual savings input
@@ -65,12 +91,78 @@ class TabunganController extends Controller
     }
 
     /**
-     * Process manual savings input
+     * Cari siswa berdasarkan NISN untuk tabungan
      */
-    public function storeManual(Request $request)
+    public function cariSiswa(Request $request)
+    {
+        $request->validate([
+            'nisn' => 'required|exists:siswa,nisn'
+        ]);
+
+        $siswa = Siswa::with(['kelas'])->where('nisn', $request->nisn)->first();
+        
+        if (!$siswa) {
+            return redirect()->route('tabungan.index')
+                ->with('error', 'Siswa dengan NISN tersebut tidak ditemukan');
+        }
+        
+        // Hitung saldo terakhir
+        $saldoTerakhir = Tabungan::where('id_siswa', $siswa->id)
+            ->latest()
+            ->first();
+        
+        $saldo = $saldoTerakhir ? $saldoTerakhir->saldo : 0;
+        
+        // Ambil riwayat transaksi
+        $riwayatTabungan = Tabungan::where('id_siswa', $siswa->id)
+            ->with('petugas')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        // Query untuk data tabungan - HANYA siswa yang dicari
+        $query = Siswa::with(['kelas'])
+            ->select('siswa.*')
+            ->leftJoinSub(
+                Tabungan::select('id_siswa', DB::raw('MAX(created_at) as last_transaction'), DB::raw('MAX(saldo) as last_balance'))
+                    ->groupBy('id_siswa'),
+                'last_tabungan',
+                function ($join) {
+                    $join->on('siswa.id', '=', 'last_tabungan.id_siswa');
+                }
+            )
+            ->where('siswa.nisn', $request->nisn);
+
+        $tabunganSiswa = $query->orderBy('siswa.nama')->paginate(10);
+
+        $tabunganSiswa->getCollection()->transform(function ($siswaItem) {
+            $saldoTerakhirItem = Tabungan::where('id_siswa', $siswaItem->id)
+                ->latest()
+                ->first();
+                
+            $siswaItem->saldo_terakhir = $saldoTerakhirItem ? $saldoTerakhirItem->saldo : 0;
+            $siswaItem->transaksi_terakhir = $saldoTerakhirItem ? $saldoTerakhirItem->created_at : null;
+            
+            return $siswaItem;
+        });
+
+        return view('dashboard.tabungan.index', [
+            'tabungan' => $tabunganSiswa,
+            'siswa' => $siswa,
+            'saldo' => $saldo,
+            'riwayat_tabungan' => $riwayatTabungan,
+            'nisn_search' => $request->nisn,
+            'user' => auth()->user()
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
     {
         $request->validate([
             'id_siswa' => 'required|exists:siswa,id',
+            'tipe' => 'required|in:debit,kredit',
             'jumlah' => 'required|numeric|min:1',
             'keterangan' => 'required|string|max:255'
         ]);
@@ -80,31 +172,46 @@ class TabunganController extends Controller
 
             $siswa = Siswa::findOrFail($request->id_siswa);
             
+            // Dapatkan saldo terakhir
             $saldo_terakhir = Tabungan::where('id_siswa', $request->id_siswa)
                 ->latest()
                 ->first();
             
             $saldo_sebelumnya = $saldo_terakhir ? $saldo_terakhir->saldo : 0;
-            $saldo_sekarang = $saldo_sebelumnya + $request->jumlah;
+            
+            if ($request->tipe === 'debit') {
+                $debit = $request->jumlah;
+                $kredit = 0;
+                $saldo_sekarang = $saldo_sebelumnya + $request->jumlah;
+            } else {
+                // Validasi saldo untuk penarikan
+                if ($request->jumlah > $saldo_sebelumnya) {
+                    return back()->withErrors(['jumlah' => 'Saldo tidak mencukupi untuk penarikan ini.'])->withInput();
+                }
+                
+                $debit = 0;
+                $kredit = $request->jumlah;
+                $saldo_sekarang = $saldo_sebelumnya - $request->jumlah;
+            }
 
             Tabungan::create([
                 'id_siswa' => $request->id_siswa,
                 'id_petugas' => auth()->id(),
-                'debit' => $request->jumlah,
-                'kredit' => 0,
+                'debit' => $debit,
+                'kredit' => $kredit,
                 'saldo' => $saldo_sekarang,
                 'keterangan' => $request->keterangan,
             ]);
 
             DB::commit();
 
-            Alert::success('Berhasil!', 'Setoran tabungan berhasil disimpan');
-            return redirect()->route('tabungan.index');
+            Alert::success('Berhasil!', 'Transaksi tabungan berhasil disimpan');
+            return redirect()->route('tabungan.cari-siswa', ['nisn' => $siswa->nisn]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error saving manual savings: '.$e->getMessage());
-            Alert::error('Gagal!', 'Terjadi kesalahan saat menyimpan setoran');
+            Log::error('Error saving savings transaction: '.$e->getMessage());
+            Alert::error('Gagal!', 'Terjadi kesalahan saat menyimpan transaksi');
             return back()->withInput();
         }
     }
@@ -114,12 +221,10 @@ class TabunganController extends Controller
      */
     public function edit($id)
     {
-        $tabungan = Tabungan::with('siswa')->findOrFail($id);
-        $siswaList = Siswa::orderBy('nama')->get();
+        $tabungan = Tabungan::with(['siswa', 'petugas'])->findOrFail($id);
         
         return view('dashboard.tabungan.edit', [
             'tabungan' => $tabungan,
-            'siswaList' => $siswaList,
             'user' => auth()->user()
         ]);
     }
@@ -130,7 +235,6 @@ class TabunganController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'id_siswa' => 'required|exists:siswa,id',
             'jumlah' => 'required|numeric|min:1',
             'keterangan' => 'required|string|max:255',
             'tipe' => 'required|in:debit,kredit'
@@ -139,63 +243,36 @@ class TabunganController extends Controller
         try {
             DB::beginTransaction();
 
-            $tabungan = Tabungan::findOrFail($id);
-            $siswa = Siswa::findOrFail($request->id_siswa);
-            
-            // Simpan data lama untuk perhitungan ulang
-            $oldAmount = $tabungan->debit > 0 ? $tabungan->debit : $tabungan->kredit;
-            $oldType = $tabungan->debit > 0 ? 'debit' : 'kredit';
-            $oldSiswaId = $tabungan->id_siswa;
+            $tabungan = Tabungan::with('siswa')->findOrFail($id);
             
             // Update data transaksi
             if ($request->tipe === 'debit') {
-                $tabungan->debit = $request->jumlah;
-                $tabungan->kredit = 0;
+                $tabungan->update([
+                    'debit' => $request->jumlah,
+                    'kredit' => 0,
+                    'keterangan' => $request->keterangan,
+                ]);
             } else {
-                $tabungan->kredit = $request->jumlah;
-                $tabungan->debit = 0;
+                $tabungan->update([
+                    'debit' => 0,
+                    'kredit' => $request->jumlah,
+                    'keterangan' => $request->keterangan,
+                ]);
             }
-            
-            $tabungan->id_siswa = $request->id_siswa;
-            $tabungan->keterangan = $request->keterangan;
-            $tabungan->save();
-            
-            // Hitung ulang saldo untuk siswa yang lama dan yang baru
-            $this->recalculateSaldo($oldSiswaId);
-            if ($oldSiswaId != $request->id_siswa) {
-                $this->recalculateSaldo($request->id_siswa);
-            }
+
+            // Hitung ulang saldo untuk semua transaksi setelah yang diubah
+            $this->recalculateSaldo($tabungan->id_siswa);
 
             DB::commit();
 
             Alert::success('Berhasil!', 'Transaksi tabungan berhasil diperbarui');
-            return redirect()->route('tabungan.index');
+            return redirect()->route('tabungan.cari-siswa', ['nisn' => $tabungan->siswa->nisn]);
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error updating savings transaction: '.$e->getMessage());
             Alert::error('Gagal!', 'Terjadi kesalahan saat memperbarui transaksi');
             return back()->withInput();
-        }
-    }
-
-    /**
-     * Helper method to recalculate saldo for a student
-     */
-    private function recalculateSaldo($siswaId)
-    {
-        $transactions = Tabungan::where('id_siswa', $siswaId)
-            ->orderBy('created_at')
-            ->get();
-        
-        $saldo = 0;
-        
-        foreach ($transactions as $transaction) {
-            $saldo += $transaction->debit;
-            $saldo -= $transaction->kredit;
-            
-            $transaction->saldo = $saldo;
-            $transaction->save();
         }
     }
 
@@ -213,13 +290,14 @@ class TabunganController extends Controller
 
         $saldo = Tabungan::where('id_siswa', $id)
             ->latest()
-            ->first()
-            ->saldo ?? 0;
+            ->first();
+        
+        $saldo_terakhir = $saldo ? $saldo->saldo : 0;
 
         return view('dashboard.tabungan.show', [
             'siswa' => $siswa,
             'tabungan' => $tabungan,
-            'saldo' => $saldo,
+            'saldo' => $saldo_terakhir,
             'user' => auth()->user()
         ]);
     }
@@ -281,24 +359,18 @@ class TabunganController extends Controller
         try {
             DB::beginTransaction();
 
-            // Temukan transaksi yang akan dihapus
-            $tabungan = Tabungan::findOrFail($id);
+            $tabungan = Tabungan::with('siswa')->findOrFail($id);
             $siswaId = $tabungan->id_siswa;
+            $siswaNisn = $tabungan->siswa->nisn;
             
-            // Simpan data untuk perhitungan ulang
-            $isDebit = $tabungan->debit > 0;
-            $amount = $isDebit ? $tabungan->debit : $tabungan->kredit;
-            
-            // Hapus transaksi
             $tabungan->delete();
             
-            // Hitung ulang saldo untuk siswa ini
             $this->recalculateSaldo($siswaId);
 
             DB::commit();
 
             Alert::success('Berhasil!', 'Transaksi tabungan berhasil dihapus');
-            return back();
+            return redirect()->route('tabungan.cari-siswa', ['nisn' => $siswaNisn]);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -309,22 +381,49 @@ class TabunganController extends Controller
     }
 
     /**
-     * Generate savings report PDF
+     * Helper method to recalculate saldo for a student
      */
-    public function generateReport($id)
+    private function recalculateSaldo($siswaId)
     {
-        $siswa = Siswa::findOrFail($id);
-        $tanggal = Carbon::now()->format('d-m-Y');
+        $transactions = Tabungan::where('id_siswa', $siswaId)
+            ->orderBy('created_at')
+            ->get();
         
-        $tabungan = Tabungan::where('id_siswa', $id)
-            ->orderBy('created_at', 'desc')
-            ->get(); 
-
-        if (!$tabungan) {
-            abort(404, 'Tidak ada transaksi tabungan untuk siswa ini');
+        $saldo = 0;
+        
+        foreach ($transactions as $transaction) {
+            $saldo += $transaction->debit;
+            $saldo -= $transaction->kredit;
+            
+            $transaction->saldo = $saldo;
+            $transaction->save();
         }
+        
+        return $saldo;
+    }
 
-        $saldo = $tabungan->first()->saldo;
+    /**
+     * Helper method to get saldo before a specific transaction
+     */
+    private function getSaldoSebelumTransaksi($transaksi)
+    {
+        $previousTransaction = Tabungan::where('id_siswa', $transaksi->id_siswa)
+            ->where('created_at', '<', $transaksi->created_at)
+            ->orderBy('created_at', 'desc')
+            ->first();
+            
+        return $previousTransaction ? $previousTransaction->saldo : 0;
+    }
+
+    /**
+     * Generate savings transaction receipt PDF
+     */
+    public function generateTransactionReport($id)
+    {
+        $transaksi = Tabungan::with(['siswa', 'petugas'])->findOrFail($id);
+        $siswa = $transaksi->siswa;
+        
+        $tanggal = Carbon::now()->format('d-m-Y');
 
         $logoPath = public_path('img/amanah31.png');
         $websitePath = public_path('img/icons/website.png');
@@ -342,10 +441,9 @@ class TabunganController extends Controller
         $whatsappData = base64_encode(file_get_contents($whatsappPath));
         $barcodeData = base64_encode(file_get_contents($barcodePath));
 
-        $pdf = PDF::loadView('pdf.tabungan', [
+        $pdf = PDF::loadView('pdf.bukti-tabungan', [
+            'transaksi' => $transaksi,
             'siswa' => $siswa,
-            'tabungan' => $tabungan,
-            'saldo' => $saldo,
             'logoData' => $logoData,
             'websiteData' => $websiteData,
             'instagramData' => $instagramData,
@@ -356,31 +454,61 @@ class TabunganController extends Controller
             'tanggal' => now()->format('d F Y')
         ])->setPaper('a4', 'portrait');
 
-        $namaFile = 'Laporan-Tabungan-' . $siswa->nama . '-' . $tanggal . '.pdf';
+        $namaFile = 'Bukti-Transaksi-Tabungan-' . $siswa->nama . '-' . $tanggal . '.pdf';
         return $pdf->download($namaFile);
     }
 
     /**
-     * Display savings transaction history
+     * Generate savings report PDF for all transactions
      */
-    public function histori(Request $request)
+    public function generateRekapTabungan($id)
     {
-        $search = $request->input('search');
+        $siswa = Siswa::with(['kelas'])->findOrFail($id);
         
-        $tabunganHistori = Tabungan::with(['siswa.kelas', 'petugas'])
-            ->when($search, function($query) use ($search) {
-                return $query->whereHas('siswa', function($q) use ($search) {
-                    $q->where('nisn', 'like', "%{$search}%")
-                    ->orWhere('nama', 'like', "%{$search}%");
-                });
-            })
+        $tabungan = Tabungan::where('id_siswa', $id)
+            ->with('petugas')
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->get();
 
-        return view('dashboard.history-tabungan.index', [
-            'tabunganHistori' => $tabunganHistori,
-            'search' => $search,
-            'user' => auth()->user()
+        $tanggal = Carbon::now()->format('d-m-Y');
+        
+        // Load logo dan icon
+        $logoPath = public_path('img/amanah31.png');
+        $websitePath = public_path('img/icons/website.png');
+        $instagramPath = public_path('img/icons/instagram.png');
+        $facebookPath = public_path('img/icons/facebook.png');
+        $youtubePath = public_path('img/icons/youtube.png');
+        $whatsappPath = public_path('img/icons/whatsapp.png');
+        $barcodePath = public_path('img/barcode/barcode-ita.png');
+
+        // Convert images to base64
+        $logoData = base64_encode(file_get_contents($logoPath));
+        $websiteData = base64_encode(file_get_contents($websitePath));
+        $instagramData = base64_encode(file_get_contents($instagramPath));
+        $facebookData = base64_encode(file_get_contents($facebookPath));
+        $youtubeData = base64_encode(file_get_contents($youtubePath));
+        $whatsappData = base64_encode(file_get_contents($whatsappPath));
+        $barcodeData = base64_encode(file_get_contents($barcodePath));
+
+        $pdf = PDF::loadView('pdf.rekap-tabungan', [
+            'siswa' => $siswa,
+            'tabungan' => $tabungan,
+            'logoData' => $logoData,
+            'websiteData' => $websiteData,
+            'instagramData' => $instagramData,
+            'facebookData' => $facebookData,
+            'youtubeData' => $youtubeData,
+            'whatsappData' => $whatsappData,
+            'barcodeData' => $barcodeData,
+            'tanggal' => now()->format('d F Y')
+        ])->setPaper('a4', 'portrait')
+        ->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'dpi' => 150,
         ]);
+
+        $namaFile = 'Rekap-Tabungan-' . $siswa->nama . '-' . $tanggal . '.pdf';
+        return $pdf->download($namaFile);
     }
 }

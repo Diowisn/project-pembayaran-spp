@@ -257,7 +257,7 @@
                                         </a>
                                     </li>
                                     <li class="sidebar-item">
-                                        <a href="{{ route('histori.tabungan') }}" class="sidebar-link">
+                                        <a href="{{ route('history-tabungan.index') }}" class="sidebar-link">
                                             <i class="mdi mdi-note-multiple"></i>
                                             <span class="hide-menu">History Tabungan</span>
                                         </a>

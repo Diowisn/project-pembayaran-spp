@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Alert;
 use App\Models\Pembayaran;
 use App\Models\AngsuranInfaq;
+use App\Models\Tabungan;
 use App\Models\User;
 use App\Models\Siswa;
 use App\Models\Kelas;
@@ -22,7 +23,8 @@ class HistoryController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Pembayaran::with(['siswa.kelas', 'siswa.spp', 'siswa.paketInklusi', 'petugas'])
+        $query = Pembayaran::withTrashed()
+                    ->with(['siswa.kelas', 'siswa.spp', 'siswa.paketInklusi', 'petugas'])
                     ->orderBy('created_at', 'DESC');
 
         // Filter berdasarkan pencarian
@@ -80,13 +82,47 @@ class HistoryController extends Controller
     }
 
     /**
+     * Display savings transaction history
+     */
+    public function tabungan(Request $request)
+    {
+        $search = $request->input('search');
+        $kelas = $request->input('kelas');
+        
+        $tabunganHistori = Tabungan::withTrashed()
+            ->with(['siswa.kelas', 'petugas'])
+            ->when($search, function($query) use ($search) {
+                return $query->whereHas('siswa', function($q) use ($search) {
+                    $q->where('nisn', 'like', "%{$search}%")
+                    ->orWhere('nama', 'like', "%{$search}%");
+                });
+            })
+            ->when($kelas, function($query) use ($kelas) {
+                return $query->whereHas('siswa.kelas', function($q) use ($kelas) {
+                    $q->where('id', $kelas);
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('dashboard.history-tabungan.index', [
+            'tabunganHistori' => $tabunganHistori,
+            'search' => $search,
+            'kelas' => $kelas,
+            'kelasList' => Kelas::all(),
+            'user' => User::find(auth()->user()->id)
+        ]);
+    }
+
+    /**
      * Display infaq payment history with filters
      *
      * @return \Illuminate\Http\Response
      */
     public function infaq(Request $request)
     {
-        $query = AngsuranInfaq::with(['siswa.kelas', 'infaqGedung', 'petugas'])
+        $query = AngsuranInfaq::withTrashed()
+                    ->with(['siswa.kelas', 'infaqGedung', 'petugas'])
                     ->orderBy('created_at', 'DESC');
 
         // Filter berdasarkan pencarian
@@ -158,45 +194,6 @@ class HistoryController extends Controller
     }
 
     /**
-     * Remove infaq payment
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroyInfaq($id)
-    {
-        try {
-            DB::beginTransaction();
-            
-            $angsuran = AngsuranInfaq::findOrFail($id);
-            $idSiswa = $angsuran->id_siswa;
-            
-            // Hapus record tabungan terkait jika ada
-            $tabungan = Tabungan::where('id_pembayaran_infaq', $angsuran->id)->first();
-            if ($tabungan) {
-                $tabungan->delete();
-            }
-            
-            if($angsuran->delete()) {
-                // Update status lunas
-                $this->updateLunasStatusInfaq($idSiswa);
-                
-                Alert::success('Berhasil!', 'Pembayaran infaq berhasil dihapus!');
-            } else {
-                Alert::error('Terjadi Kesalahan!', 'Pembayaran infaq gagal dihapus!');
-            }
-            
-            DB::commit();
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Alert::error('Terjadi Kesalahan!', 'Pembayaran infaq gagal dihapus!');
-        }
-        
-        return back();
-    }
-
-    /**
      * Update lunas status for infaq
      */
     private function updateLunasStatusInfaq($idSiswa)
@@ -256,7 +253,8 @@ class HistoryController extends Controller
      */
     public function kegiatan(Request $request)
     {
-        $query = SiswaKegiatan::with(['siswa.kelas', 'kegiatan', 'petugas'])
+        $query = SiswaKegiatan::withTrashed()
+                    ->with(['siswa.kelas', 'kegiatan', 'petugas'])
                     ->where('partisipasi', 'ikut')
                     ->orderBy('created_at', 'DESC');
 

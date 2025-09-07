@@ -149,7 +149,8 @@ Route::get('/history-infaq', [HistoryController::class, 'infaq'])->name('history
 Route::get('/history-infaq/{id}', [HistoryController::class, 'showInfaq'])->name('history-infaq.show');
 Route::delete('/history-infaq/{id}', [HistoryController::class, 'destroyInfaq'])->name('history-infaq.destroy');
 
-Route::get('/history-tabungan', [TabunganController::class, 'histori'])->name('histori.tabungan');
+Route::get('/histori-tabungan', [HistoryController::class, 'tabungan'])->name('history-tabungan.index');
+
 Route::get('/dashboard/history/uang-tahunan', [HistoryController::class, 'uangTahunan'])->name('history.uang-tahunan');
 
 // Laporan Routes
@@ -180,13 +181,15 @@ Route::get('/get-data', [SiswaLoginController::class, 'getData'])->name('siswa.g
 
 Route::get('/dashboard/tabungan', [TabunganController::class, 'index'])->name('tabungan.index');
 Route::get('/dashboard/tabungan/create', [TabunganController::class, 'create'])->name('tabungan.create');
-Route::post('/dashboard/tabungan/store-manual', [TabunganController::class, 'storeManual'])->name('tabungan.store-manual');
+Route::post('/dashboard/tabungan', [TabunganController::class, 'store'])->name('tabungan.store');
+Route::get('/dashboard/tabungan/cari-siswa', [TabunganController::class, 'cariSiswa'])->name('tabungan.cari-siswa');
 Route::get('/dashboard/tabungan/{id}', [TabunganController::class, 'show'])->name('tabungan.show');
 Route::get('/dashboard/tabungan/{id}/edit', [TabunganController::class, 'edit'])->name('tabungan.edit');
-Route::put('/dashboard/tabungan/{id}/update', [TabunganController::class, 'update'])->name('tabungan.update');
-Route::post('/dashboard/tabungan/tarik/{id}', [TabunganController::class, 'tarik'])->name('tabungan.tarik');
-Route::get('/dashboard/tabungan/report/{id}', [TabunganController::class, 'generateReport'])->name('tabungan.report');
+Route::put('/dashboard/tabungan/{id}', [TabunganController::class, 'update'])->name('tabungan.update');
 Route::delete('/dashboard/tabungan/{id}', [TabunganController::class, 'destroy'])->name('tabungan.destroy');
+Route::post('/dashboard/tabungan/tarik/{id}', [TabunganController::class, 'tarik'])->name('tabungan.tarik');
+Route::get('/dashboard/tabungan/transaksi/{id}/cetak', [TabunganController::class, 'generateTransactionReport'])->name('tabungan.transaksi.cetak');
+Route::get('/tabungan/rekap/{id}/cetak', [TabunganController::class, 'generateRekapTabungan'])->name('tabungan.rekap.cetak');
 
 Route::get('/dashboard/uang-tahunan', [UangTahunanController::class, 'index'])->name('uang-tahunan.index');
 // Route::get('/dashboard/uang-tahunan/create', [UangTahunanController::class, 'create'])->name('uang-tahunan.create');

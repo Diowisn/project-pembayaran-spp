@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Pembayaran extends Model
 {
+    use SoftDeletes;
+    protected $dates = ['deleted_at'];
+    
     protected $table = 'pembayaran';
     protected $primaryKey = 'id';
     protected $fillable = [

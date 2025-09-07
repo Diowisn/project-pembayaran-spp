@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Laporan Transaksi Tabungan</title>
+    <title>Bukti Transaksi Tabungan</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,11 +29,6 @@
             height: auto;
             object-fit: contain;
             margin-bottom: 5px;
-        }
-
-        .header-left h2 {
-            margin: 2px 0;
-            font-size: 16px;
         }
 
         .header-left p {
@@ -74,14 +69,6 @@
             background-color: #f2f2f2;
         }
 
-        .debit {
-            color: #28a745; /* Green for debit */
-        }
-
-        .kredit {
-            color: #dc3545; /* Red for credit */
-        }
-
         .total {
             margin-top: 5px;
             text-align: right;
@@ -101,16 +88,38 @@
             float: right;
             text-align: center;
         }
+
         .footer .right img {
             width: 100px;
             height: auto;
             margin: 0 auto 5px;
             display: block;
         }
+
         .clearfix::after {
             content: "";
             clear: both;
             display: table;
+        }
+
+        .status-lunas {
+            color: green;
+            font-weight: bold;
+        }
+
+        .status-belum {
+            color: red;
+            font-weight: bold;
+        }
+
+        .debit {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .kredit {
+            color: #dc3545;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -143,74 +152,97 @@
                         style="width:14px; height:14px; vertical-align: text-bottom; margin-right:4px;"> +62 851 6258 6667
                 </span>
             </p>
-            <br>
-            <br>
+            <br><br>
         </div>
         <div class="header-right">
-            Laporan Transaksi Tabungan
+            Bukti Transaksi Tabungan
         </div>
     </div>
 
     <table class="info-table">
         <tr>
-            <td width="25%">NISN</td>
-            <td width="25%">: {{ $siswa->nisn }}</td>
-            <td width="25%">Periode</td>
-            <td width="25%">: {{ request('start_date') ? \Carbon\Carbon::parse(request('start_date'))->isoFormat('D MMMM Y') : 'Awal' }} 
-                s/d {{ request('end_date') ? \Carbon\Carbon::parse(request('end_date'))->isoFormat('D MMMM Y') : now()->isoFormat('D MMMM Y') }}</td>
+            <td width="25%">Tanggal Transaksi</td>
+            <td width="25%">: {{ $transaksi->created_at->format('d F Y') }}</td>
+            <td width="25%">Jenis Transaksi</td>
+            <td width="25%">:
+                @if ($transaksi->debit > 0)
+                    <span class="debit">SETORAN</span>
+                @else
+                    <span class="kredit">PENARIKAN</span>
+                @endif
+            </td>
         </tr>
         <tr>
+            <td>NISN</td>
+            <td>: {{ $siswa->nisn }}</td>
             <td>Nama</td>
             <td>: {{ $siswa->nama }}</td>
-            <td>Kelas</td>
-            <td>: {{ $siswa->kelas->nama_kelas }}</td>
         </tr>
         <tr>
-            <td>Saldo Akhir</td>
-            <td>: Rp {{ number_format($saldo, 0, ',', '.') }}</td>
-            <td>Total Transaksi</td>
-            <td>: {{ $tabungan->count() }}</td>
+            <td>Kelas</td>
+            <td>: {{ $siswa->kelas->nama_kelas ?? '-' }}</td>
+            <td>Petugas</td>
+            <td>: {{ $transaksi->petugas->name ?? 'Administrator' }}</td>
         </tr>
     </table>
 
-    <p class="rincian-title">Daftar Transaksi Tabungan:</p>
+    <p class="rincian-title">Dengan rincian transaksi sebagai berikut:</p>
 
     <table class="detail-table">
         <thead>
             <tr>
-                <th width="15%" style="text-align: center">Tanggal</th>
-                <th width="15%" style="text-align: center">Jenis</th>
-                <th width="15%" style="text-align: center">Debit</th>
-                <th width="15%" style="text-align: center">Kredit</th>
-                <th width="20%" style="text-align: center">Saldo</th>
-                <th width="20%" style="text-align: center">Keterangan</th>
+                <th width="5%">No.</th>
+                <th>Jenis Transaksi</th>
+                <th width="20%">Jumlah</th>
+                <th width="20%">Saldo Akhir</th>
+                <th width="35%">Keterangan</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($tabungan as $transaksi)
             <tr>
-                <td style="text-align: center">{{ $transaksi->created_at->isoFormat('D MMM Y') }}</td>
-                <td style="text-align: center">{{ $transaksi->debit > 0 ? 'Setoran' : 'Penarikan' }}</td>
-                <td style="text-align: center" class="debit">{{ $transaksi->debit > 0 ? 'Rp '.number_format($transaksi->debit, 0, ',', '.') : '-' }}</td>
-                <td style="text-align: center" class="kredit">{{ $transaksi->kredit > 0 ? 'Rp '.number_format($transaksi->kredit, 0, ',', '.') : '-' }}</td>
-                <td style="text-align: center">Rp {{ number_format($transaksi->saldo, 0, ',', '.') }}</td>
-                <td style="text-align: center">{{ $transaksi->keterangan }}</td>
+                <td>1</td>
+                <td>
+                    @if ($transaksi->debit > 0)
+                        Setoran Tabungan
+                    @else
+                        Penarikan Tabungan
+                    @endif
+                    - {{ $transaksi->created_at->format('d F Y') }}
+                </td>
+                <td class="{{ $transaksi->debit > 0 ? 'debit' : 'kredit' }}">
+                    @if ($transaksi->debit > 0)
+                        Rp {{ number_format($transaksi->debit, 0, ',', '.') }}
+                    @else
+                        Rp {{ number_format($transaksi->kredit, 0, ',', '.') }}
+                    @endif
+                </td>
+                <td>Rp {{ number_format($transaksi->saldo, 0, ',', '.') }}</td>
+                <td>{{ $transaksi->keterangan }}</td>
             </tr>
-            @endforeach
         </tbody>
     </table>
 
+    @php
+        $saldoSebelumnya = $transaksi->saldo;
+        if ($transaksi->debit > 0) {
+            $saldoSebelumnya -= $transaksi->debit;
+        } else {
+            $saldoSebelumnya += $transaksi->kredit;
+        }
+    @endphp
+
+    <p class="total">Saldo Sebelumnya: Rp {{ number_format($saldoSebelumnya, 0, ',', '.') }}</p>
+    <p class="total">Saldo Setelah Transaksi: Rp {{ number_format($transaksi->saldo, 0, ',', '.') }}</p>
+
     <div class="footer clearfix">
         <div class="left">
-            {{--  --}}
         </div>
         <div class="right">
-            <p>{{ now()->isoFormat('D MMMM Y') }}</p>
+            <p>{{ $transaksi->created_at->locale('id')->isoFormat('dddd, D MMMM Y') }}</p>
             <img src="data:image/png;base64,{{ $barcodeData }}" style="width: 100px; height: auto; display: block; margin-bottom: 5px;" alt="Barcode">
-            <p>({{ Auth::check() ? Auth::user()->name : 'Administrator' }})</p>
+            <p>({{ $transaksi->petugas->name ?? 'Administrator' }})</p>
         </div>
     </div>
 
 </body>
-
 </html>
