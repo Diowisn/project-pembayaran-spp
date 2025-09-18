@@ -9,6 +9,7 @@ use App\Models\Kelas;
 use App\Models\Spp;
 use App\Models\InfaqGedung;
 use App\Models\Inklusi;
+use App\Models\KegiatanTahunan;
 use Illuminate\Support\Facades\Log;
 use Alert;
 
@@ -72,6 +73,7 @@ class SiswaController extends Controller
             'spp' => Spp::with('kelas')->get(),
             'infaq' => InfaqGedung::all(), 
             'inklusi' => Inklusi::all(),
+            'paketKegiatan' => KegiatanTahunan::whereNull('nama_kegiatan')->get(),
         ];
     
         return view('dashboard.data-siswa.create', $data);
@@ -104,6 +106,7 @@ class SiswaController extends Controller
             'alamat' => 'required',
             'id_infaq_gedung' => 'nullable|integer|exists:infaq_gedung,id',
             'id_spp' => 'required|integer|exists:spp,id',
+            'id_paket_kegiatan' => 'nullable|integer|exists:kegiatan_tahunan,id',
         ], $messages);
 
         try {
@@ -117,6 +120,7 @@ class SiswaController extends Controller
                 'alamat' => $request->alamat,
                 'id_infaq_gedung' => $request->id_infaq_gedung,
                 'id_spp' => $request->id_spp,
+                'id_paket_kegiatan' => $request->id_paket_kegiatan,
             ]);
             
             Alert::success('Berhasil!', 'Data Berhasil di Tambahkan');
@@ -153,6 +157,7 @@ class SiswaController extends Controller
             'spp' => Spp::all(),
             'infaq' => InfaqGedung::all(),
             'inklusi' => Inklusi::all(),
+            'paketKegiatan' => KegiatanTahunan::whereNull('nama_kegiatan')->get(),
         ];
       
         return view('dashboard.data-siswa.edit', $data);
@@ -185,7 +190,8 @@ class SiswaController extends Controller
             'nomor_telp' => 'required|numeric',
             'alamat' => 'required',
             'id_infaq_gedung' => 'nullable|integer|exists:infaq_gedung,id',
-            'id_spp' => 'required|integer|exists:spp,id'
+            'id_spp' => 'required|integer|exists:spp,id',
+            'id_paket_kegiatan' => 'nullable|integer|exists:kegiatan_tahunan,id'
         ], $messages);
 
         try {
@@ -200,6 +206,7 @@ class SiswaController extends Controller
                 'alamat' => $request->alamat,
                 'id_infaq_gedung' => $request->id_infaq_gedung,
                 'id_spp' => $request->id_spp,
+                'id_paket_kegiatan' => $request->id_paket_kegiatan,
             ]);
             
             if($update) {

@@ -469,7 +469,7 @@ class PembayaranController extends Controller
         try {
             $siswa = Siswa::with(['kelas'])->findOrFail($siswaId);
             $riwayatPembayaran = Pembayaran::where('id_siswa', $siswaId)
-                ->with('petugas') // Eager load petugas
+                ->with('petugas')
                 ->orderBy('tahun', 'desc')
                 ->orderByRaw("FIELD(bulan, 'januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember') DESC")
                 ->get();

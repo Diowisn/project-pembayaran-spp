@@ -16,76 +16,141 @@ class KegiatanTahunanController extends Controller
         ]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
+        // Ambil parameter paket dari request
+        $selectedPaket = $request->get('paket');
+        
         $data = [
             'user' => User::find(auth()->user()->id),
-            'kegiatan' => KegiatanTahunan::orderBy('id', 'DESC')->paginate(10),
+            'paketList' => KegiatanTahunan::getPaketList(),
+            'selectedPaket' => $selectedPaket,
         ];
+
+        // Jika ada paket yang dipilih, tampilkan kegiatannya
+        if ($selectedPaket) {
+            $data['kegiatanPaket'] = KegiatanTahunan::getKegiatanByPaket($selectedPaket);
+        }
 
         return view('dashboard.data-kegiatan-tahunan.index', $data);
     }
 
-    public function create()
-    {
-        return view('dashboard.data-kegiatan-tahunan.create', [
-            'user' => User::find(auth()->user()->id)
-        ]);
-    }
-
     public function store(Request $request)
     {
-        $request->validate([
-            'nama_kegiatan' => 'required|string|max:255',
-            'nominal' => 'required|integer',
-            // 'wajib' => 'required|boolean',
-            'keterangan' => 'nullable|string',
-        ]);
+        // Validasi untuk menambah paket (hanya nama_paket)
+        if (empty($request->nama_kegiatan)) {
+            $request->validate([
+                'nama_paket' => 'required|string|max:255',
+            ]);
+            
+            // Cek apakah paket sudah ada
+            $existingPaket = KegiatanTahunan::where('nama_paket', $request->nama_paket)
+                ->whereNull('nama_kegiatan')
+                ->first();
+                
+            if ($existingPaket) {
+                Alert::error('Gagal!', 'Paket dengan nama ini sudah ada');
+                return back();
+            }
+            
+            // Buat record paket saja dengan nilai null untuk lainnya
+            KegiatanTahunan::create([
+                'nama_paket' => $request->nama_paket,
+                'nama_kegiatan' => null,
+                'nominal' => null,
+                'keterangan' => null,
+            ]);
+            
+            Alert::success('Berhasil!', 'Paket berhasil ditambahkan');
+        } else {
+            // Validasi untuk menambah kegiatan
+            $request->validate([
+                'nama_paket' => 'required|string|max:255',
+                'nama_kegiatan' => 'required|string|max:255',
+                'nominal' => 'required|integer',
+                'keterangan' => 'nullable|string',
+            ]);
+            
+            // Tambahkan kegiatan ke dalam paket
+            KegiatanTahunan::create($request->all());
+            Alert::success('Berhasil!', 'Kegiatan berhasil ditambahkan ke paket');
+        }
 
-        KegiatanTahunan::create($request->all());
-
-        Alert::success('Berhasil!', 'Data kegiatan berhasil ditambahkan');
         return redirect()->route('data-kegiatan-tahunan.index');
     }
 
     public function edit($id)
     {
+        $kegiatan = KegiatanTahunan::findOrFail($id);
+        
         return view('dashboard.data-kegiatan-tahunan.edit', [
             'user' => User::find(auth()->user()->id),
-            'kegiatan' => KegiatanTahunan::findOrFail($id),
+            'kegiatan' => $kegiatan,
+            'paketList' => KegiatanTahunan::getPaketList(),
+            'isPaket' => empty($kegiatan->nama_kegiatan),
         ]);
     }
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'nama_kegiatan' => 'required|string|max:255',
-            'nominal' => 'required|integer',
-            // 'wajib' => 'required|boolean',
-            'keterangan' => 'nullable|string',
-        ]);
-
         $kegiatan = KegiatanTahunan::findOrFail($id);
-        $kegiatan->update($request->all());
+        
+        if (empty($kegiatan->nama_kegiatan)) {
+            // Update paket
+            $request->validate([
+                'nama_paket' => 'required|string|max:255',
+            ]);
+            
+            $kegiatan->update([
+                'nama_paket' => $request->nama_paket,
+            ]);
+            
+            Alert::success('Berhasil!', 'Paket berhasil diupdate');
+        } else {
+            // Update kegiatan
+            $request->validate([
+                'nama_paket' => 'required|string|max:255',
+                'nama_kegiatan' => 'required|string|max:255',
+                'nominal' => 'required|integer',
+                'keterangan' => 'nullable|string',
+            ]);
+            
+            $kegiatan->update($request->all());
+            Alert::success('Berhasil!', 'Kegiatan berhasil diupdate');
+        }
 
-        Alert::success('Berhasil!', 'Data kegiatan berhasil diupdate');
         return redirect()->route('data-kegiatan-tahunan.index');
     }
 
     public function destroy($id) 
     {
         try {
-            $kegiatan = KegiatanTahunan::withCount('siswaKegiatan')->findOrFail($id);
-
-            if ($kegiatan->siswa_kegiatan_count > 0) {
-                Alert::error('Gagal!', 'Tidak dapat menghapus karena ada siswa yang mengikuti kegiatan ini');
-                return back();
-            }
-
-            if ($kegiatan->delete()) {
-                Alert::success('Berhasil!', 'Data kegiatan berhasil dihapus');
+            $kegiatan = KegiatanTahunan::findOrFail($id);
+            
+            if (empty($kegiatan->nama_kegiatan)) {
+                // Hapus paket - cek dulu apakah ada kegiatan dalam paket ini
+                $kegiatanCount = KegiatanTahunan::where('nama_paket', $kegiatan->nama_paket)
+                    ->whereNotNull('nama_kegiatan')
+                    ->count();
+                    
+                if ($kegiatanCount > 0) {
+                    Alert::error('Gagal!', 'Tidak dapat menghapus paket karena masih memiliki kegiatan');
+                    return back();
+                }
+                
+                if ($kegiatan->delete()) {
+                    Alert::success('Berhasil!', 'Paket berhasil dihapus');
+                }
             } else {
-                Alert::error('Gagal!', 'Data kegiatan gagal dihapus');
+                // Hapus kegiatan individual - cek apakah ada siswa yang terkait
+                if ($kegiatan->siswaKegiatan()->count() > 0) {
+                    Alert::error('Gagal!', 'Tidak dapat menghapus karena ada siswa yang mengikuti kegiatan ini');
+                    return back();
+                }
+
+                if ($kegiatan->delete()) {
+                    Alert::success('Berhasil!', 'Kegiatan berhasil dihapus');
+                }
             }
 
         } catch (\Exception $e) {
@@ -93,5 +158,14 @@ class KegiatanTahunanController extends Controller
         }
 
         return back();
+    }
+    
+    // Method untuk menampilkan form tambah kegiatan ke paket
+    public function createKegiatan($paket)
+    {
+        return view('dashboard.data-kegiatan-tahunan.create-kegiatan', [
+            'user' => User::find(auth()->user()->id),
+            'paket' => $paket,
+        ]);
     }
 }

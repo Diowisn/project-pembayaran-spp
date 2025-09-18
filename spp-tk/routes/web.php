@@ -106,6 +106,8 @@ Route::resource('/dashboard/data-kegiatan-tahunan', KegiatanTahunanController::c
     'update' => 'data-kegiatan-tahunan.update',
     'destroy' => 'data-kegiatan-tahunan.destroy',
 ]);
+Route::get('data-kegiatan-tahunan/create-kegiatan/{paket}', [KegiatanTahunanController::class, 'createKegiatan'])
+    ->name('data-kegiatan-tahunan.create.kegiatan');
 
 // Routes untuk Kegiatan Siswa
 Route::resource('/dashboard/entri-kegiatan', KegiatanSiswaController::class)->names([

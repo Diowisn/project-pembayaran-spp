@@ -63,8 +63,15 @@ class KegiatanSiswaController extends Controller
             'nisn' => 'required|exists:siswa,nisn'
         ]);
 
-        $siswa = Siswa::with(['kegiatanSiswa.kegiatan'])->where('nisn', $request->nisn)->first();
-        $semuaKegiatan = KegiatanTahunan::all();
+        $siswa = Siswa::with(['kegiatanSiswa.kegiatan', 'paketKegiatan'])->where('nisn', $request->nisn)->first();
+        
+        if ($siswa->id_paket_kegiatan && $siswa->paketKegiatan) {
+            $semuaKegiatan = KegiatanTahunan::where('nama_paket', $siswa->paketKegiatan->nama_paket)
+                ->whereNotNull('nama_kegiatan')
+                ->get();
+        } else {
+            $semuaKegiatan = KegiatanTahunan::whereNotNull('nama_kegiatan')->get();
+        }
 
         $detailKegiatan = [];
         $totalTagihanKegiatan = 0;
@@ -209,8 +216,16 @@ class KegiatanSiswaController extends Controller
         try {
             DB::beginTransaction();
 
-            $siswa = Siswa::findOrFail($request->id_siswa);
-            $semuaKegiatan = KegiatanTahunan::all();
+            $siswa = Siswa::with('paketKegiatan')->findOrFail($request->id_siswa);
+            
+            if ($siswa->id_paket_kegiatan && $siswa->paketKegiatan) {
+                $semuaKegiatan = KegiatanTahunan::where('nama_paket', $siswa->paketKegiatan->nama_paket)
+                    ->whereNotNull('nama_kegiatan')
+                    ->get();
+            } else {
+                $semuaKegiatan = KegiatanTahunan::whereNotNull('nama_kegiatan')->get();
+            }
+
             $totalBayar = $request->jumlah_bayar_semua;
             $totalSisa = $request->total_sisa;
             
@@ -646,21 +661,33 @@ class KegiatanSiswaController extends Controller
             'nisn' => 'required|exists:siswa,nisn'
         ]);
 
-        $siswa = Siswa::with(['kelas', 'kegiatanSiswa.kegiatan'])->where('nisn', $request->nisn)->firstOrFail();
+        $siswa = Siswa::with(['kelas', 'kegiatanSiswa.kegiatan', 'paketKegiatan'])->where('nisn', $request->nisn)->firstOrFail();
         
+        if ($siswa->id_paket_kegiatan && $siswa->paketKegiatan) {
+            $semuaKegiatan = KegiatanTahunan::where('nama_paket', $siswa->paketKegiatan->nama_paket)
+                ->whereNotNull('nama_kegiatan')
+                ->get();
+        } else {
+            $semuaKegiatan = KegiatanTahunan::whereNotNull('nama_kegiatan')->get();
+        }
+
         $pembayaran = SiswaKegiatan::with(['kegiatan'])
             ->where('id_siswa', $siswa->id)
             ->where('partisipasi', 'ikut')
             ->orderBy('tgl_bayar', 'asc')
             ->get();
 
-        $semuaKegiatan = KegiatanTahunan::all();
         $detailKegiatan = [];
         $totalTagihanKegiatan = 0; 
         $totalDibayarSemua = 0;    
         $sisaSemua = 0;            
 
         foreach ($semuaKegiatan as $kegiatan) {
+            // Skip record yang hanya berisi paket tanpa kegiatan
+            if (empty($kegiatan->nama_kegiatan)) {
+                continue;
+            }
+
             $partisipasi = $siswa->kegiatanSiswa
                 ->where('id_kegiatan', $kegiatan->id)
                 ->first();
@@ -706,21 +733,21 @@ class KegiatanSiswaController extends Controller
 
         $sisaSemua = max($totalTagihanKegiatan - $totalDibayarSemua, 0);
 
-            $logoPath = public_path('img/amanah31.png');
-            $websitePath = public_path('img/icons/website.png');
-            $instagramPath = public_path('img/icons/instagram.png');
-            $facebookPath = public_path('img/icons/facebook.png');
-            $youtubePath = public_path('img/icons/youtube.png');
-            $whatsappPath = public_path('img/icons/whatsapp.png');
-            $barcodePath = public_path('img/barcode/barcode-ita.png');
+        $logoPath = public_path('img/amanah31.png');
+        $websitePath = public_path('img/icons/website.png');
+        $instagramPath = public_path('img/icons/instagram.png');
+        $facebookPath = public_path('img/icons/facebook.png');
+        $youtubePath = public_path('img/icons/youtube.png');
+        $whatsappPath = public_path('img/icons/whatsapp.png');
+        $barcodePath = public_path('img/barcode/barcode-ita.png');
 
-            $logoData = base64_encode(file_get_contents($logoPath));
-            $websiteData = base64_encode(file_get_contents($websitePath));
-            $instagramData = base64_encode(file_get_contents($instagramPath));
-            $facebookData = base64_encode(file_get_contents($facebookPath));
-            $youtubeData = base64_encode(file_get_contents($youtubePath));
-            $whatsappData = base64_encode(file_get_contents($whatsappPath));
-            $barcodeData = base64_encode(file_get_contents($barcodePath));
+        $logoData = base64_encode(file_get_contents($logoPath));
+        $websiteData = base64_encode(file_get_contents($websitePath));
+        $instagramData = base64_encode(file_get_contents($instagramPath));
+        $facebookData = base64_encode(file_get_contents($facebookPath));
+        $youtubeData = base64_encode(file_get_contents($youtubePath));
+        $whatsappData = base64_encode(file_get_contents($whatsappPath));
+        $barcodeData = base64_encode(file_get_contents($barcodePath));
 
         $pdf = PDF::loadView('pdf.rekap-siswa-kegiatan', compact(
             'pembayaran',

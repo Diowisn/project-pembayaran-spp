@@ -111,7 +111,7 @@
                                 <label class="input-group-text">Paket Infaq Gedung</label>
                             </div>
                             <select name="id_infaq_gedung" class="custom-select">
-                                <option value="">Pilih Paket (Opsional)</option>
+                                <option value="">Pilih Paket</option>
                                 @foreach ($infaq as $item)
                                     <option value="{{ $item->id }}"
                                         {{ old('id_infaq_gedung') == $item->id ? 'selected' : '' }}>
@@ -123,6 +123,25 @@
                                 @endforeach
                             </select>
                         </div>
+
+                        <!-- Tambahkan pilihan paket kegiatan -->
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <label class="input-group-text">Paket Kegiatan Tahunan</label>
+                            </div>
+                            <select name="id_paket_kegiatan" class="custom-select">
+                                <option value="">Pilih Paket Kegiatan</option>
+                                @foreach ($paketKegiatan as $paket)
+                                    <option value="{{ $paket->id }}"
+                                        {{ old('id_paket_kegiatan') == $paket->id ? 'selected' : '' }}>
+                                        {{ $paket->nama_paket }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <small class="form-text text-muted mb-3">
+                            Pilih paket kegiatan tahunan yang akan diikuti siswa
+                        </small>
 
                         <div class="form-group">
                             <label>Status Inklusi</label>
@@ -171,8 +190,9 @@
 @endsection
 
 @section('scripts')
+<script>
 function toggleInklusiPackage() {
-    const inklusiCheckbox = document.getElementById('inklusiCheckbox');
+    const inklusiCheckbox = document.getElementById('inklusi');
     const inklusiPackage = document.getElementById('inklusiPackage');
     
     if (inklusiCheckbox && inklusiPackage) {
@@ -195,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleInklusiPackage();
     
     // Tambahkan event listener untuk perubahan checkbox
-    const checkbox = document.getElementById('inklusiCheckbox');
+    const checkbox = document.getElementById('inklusi');
     if (checkbox) {
         checkbox.addEventListener('change', toggleInklusiPackage);
     }
@@ -205,4 +225,5 @@ document.addEventListener('DOMContentLoaded', function() {
 setTimeout(function() {
     toggleInklusiPackage();
 }, 100);
+</script>
 @endsection

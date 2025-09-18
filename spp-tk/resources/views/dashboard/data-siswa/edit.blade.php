@@ -101,6 +101,24 @@
                             @endforeach
                         </select>
                     </div>
+                    
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text">Paket Kegiatan Tahunan</label>
+                        </div>
+                        <select name="id_paket_kegiatan" class="custom-select">
+                            <option value="">Pilih Paket Kegiatan (Opsional)</option>
+                            @foreach ($paketKegiatan as $paket)
+                                <option value="{{ $paket->id }}"
+                                    {{ old('id_paket_kegiatan', $siswa->id_paket_kegiatan) == $paket->id ? 'selected' : '' }}>
+                                    {{ $paket->nama_paket }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <small class="form-text text-muted mb-3">
+                        Pilih paket kegiatan tahunan yang akan diikuti siswa
+                    </small>
 
                     <div class="form-group">
                         <label>Status Inklusi</label>

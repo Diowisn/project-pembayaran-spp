@@ -153,6 +153,14 @@
             height: 12px;
             margin-right: 5px;
         }
+        
+        .paket-info {
+            background-color: #e3f2fd;
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2196f3;
+        }
     </style>
 </head>
 
@@ -192,6 +200,14 @@
         </div>
     </div>
 
+    <!-- Informasi Paket -->
+    @if($siswa->paketKegiatan)
+    <div class="paket-info">
+        <strong>Paket Kegiatan:</strong> {{ $siswa->paketKegiatan->nama_paket }}<br>
+        <small>Siswa terdaftar dalam paket kegiatan ini</small>
+    </div>
+    @endif
+
     <div class="student-info">
         <table class="info-table">
             <tr>
@@ -227,6 +243,8 @@
         </table>
     </div>
 
+    <!-- Tabel Detail Pembayaran -->
+    @if($pembayaran->count() > 0)
     <p class="rincian-title">Daftar Pembayaran Kegiatan:</p>
 
     <table class="detail-table">
@@ -250,6 +268,7 @@
             @endphp
 
             @foreach($pembayaran as $item)
+                @if($item->kegiatan && !empty($item->kegiatan->nama_kegiatan))
                 <tr>
                     <td class="text-center">{{ $counter++ }}</td>
                     <td>
@@ -282,9 +301,11 @@
                     $totalBayar += $item->jumlah_bayar;
                     $totalKembalian += $item->kembalian;
                 @endphp
+                @endif
             @endforeach
 
             <!-- Total -->
+            @if($counter > 1)
             <tr style="background-color: #e8f5e8; font-weight: bold;">
                 <td colspan="5" class="text-right">TOTAL</td>
                 <td class="text-right">Rp {{ number_format($totalBayar, 0, ',', '.') }}</td>
@@ -297,9 +318,17 @@
                 </td>
                 <td></td>
             </tr>
+            @endif
         </tbody>
     </table>
+    @else
+    <div style="text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 5px;">
+        <p>Belum ada data pembayaran kegiatan</p>
+    </div>
+    @endif
 
+    <!-- Ringkasan Status Kegiatan -->
+    @if(count($detailKegiatan) > 0)
     <div class="summary">
         <p class="rincian-title">Ringkasan Status Kegiatan:</p>
 
@@ -315,6 +344,7 @@
             </thead>
             <tbody>
                 @foreach($detailKegiatan as $detail)
+                @if(!empty($detail['kegiatan']->nama_kegiatan))
                 <tr>
                     <td>{{ $detail['kegiatan']->nama_kegiatan }}</td>
                     <td class="text-right">Rp {{ number_format($detail['kegiatan']->nominal, 0, ',', '.') }}</td>
@@ -336,10 +366,12 @@
                         @endif
                     </td>
                 </tr>
+                @endif
                 @endforeach
             </tbody>
         </table>
     </div>
+    @endif
 
     <div class="footer clearfix">
         <div class="left">

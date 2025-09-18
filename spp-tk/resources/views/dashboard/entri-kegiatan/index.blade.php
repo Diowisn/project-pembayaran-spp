@@ -46,14 +46,18 @@
                                     <div class="card-body">
                                         <h5>Informasi Siswa</h5>
                                         <div class="row">
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <strong>NISN:</strong> {{ $siswa->nisn }}
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <strong>Nama:</strong> {{ $siswa->nama }}
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <strong>Kelas:</strong> {{ $siswa->kelas->nama_kelas ?? '-' }}
+                                            </div>
+                                            <div class="col-md-3">
+                                                <strong>Paket Kegiatan:</strong> 
+                                                {{ $siswa->paketKegiatan->nama_paket ?? 'Tidak ada paket' }}
                                             </div>
                                         </div>
                                     </div>
@@ -69,6 +73,38 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Info Paket Kegiatan -->
+                        @if($siswa->paketKegiatan)
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Paket Kegiatan: {{ $siswa->paketKegiatan->nama_paket }}</h5>
+                                        <p class="card-text">
+                                            Siswa terdaftar dalam paket kegiatan ini. Hanya kegiatan dalam paket ini yang akan ditampilkan.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @else
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Tidak Ada Paket Kegiatan</h5>
+                                        <p class="card-text">
+                                            Siswa belum terdaftar dalam paket kegiatan tertentu. Menampilkan semua kegiatan yang tersedia.
+                                        </p>
+                                        <a href="{{ route('data-siswa.edit', $siswa->id) }}" class="btn btn-light btn-sm">
+                                            <i class="mdi mdi-pencil"></i> Atur Paket Kegiatan
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
 
                         <!-- Ringkasan Total -->
                         <div class="row mb-4">

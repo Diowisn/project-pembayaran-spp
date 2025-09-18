@@ -10,7 +10,8 @@ class Siswa extends Model
     protected $primaryKey = 'id';
     protected $fillable = [
         'nisn', 'nama', 'password', 'id_kelas', 'id_spp',
-        'alamat', 'nomor_telp', 'id_infaq_gedung', 'inklusi', 'id_inklusi'
+        'alamat', 'nomor_telp', 'id_infaq_gedung', 'inklusi', 'id_inklusi',
+        'id_paket_kegiatan'
     ];
 
     public function kelas()
@@ -65,5 +66,26 @@ class Siswa extends Model
     public function paketInklusi()
     {
         return $this->belongsTo(Inklusi::class, 'id_inklusi');
+    }
+
+    public function paketKegiatan()
+    {
+        return $this->belongsTo(KegiatanTahunan::class, 'id_paket_kegiatan')
+                    ->whereNull('nama_kegiatan'); 
+    }
+
+    public function kegiatanTahunanSiswa()
+    {
+        return $this->hasMany(SiswaKegiatan::class, 'id_siswa');
+    }
+
+    public function getKegiatanFromPaket()
+    {
+        if ($this->id_paket_kegiatan) {
+            return KegiatanTahunan::where('nama_paket', $this->paketKegiatan->nama_paket)
+                ->whereNotNull('nama_kegiatan')
+                ->get();
+        }
+        return collect();
     }
 }
