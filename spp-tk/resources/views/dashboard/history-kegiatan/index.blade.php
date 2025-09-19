@@ -24,6 +24,20 @@
                             </div>
                             <div class="col-md-2">
                                 <div class="form-group">
+                                    <label for="paket">Paket</label>
+                                    <select class="form-control" id="paket" name="paket">
+                                        <option value="">Semua Paket</option>
+                                        @foreach($paketList as $paket)
+                                            <option value="{{ $paket }}" 
+                                                {{ $selectedPaket == $paket ? 'selected' : '' }}>
+                                                {{ $paket }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
                                     <label for="kegiatan">Kegiatan</label>
                                     <select class="form-control" id="kegiatan" name="kegiatan">
                                         <option value="">Semua Kegiatan</option>
@@ -52,6 +66,18 @@
                             </div>
                             <div class="col-md-2">
                                 <div class="form-group">
+                                    <label for="status_lunas">Status</label>
+                                    <select class="form-control" id="status_lunas" name="status_lunas">
+                                        <option value="">Semua Status</option>
+                                        <option value="1" {{ $selectedStatusLunas == '1' ? 'selected' : '' }}>Lunas</option>
+                                        <option value="0" {{ $selectedStatusLunas == '0' ? 'selected' : '' }}>Belum Lunas</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="form-group">
                                     <label for="tanggal_mulai">Tanggal Mulai</label>
                                     <input type="date" class="form-control" id="tanggal_mulai" name="tanggal_mulai" 
                                         value="{{ $tanggalMulai }}">
@@ -64,10 +90,16 @@
                                         value="{{ $tanggalAkhir }}">
                                 </div>
                             </div>
-                            <div class="col-md-1">
+                            <div class="col-md-2">
                                 <div class="form-group">
                                     <label>&nbsp;</label>
                                     <button type="submit" class="btn btn-primary btn-block">Filter</button>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <a href="{{ route('history-kegiatan.index') }}" class="btn btn-secondary btn-block">Reset</a>
                                 </div>
                             </div>
                         </div>
@@ -83,6 +115,7 @@
                                     <th>NISN</th>
                                     <th>Nama Siswa</th>
                                     <th>Kelas</th>
+                                    <th>Paket</th>
                                     <th>Kegiatan</th>
                                     <th>Angsuran Ke</th>
                                     <th>Jumlah Bayar</th>
@@ -106,6 +139,7 @@
                                         <td>{{ $value->siswa->nisn }}</td>
                                         <td>{{ $value->siswa->nama }}</td>
                                         <td>{{ $value->siswa->kelas->nama_kelas ?? '-' }}</td>
+                                        <td>{{ $value->kegiatan->nama_paket ?? '-' }}</td>
                                         <td>{{ $value->kegiatan->nama_kegiatan }}</td>
                                         <td class="text-center">{{ $value->angsuran_ke }}</td>
                                         <td class="text-right">Rp {{ number_format($value->jumlah_bayar, 0, ',', '.') }}</td>
@@ -150,7 +184,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="12" class="text-center">Tidak ada data pembayaran kegiatan</td>
+                                        <td colspan="13" class="text-center">Tidak ada data pembayaran kegiatan</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -181,11 +215,35 @@
 @section('scripts')
 <script>
     $(document).ready(function() {
+        // Dynamic dropdown untuk kegiatan berdasarkan paket
+        $('#paket').change(function() {
+            var selectedPaket = $(this).val();
+            $('#kegiatan').html('<option value="">Semua Kegiatan</option>');
+            
+            if (selectedPaket) {
+                // AJAX untuk mendapatkan kegiatan berdasarkan paket
+                $.ajax({
+                    url: '{{ route("get-kegiatan-by-paket") }}',
+                    type: 'GET',
+                    data: {
+                        paket: selectedPaket
+                    },
+                    success: function(data) {
+                        $.each(data, function(key, value) {
+                            $('#kegiatan').append('<option value="' + value.id + '">' + value.nama_kegiatan + '</option>');
+                        });
+                    }
+                });
+            }
+        });
+
         // Reset filter
         $('#reset-filter').click(function() {
             $('#search').val('');
+            $('#paket').val('');
             $('#kegiatan').val('');
             $('#kelas').val('');
+            $('#status_lunas').val('');
             $('#tanggal_mulai').val('');
             $('#tanggal_akhir').val('');
             $('form').submit();

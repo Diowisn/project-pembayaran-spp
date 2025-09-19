@@ -134,6 +134,14 @@ Route::get('/entri-kegiatan/generate-rekap-siswa-pdf', [KegiatanSiswaController:
 Route::get('history-kegiatan', [HistoryController::class, 'kegiatan'])->name('history-kegiatan.index');
 Route::get('history-kegiatan/{id}', [HistoryController::class, 'showKegiatan'])->name('history-kegiatan.show');
 Route::delete('history-kegiatan/{id}', [HistoryController::class, 'destroyKegiatan'])->name('history-kegiatan.destroy');
+Route::get('/get-kegiatan-by-paket', function(Request $request) {
+    $paket = $request->input('paket');
+    $kegiatan = KegiatanTahunan::where('nama_paket', $paket)
+        ->whereNotNull('nama_kegiatan')
+        ->get(['id', 'nama_kegiatan']);
+    
+    return response()->json($kegiatan);
+})->name('get-kegiatan-by-paket');
     
 Route::resource('/dashboard/kegiatan', KegiatanController::class);
 Route::get('/dashboard/entri-kegiatan', [KegiatanSiswaController::class, 'index'])->name('entri-kegiatan.index');

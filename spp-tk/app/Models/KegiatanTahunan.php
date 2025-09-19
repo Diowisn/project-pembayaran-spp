@@ -49,7 +49,8 @@ class KegiatanTahunan extends Model
             ->whereNotNull('nama_paket')
             ->distinct()
             ->orderBy('nama_paket')
-            ->pluck('nama_paket');
+            ->pluck('nama_paket')
+            ->toArray();
     }
     
     // Method untuk mendapatkan semua paket (widget)

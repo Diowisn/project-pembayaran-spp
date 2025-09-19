@@ -259,17 +259,29 @@ class HistoryController extends Controller
                     ->orderBy('created_at', 'DESC');
 
         // Filter pencarian
-        if ($request->has('search')) {
+        if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
-            $query->whereHas('siswa', function($q) use ($search) {
-                $q->where('nisn', 'like', "%{$search}%")
-                  ->orWhere('nama', 'like', "%{$search}%");
+            $query->where(function($q) use ($search) {
+                $q->whereHas('siswa', function($q2) use ($search) {
+                    $q2->where('nisn', 'like', "%{$search}%")
+                    ->orWhere('nama', 'like', "%{$search}%");
+                })->orWhereHas('kegiatan', function($q2) use ($search) {
+                    $q2->where('nama_kegiatan', 'like', "%{$search}%")
+                    ->orWhere('nama_paket', 'like', "%{$search}%");
+                });
             });
         }
 
         // Filter kegiatan
         if ($request->has('kegiatan') && $request->kegiatan != '') {
             $query->where('id_kegiatan', $request->kegiatan);
+        }
+
+        // Filter paket
+        if ($request->has('paket') && $request->paket != '') {
+            $query->whereHas('kegiatan', function($q) use ($request) {
+                $q->where('nama_paket', $request->paket);
+            });
         }
 
         // Filter kelas
@@ -280,23 +292,30 @@ class HistoryController extends Controller
         }
 
         // Filter tanggal
-        if ($request->has('tanggal_mulai') && $request->has('tanggal_akhir')) {
-            if ($request->tanggal_mulai && $request->tanggal_akhir) {
-                $query->whereBetween('tgl_bayar', [
-                    $request->tanggal_mulai,
-                    $request->tanggal_akhir
-                ]);
-            }
+        if ($request->has('tanggal_mulai') && !empty($request->tanggal_mulai) && 
+            $request->has('tanggal_akhir') && !empty($request->tanggal_akhir)) {
+            $query->whereBetween('tgl_bayar', [
+                $request->tanggal_mulai,
+                $request->tanggal_akhir
+            ]);
+        }
+
+        // Filter status lunas
+        if ($request->has('status_lunas') && $request->status_lunas != '') {
+            $query->where('is_lunas', $request->status_lunas);
         }
 
         $data = [
             'pembayaranKegiatan' => $query->paginate(15)->appends($request->all()),
             'user' => User::find(auth()->user()->id),
-            'kegiatanList' => KegiatanTahunan::all(),
+            'kegiatanList' => KegiatanTahunan::whereNotNull('nama_kegiatan')->get(),
+            'paketList' => KegiatanTahunan::getPaketList(), // Tambahkan ini
             'kelasList' => Kelas::all(),
             'search' => $request->search,
             'selectedKegiatan' => $request->kegiatan,
+            'selectedPaket' => $request->paket, // Tambahkan ini
             'selectedKelas' => $request->kelas,
+            'selectedStatusLunas' => $request->status_lunas,
             'tanggalMulai' => $request->tanggal_mulai,
             'tanggalAkhir' => $request->tanggal_akhir
         ];
@@ -316,9 +335,20 @@ class HistoryController extends Controller
                         ->where('partisipasi', 'ikut')
                         ->findOrFail($id);
         
+        // Hitung total pembayaran untuk siswa ini pada kegiatan yang sama
+        $totalDibayar = SiswaKegiatan::where('id_siswa', $pembayaran->id_siswa)
+            ->where('id_kegiatan', $pembayaran->id_kegiatan)
+            ->where('partisipasi', 'ikut')
+            ->sum('jumlah_bayar');
+        
+        $sisaTagihan = max(0, ($pembayaran->kegiatan->nominal ?? 0) - $totalDibayar);
+        
         return view('dashboard.history-kegiatan.show', [
             'pembayaran' => $pembayaran,
-            'user' => User::find(auth()->user()->id)
+            'user' => User::find(auth()->user()->id),
+            'totalDibayar' => $totalDibayar,
+            'sisaTagihan' => $sisaTagihan,
+            'isLunas' => $pembayaran->is_lunas
         ]);
     }
 
