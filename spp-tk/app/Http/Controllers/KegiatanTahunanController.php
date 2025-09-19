@@ -98,8 +98,19 @@ class KegiatanTahunanController extends Controller
         if (empty($kegiatan->nama_kegiatan)) {
             // Update paket
             $request->validate([
-                'nama_paket' => 'required|string|max:255',
+                'nama_paket' => 'required|string|max:255|unique:kegiatan_tahunan,nama_paket,' . $id . ',id,nama_kegiatan,NULL',
             ]);
+            
+            // Cek apakah nama paket sudah ada (kecuali untuk record ini)
+            $existingPaket = KegiatanTahunan::where('nama_paket', $request->nama_paket)
+                ->whereNull('nama_kegiatan')
+                ->where('id', '!=', $id)
+                ->first();
+                
+            if ($existingPaket) {
+                Alert::error('Gagal!', 'Paket dengan nama ini sudah ada');
+                return back();
+            }
             
             $kegiatan->update([
                 'nama_paket' => $request->nama_paket,
