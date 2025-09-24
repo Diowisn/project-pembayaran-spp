@@ -15,7 +15,7 @@ class Pembayaran extends Model
     protected $fillable = [
         'id_petugas', 'name', 'id_siswa', 'id_spp', 'bulan', 'tahun',
         'nominal_spp', 'nominal_konsumsi', 'nominal_fullday', 'nominal_inklusi',
-        'jumlah_bayar', 'kembalian', 'is_lunas', 'tgl_bayar'
+        'jumlah_bayar', 'kembalian', 'is_lunas', 'tgl_bayar', 'kembalian_action'
     ];
 
     protected $casts = [
@@ -48,5 +48,33 @@ class Pembayaran extends Model
     public function tabungan() 
     {
         return $this->hasOne(Tabungan::class, 'id_pembayaran');
+    }
+
+    // Method untuk mendapatkan status kembalian
+    public function getStatusKembalianAttribute()
+    {
+        if ($this->kembalian <= 0) {
+            return '-';
+        }
+
+        if ($this->tabungan) {
+            return 'Masuk Tabungan';
+        }
+
+        return 'Dikembalikan Tunai';
+    }
+
+    // Method untuk mendapatkan badge warna status kembalian
+    public function getBadgeKembalianAttribute()
+    {
+        if ($this->kembalian <= 0) {
+            return '<span class="badge badge-secondary">-</span>';
+        }
+
+        if ($this->tabungan) {
+            return '<span class="badge badge-success">Masuk Tabungan</span>';
+        }
+
+        return '<span class="badge badge-warning">Dikembalikan Tunai</span>';
     }
 }

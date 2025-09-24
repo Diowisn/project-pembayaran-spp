@@ -118,7 +118,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title">Pembayaran SPP</h5>
 
-                                    <form method="post" action="{{ route('entry-pembayaran.store') }}">
+                                    <form method="post" action="{{ route('entry-pembayaran.store') }}" id="paymentForm">
                                         @csrf
                                         <input type="hidden" name="nisn" value="{{ $siswa->nisn }}">
                                         <input type="hidden" name="id_siswa" value="{{ $siswa->id }}">
@@ -304,9 +304,9 @@
                                                 class="form-control @error('nominal_pembayaran') is-invalid @enderror"
                                                 name="nominal_pembayaran" id="nominal_pembayaran"
                                                 value="{{ old('nominal_pembayaran', $total_bayar) }}" required
+                                                min="{{ $total_bayar }}"
                                                 oninput="hitungKembalian({{ $total_bayar }}, this.value)">
-                                            <small class="text-muted">Pembayaran harus sesuai dengan nominal atau lebih
-                                                dari nominal</small>
+                                            <small class="text-muted">Pembayaran harus sesuai dengan nominal atau lebih dari nominal</small>
                                             <span class="text-danger">
                                                 @error('nominal_pembayaran')
                                                     {{ $message }}
@@ -321,11 +321,14 @@
                                                 </div>
                                                 <div id="kembalian" class="text-success d-none">
                                                     Kembalian: <span id="jumlah_kembalian">0</span>
+                                                    <div class="mt-2">
+                                                        <small class="text-info">Kembalian akan otomatis masuk ke tabungan siswa</small>
+                                                    </div>
                                                 </div>
                                             </small>
                                         </div>
 
-                                        <button type="submit" class="btn btn-success btn-rounded float-right mt-3">
+                                        <button type="submit" class="btn btn-success btn-rounded float-right mt-3" id="submitBtn">
                                             <i class="mdi mdi-check"></i> Simpan Pembayaran
                                         </button>
                                     </form>
@@ -359,6 +362,7 @@
                                                 <th>Total Tagihan</th>
                                                 <th>Jumlah Bayar</th>
                                                 <th>Kembalian</th>
+                                                <th>Status Kembalian</th>
                                                 <th>Status</th>
                                                 <th>Tanggal Bayar</th>
                                             </tr>
@@ -368,8 +372,7 @@
                                                 <tr>
                                                     <td>{{ ucfirst($riwayat->bulan) }}/{{ $riwayat->tahun }}</td>
                                                     <td>Rp {{ number_format($riwayat->nominal_spp, 0, ',', '.') }}</td>
-                                                    <td>Rp {{ number_format($riwayat->nominal_konsumsi, 0, ',', '.') }}
-                                                    </td>
+                                                    <td>Rp {{ number_format($riwayat->nominal_konsumsi, 0, ',', '.') }}</td>
                                                     <td>Rp {{ number_format($riwayat->nominal_fullday, 0, ',', '.') }}</td>
                                                     <td>Rp {{ number_format($riwayat->nominal_inklusi, 0, ',', '.') }}</td>
                                                     <td>Rp
@@ -377,6 +380,25 @@
                                                     </td>
                                                     <td>Rp {{ number_format($riwayat->jumlah_bayar, 0, ',', '.') }}</td>
                                                     <td>Rp {{ number_format($riwayat->kembalian, 0, ',', '.') }}</td>
+                                                    <td style="text-align: center;">
+                                                        @if($riwayat->kembalian > 0)
+                                                            @if($riwayat->tabungan)
+                                                                <span class="badge badge-success">
+                                                                    Masuk Tabungan
+                                                                </span>
+                                                            @else
+                                                                <span class="badge badge-warning">
+                                                                    Dikembalikan Tunai
+                                                                </span>
+                                                            @endif
+                                                        @else
+                                                            <span class="badge badge-secondary">-</span>
+                                                        @endif
+                                                        
+                                                        @if($riwayat->kembalian > 0 && $riwayat->tabungan)
+                                                            <br><small class="text-muted">Saldo: +Rp {{ number_format($riwayat->kembalian, 0, ',', '.') }}</small>
+                                                        @endif
+                                                    </td>
                                                     <td>
                                                         @if ($riwayat->is_lunas)
                                                             <span class="badge badge-success">LUNAS</span>
@@ -446,6 +468,7 @@
                                     <th scope="col">SISA</th>
                                     <th scope="col">BULAN</th>
                                     <th scope="col">STATUS</th>
+                                    <th scope="col">STATUS KEMBALIAN</th>
                                     <th scope="col">
                                         <a href="{{ route('entry-pembayaran.index', [
                                             'search' => request('search'),
@@ -511,6 +534,20 @@
                                                     {{ number_format($kekurangan, 0, ',', '.') }}</small>
                                             @endif
                                         </td>
+                                        <td style="text-align: center;">
+                                            @if($value->kembalian > 0)
+                                                @if($value->tabungan)
+                                                    <span class="badge badge-success">
+                                                        Masuk Tabungan
+                                                    </span>
+                                                @else
+                                                    <span class="badge badge-warning">
+                                                        Dikembalikan Tunai
+                                                    </span>
+                                                @endif
+                                            @else
+                                                <span class="badge badge-secondary">-</span>
+                                            @endif
                                         <td>{{ $value->created_at->format('d M, Y') }}</td>
                                         <td>
                                             <div class="hide-menu">
@@ -652,37 +689,47 @@
             const containerKembalian = document.getElementById('kembalian');
 
             if (kembalian > 0) {
-                statusElement.textContent = 'Pembayaran lebih: Rp ' + kembalian.toLocaleString('id-ID') +
-                    ' akan masuk ke tabungan';
+                statusElement.textContent = 'Pembayaran lebih: Rp ' + kembalian.toLocaleString('id-ID');
                 statusElement.className = 'text-success';
                 containerKembalian.classList.remove('d-none');
             } else if (kekurangan > 0) {
                 statusElement.textContent = 'Pembayaran kurang: Rp ' + kekurangan.toLocaleString('id-ID');
                 statusElement.className = 'text-danger';
                 containerKembalian.classList.add('d-none');
+                
+                // Disable submit button jika kurang
+                document.getElementById('submitBtn').disabled = true;
             } else {
                 statusElement.textContent = 'Pembayaran sesuai tagihan';
                 statusElement.className = 'text-info';
                 containerKembalian.classList.add('d-none');
+                document.getElementById('submitBtn').disabled = false;
+            }
+            
+            // Enable submit button jika cukup
+            if (jumlahBayar >= jumlahTagihan) {
+                document.getElementById('submitBtn').disabled = false;
             }
         }
 
-        // Inisialisasi saat halaman dimuat
+        // Form submission handler
         document.addEventListener('DOMContentLoaded', function() {
-            hitungTotal();
-
-            // Event listener untuk input konsumsi
-            const konsumsiInput = document.querySelector('input[name="nominal_konsumsi"]');
-            if (konsumsiInput) {
-                konsumsiInput.addEventListener('input', hitungTotal);
-            }
-
-            // Event listener untuk input pembayaran
-            const nominalPembayaran = document.getElementById('nominal_pembayaran');
-            if (nominalPembayaran) {
-                nominalPembayaran.addEventListener('input', function() {
+            const paymentForm = document.getElementById('paymentForm');
+            if (paymentForm) {
+                paymentForm.addEventListener('submit', function(e) {
+                    const nominalPembayaran = parseFloat(document.getElementById('nominal_pembayaran').value);
                     const totalTagihan = parseFloat(document.getElementById('jumlah_tagihan').value);
-                    hitungKembalian(totalTagihan, this.value);
+                    
+                    if (nominalPembayaran < totalTagihan) {
+                        e.preventDefault();
+                        alert('Nominal pembayaran tidak boleh kurang dari total tagihan');
+                        return false;
+                    }
+                    
+                    // Show loading state
+                    const submitBtn = document.getElementById('submitBtn');
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Menyimpan...';
                 });
             }
         });

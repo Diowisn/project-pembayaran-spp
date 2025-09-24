@@ -76,6 +76,11 @@ Route::resource('/dashboard/pembayaran', PembayaranController::class)->names([
 Route::get('/pembayaran/{id}/generate-pdf', [PembayaranController::class, 'generate'])->name('pembayaran.generate-pdf');
 Route::get('/pembayaran/siswa/{siswaId}/rekap-pdf', [PembayaranController::class, 'generateRiwayat'])->name('pembayaran.rekap-siswa');
 
+Route::get('/pembayaran/konfirmasi-kembalian/{id}', [PembayaranController::class, 'konfirmasiKembalian'])
+    ->name('entri-pembayaran.konfirmasi-kembalian');
+Route::post('/pembayaran/handle-kembalian', [PembayaranController::class, 'handleKembalian'])
+    ->name('entri-pembayaran.handle-kembalian');
+
 Route::get('/dashboard/infaq/cari', [InfaqController::class, 'cariSiswa'])->name('infaq.cari-siswa');
 Route::get('/infaq/rekap/{siswaId}', [InfaqController::class, 'generateRiwayatInfaq'])->name('infaq.rekap');
 

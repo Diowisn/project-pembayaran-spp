@@ -160,10 +160,11 @@ class PembayaranController extends Controller
             'bulan' => 'required|string',
             'nominal_konsumsi' => 'nullable|numeric|min:0',
             'nominal_pembayaran' => 'required|numeric|min:0',
-            'jumlah_tagihan' => 'required|numeric'
+            'jumlah_tagihan' => 'required|numeric',
+            'tahun' => 'required|numeric'
         ], [
             'bulan.required' => 'Bulan pembayaran harus dipilih',
-            'min' => 'Pembayaran tidak boleh kurang dari :min',
+            'nominal_pembayaran.min' => 'Pembayaran tidak boleh kurang dari :min',
             'required' => 'Field :attribute wajib diisi'
         ]);
 
@@ -182,6 +183,19 @@ class PembayaranController extends Controller
             $bulan = strtolower($request->bulan);
             $tahun = $request->tahun ?? date('Y');
             
+            // Cek apakah sudah bayar untuk bulan dan tahun yang sama
+            $pembayaranExist = Pembayaran::where('id_siswa', $request->id_siswa)
+                ->where('bulan', $bulan)
+                ->where('tahun', $tahun)
+                ->exists();
+
+            if ($pembayaranExist) {
+                return redirect()
+                    ->route('pembayaran.cari-siswa', ['nisn' => $request->nisn])
+                    ->with('error', 'Siswa sudah melakukan pembayaran untuk bulan ' . ucfirst($bulan) . ' ' . $tahun)
+                    ->withInput();
+            }
+
             $nominal_inklusi = 0;
             if ($siswa->inklusi && $siswa->paketInklusi) {
                 $nominal_inklusi = $siswa->paketInklusi->nominal;
@@ -190,13 +204,20 @@ class PembayaranController extends Controller
             $nominal_konsumsi = $request->nominal_konsumsi ?? $siswa->spp->nominal_konsumsi ?? 0;
             
             $total_tagihan = $siswa->spp->nominal_spp + 
-                            // ($siswa->spp->nominal_konsumsi ?? 0) + 
                             $nominal_konsumsi +
                             ($siswa->spp->nominal_fullday ?? 0) +
                             $nominal_inklusi;
 
+            // Validasi nominal pembayaran
+            if ($request->nominal_pembayaran < $total_tagihan) {
+                return redirect()
+                    ->route('pembayaran.cari-siswa', ['nisn' => $request->nisn])
+                    ->with('error', 'Nominal pembayaran tidak boleh kurang dari total tagihan')
+                    ->withInput();
+            }
+
             $kembalian = $request->nominal_pembayaran - $total_tagihan;
-            $is_lunas = $kembalian >= 0; 
+            $is_lunas = true;
 
             $pembayaran = Pembayaran::create([
                 'id_petugas' => auth()->id(),
@@ -206,39 +227,25 @@ class PembayaranController extends Controller
                 'bulan' => $bulan,
                 'tahun' => $tahun,
                 'nominal_spp' => $siswa->spp->nominal_spp,
-                // 'nominal_konsumsi' => $siswa->spp->nominal_konsumsi ?? 0,
                 'nominal_konsumsi' => $nominal_konsumsi,
                 'nominal_fullday' => $siswa->spp->nominal_fullday ?? 0,
                 'nominal_inklusi' => $nominal_inklusi,
                 'jumlah_bayar' => $request->nominal_pembayaran,
-                'kembalian' => $is_lunas ? $kembalian : 0,
+                'kembalian' => $kembalian,
                 'tgl_bayar' => now(),
-                'is_lunas' => $is_lunas, 
+                'is_lunas' => $is_lunas,
             ]);
-
-            if ($is_lunas && $kembalian > 0) {
-                $saldo_terakhir = Tabungan::where('id_siswa', $request->id_siswa)
-                    ->latest()
-                    ->first();
-                
-                $saldo_sebelumnya = $saldo_terakhir ? $saldo_terakhir->saldo : 0;
-                $saldo_sekarang = $saldo_sebelumnya + $kembalian;
-
-                Tabungan::create([
-                    'id_siswa' => $request->id_siswa,
-                    'id_pembayaran' => $pembayaran->id,
-                    'id_petugas' => auth()->id(),
-                    'debit' => $kembalian,
-                    'kredit' => 0,
-                    'saldo' => $saldo_sekarang,
-                    'keterangan' => 'Kembalian pembayaran SPP bulan ' . ucfirst($request->bulan),
-                ]);
-            }
 
             DB::commit();
 
+            // JIKA ADA KEMBALIAN, redirect ke halaman konfirmasi
+            if ($kembalian > 0) {
+                return redirect()->route('entri-pembayaran.konfirmasi-kembalian', $pembayaran->id);
+            }
+
             Alert::success('Berhasil!', 'Pembayaran berhasil disimpan!');
-            return redirect()->route('entry-pembayaran.index'); 
+            return redirect()->route('pembayaran.cari-siswa', ['nisn' => $request->nisn])
+                ->with('success', 'Pembayaran berhasil disimpan!');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -247,6 +254,78 @@ class PembayaranController extends Controller
             Alert::error('Error!', 'Terjadi kesalahan saat menyimpan pembayaran');
             return redirect()->route('pembayaran.cari-siswa', ['nisn' => $request->nisn])
                 ->withInput();
+        }
+    }
+
+    // Method baru untuk halaman konfirmasi kembalian
+    public function konfirmasiKembalian($id)
+    {
+        $pembayaran = Pembayaran::with('siswa')->findOrFail($id);
+        
+        return view('dashboard.entri-pembayaran.konfirmasi-kembalian', [
+            'pembayaran' => $pembayaran,
+            'user' => User::find(auth()->user()->id),
+            'siswa' => $pembayaran->siswa,
+            'kembalian' => $pembayaran->kembalian
+        ]);
+    }
+
+    public function handleKembalian(Request $request)
+    {
+        $request->validate([
+            'id_pembayaran' => 'required|exists:pembayaran,id',
+            'action' => 'required|in:tabungan,tunai',
+            'jumlah_kembalian' => 'required|numeric|min:0'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $pembayaran = Pembayaran::findOrFail($request->id_pembayaran);
+            $siswa = $pembayaran->siswa;
+
+            if ($request->action === 'tabungan') {
+                // Masukkan ke tabungan
+                $saldo_terakhir = Tabungan::where('id_siswa', $siswa->id)
+                    ->latest()
+                    ->first();
+                
+                $saldo_sebelumnya = $saldo_terakhir ? $saldo_terakhir->saldo : 0;
+                $saldo_sekarang = $saldo_sebelumnya + $request->jumlah_kembalian;
+
+                Tabungan::create([
+                    'id_siswa' => $siswa->id,
+                    'id_pembayaran' => $pembayaran->id,
+                    'id_petugas' => auth()->id(),
+                    'debit' => $request->jumlah_kembalian,
+                    'kredit' => 0,
+                    'saldo' => $saldo_sekarang,
+                    'keterangan' => 'Kembalian pembayaran SPP bulan ' . ucfirst($pembayaran->bulan),
+                ]);
+
+                // Update status kembalian di pembayaran
+                $pembayaran->update(['kembalian_action' => 'tabungan']);
+
+                $message = 'Kembalian berhasil dimasukkan ke tabungan siswa';
+            } else {
+                // Update status kembalian di pembayaran
+                $pembayaran->update(['kembalian_action' => 'tunai']);
+
+                $message = 'Kembalian berhasil dikembalikan secara tunai';
+            }
+
+            DB::commit();
+
+            Alert::success('Berhasil!', $message);
+            return redirect()->route('pembayaran.cari-siswa', ['nisn' => $siswa->nisn])
+                ->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Error handling kembalian: '.$e->getMessage());
+            Alert::error('Error!', 'Terjadi kesalahan saat menangani kembalian');
+            return back()->withInput();
         }
     }
 
