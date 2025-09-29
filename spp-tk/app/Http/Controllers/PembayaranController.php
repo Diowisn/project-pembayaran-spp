@@ -183,7 +183,6 @@ class PembayaranController extends Controller
             $bulan = strtolower($request->bulan);
             $tahun = $request->tahun ?? date('Y');
             
-            // Cek apakah sudah bayar untuk bulan dan tahun yang sama
             $pembayaranExist = Pembayaran::where('id_siswa', $request->id_siswa)
                 ->where('bulan', $bulan)
                 ->where('tahun', $tahun)
@@ -257,7 +256,6 @@ class PembayaranController extends Controller
         }
     }
 
-    // Method baru untuk halaman konfirmasi kembalian
     public function konfirmasiKembalian($id)
     {
         $pembayaran = Pembayaran::with('siswa')->findOrFail($id);

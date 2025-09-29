@@ -170,7 +170,12 @@ Route::get('/dashboard/history/uang-tahunan', [HistoryController::class, 'uangTa
 
 // Laporan Routes
 Route::get('/dashboard/laporan', [LaporanController::class, 'index']);
-Route::get('/dashboard/laporan/create', [LaporanController::class, 'create']);
+Route::get('/dashboard/laporan/kelas', [LaporanController::class, 'laporanKelas'])->name('laporan.kelas');
+Route::get('/dashboard/laporan/bulan', [LaporanController::class, 'laporanBulan'])->name('laporan.bulan');
+Route::get('/dashboard/laporan/semester', [LaporanController::class, 'laporanSemester'])->name('laporan.semester');
+Route::get('/dashboard/laporan/tahun', [LaporanController::class, 'laporanTahun'])->name('laporan.tahun');
+Route::get('/dashboard/laporan/semua', [LaporanController::class, 'laporanSemua'])->name('laporan.semua');
+Route::post('/dashboard/laporan/create', [LaporanController::class, 'create'])->name('laporan.create');
 
 Route::get('/pembayaran/{id}/generate', [PembayaranController::class, 'generate'])->name('pembayaran.generate');
 Route::get('/infaq/{id}/generate', [InfaqController::class, 'generate'])->name('infaq.generate');
