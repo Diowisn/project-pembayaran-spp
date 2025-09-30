@@ -177,6 +177,11 @@ Route::get('/dashboard/laporan/tahun', [LaporanController::class, 'laporanTahun'
 Route::get('/dashboard/laporan/semua', [LaporanController::class, 'laporanSemua'])->name('laporan.semua');
 Route::post('/dashboard/laporan/create', [LaporanController::class, 'create'])->name('laporan.create');
 
+Route::get('/dashboard/laporan/tunggakan', [LaporanController::class, 'laporanTunggakan'])->name('laporan.tunggakan');
+Route::post('/dashboard/laporan/tunggakan/filter', [LaporanController::class, 'filterTunggakan'])->name('laporan.tunggakan.filter');
+Route::post('/dashboard/laporan/tunggakan/pdf', [LaporanController::class, 'createLaporanTunggakan'])->name('laporan.tunggakan.pdf');
+Route::get('/dashboard/laporan/tunggakan/pdf', [LaporanController::class, 'createLaporanTunggakan'])->name('laporan.tunggakan.pdf');
+
 Route::get('/pembayaran/{id}/generate', [PembayaranController::class, 'generate'])->name('pembayaran.generate');
 Route::get('/infaq/{id}/generate', [InfaqController::class, 'generate'])->name('infaq.generate');
 

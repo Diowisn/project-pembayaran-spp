@@ -81,7 +81,7 @@
                   </div>
                   
                   <!-- Informasi Tambahan -->
-                  <div class="alert alert-warning">
+                  {{-- <div class="alert alert-warning">
                      <h6><i class="fas fa-lightbulb"></i> Tips Laporan Tahunan</h6>
                      <ul class="mb-0">
                         <li>Laporan tahunan berguna untuk evaluasi kinerja tahunan</li>
@@ -89,7 +89,7 @@
                         <li>Cocok untuk laporan keuangan akhir tahun</li>
                         <li>Berguna untuk perencanaan anggaran tahun berikutnya</li>
                      </ul>
-                  </div>
+                  </div> --}}
                   
                   <!-- Tombol Aksi -->
                   <div class="row mt-4">

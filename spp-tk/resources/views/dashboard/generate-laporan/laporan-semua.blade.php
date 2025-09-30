@@ -26,16 +26,16 @@
                    </div>
                @endif
                
-               <div class="alert alert-info">
+               {{-- <div class="alert alert-info">
                   <strong>Panduan:</strong> Laporan ini akan menampilkan semua data pembayaran SPP yang tersedia dalam sistem tanpa filter tertentu.
-               </div>
+               </div> --}}
                        
                <form action="{{ route('laporan.create') }}" method="POST" target="_blank" id="laporanForm">
                   @csrf
                   <input type="hidden" name="jenis_laporan" value="semua">
                   
                   <!-- Informasi Laporan -->
-                  <div class="row mb-4">
+                  {{-- <div class="row mb-4">
                      <div class="col-md-12">
                         <div class="alert alert-warning">
                            <h6><i class="fas fa-exclamation-triangle"></i> Informasi Penting</h6>
@@ -47,7 +47,7 @@
                            </ul>
                         </div>
                      </div>
-                  </div>
+                  </div> --}}
                   
                   <!-- Statistik Data Keseluruhan -->
                   <div class="card mb-3">

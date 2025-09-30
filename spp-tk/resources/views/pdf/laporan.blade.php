@@ -372,23 +372,25 @@
             </thead>
             <tbody>
                 @php
-                    // Group by bulan untuk melihat distribusi per bulan dalam semester
+                    // Group by bulan menggunakan tgl_bayar (lebih reliable)
                     $groupedByBulan = $pembayaran->groupBy(function ($item) {
-                        return $item->bulan . '-' . $item->tahun;
+                        return \Carbon\Carbon::parse($item->tgl_bayar)->format('n-Y'); // Format: 1-2025, 2-2025, etc.
                     });
 
                     // Urutkan berdasarkan bulan
                     $groupedByBulan = $groupedByBulan->sortBy(function ($item, $key) {
-                        return $key;
+                        [$bulan, $tahun] = explode('-', $key);
+                        return (int) $tahun * 100 + (int) $bulan; // Urutkan by tahun dan bulan
                     });
                 @endphp
 
                 @foreach ($groupedByBulan as $groupKey => $transaksiBulan)
                     @php
-                        [$bulan, $tahun] = explode('-', $groupKey);
+                        [$bulanAngka, $tahun] = explode('-', $groupKey);
+                        $bulanAngka = (int) $bulanAngka; // Convert ke integer
                     @endphp
                     <tr>
-                        <td>{{ $getNamaBulan($bulan) }} {{ $tahun }}</td>
+                        <td>{{ $getNamaBulan($bulanAngka) }} {{ $tahun }}</td>
                         <td class="text-right">{{ $transaksiBulan->count() }}</td>
                         <td class="text-right">Rp
                             {{ number_format($transaksiBulan->sum('jumlah_bayar'), 0, ',', '.') }}</td>
@@ -414,7 +416,7 @@
             </thead>
             <tbody>
                 @php
-                    $jumlahSiswa = $pembayaran->unique('siswa.id')->count();
+                    $jumlahSiswa = $pembayaran->unique('id_siswa')->count();
                     $rataTransaksiPerSiswa = $jumlahSiswa > 0 ? $pembayaran->count() / $jumlahSiswa : 0;
                     $rataPembayaranPerSiswa = $jumlahSiswa > 0 ? $pembayaran->sum('jumlah_bayar') / $jumlahSiswa : 0;
                 @endphp
@@ -872,9 +874,9 @@
     <!-- footer -->
     <div class="footer">
         <div style="float: right; text-align: center;">
-            Ngawi, {{ date('d F Y') }}<br>
-            Pembuat Laporan,<br><br><br><br>
-            <strong>{{ auth()->user()->name }}</strong>
+            <p>{{ \Carbon\Carbon::parse($tanggal_surat)->locale('id')->isoFormat('dddd, D MMMM Y') }}</p>
+            <br><br>
+            <p><strong>{{ $nama_petugas }}</strong></p>
         </div>
         <div style="clear: both;"></div>
     </div>
