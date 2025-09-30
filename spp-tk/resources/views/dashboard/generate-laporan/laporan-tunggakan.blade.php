@@ -206,6 +206,31 @@
                                         Total Nominal Tunggakan: <span class="text-danger">Rp
                                             {{ number_format($total_tunggakan, 0, ',', '.') }}</span>
                                     </div>
+            
+<!-- DROPDOWN ITEMS PER PAGE -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="text-muted">
+        Total: {{ $total_siswa }} siswa
+    </div>
+    <div class="form-inline">
+        <label for="perPage" class="mr-2">Items per page:</label>
+        <select class="form-control form-control-sm" id="perPage" onchange="changePerPage(this.value)">
+            <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
+            <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
+            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+            <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+        </select>
+    </div>
+</div>
+
+<script>
+function changePerPage(perPage) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', perPage);
+    url.searchParams.delete('page'); // Reset ke halaman 1
+    window.location.href = url.toString();
+}
+</script>
 
                                     @if ($total_siswa > 0)
                                         <div class="table-responsive">
@@ -224,8 +249,14 @@
                                                 </thead>
                                                 <tbody>
                                                     @foreach ($siswa_belum_bayar as $key => $item)
+                                                        @php
+                                                            // Hitung nomor urut berdasarkan halaman
+                                                            $currentPage = $paginator->currentPage();
+                                                            $perPage = $paginator->perPage();
+                                                            $nomorUrut = ($currentPage - 1) * $perPage + $key + 1;
+                                                        @endphp
                                                         <tr>
-                                                            <td>{{ $key + 1 }}</td>
+                                                            <td>{{ $nomorUrut }}</td>
                                                             <td>{{ $item['siswa']->nisn }}</td>
                                                             <td><strong>{{ $item['siswa']->nama }}</strong></td>
                                                             <td>{{ $item['siswa']->kelas->nama_kelas }}</td>
@@ -255,6 +286,17 @@
                                                     @endforeach
                                                 </tbody>
                                             </table>
+                                        </div>
+
+                                        <!-- PAGINATION -->
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
+                                            <div class="text-muted">
+                                                Menampilkan {{ $paginator->firstItem() ?? 0 }} -
+                                                {{ $paginator->lastItem() ?? 0 }} dari {{ $paginator->total() }} data
+                                            </div>
+                                            <nav>
+                                                {{ $paginator->appends(request()->except('page'))->links() }}
+                                            </nav>
                                         </div>
                                     @else
                                         <div class="text-center text-success py-4">

@@ -461,7 +461,6 @@ class LaporanController extends Controller
         $tahun = $request->tahun ?? date('Y');
         $bulanSekarang = date('n');
         
-        // Handle bulan - PASTIKAN UNIK dan valid
         if ($request->has('bulan')) {
             $bulanDipilih = is_array($request->bulan) ? $request->bulan : [$request->bulan];
             $bulanDipilih = array_unique($bulanDipilih);
@@ -472,7 +471,6 @@ class LaporanController extends Controller
             $bulanDipilih = range(1, $bulanSekarang);
         }
         
-        // Handle kelas_id - PASTIKAN UNIK
         $kelasId = [];
         if ($request->has('kelas_id')) {
             $kelasId = is_array($request->kelas_id) ? $request->kelas_id : [$request->kelas_id];
@@ -489,14 +487,35 @@ class LaporanController extends Controller
         // Ambil data tunggakan
         $siswaBelumBayar = $this->getDataTunggakan($tahun, $bulanDipilih, $kelasId);
 
+        // Konversi ke Collection untuk pagination
+        $siswaBelumBayarCollection = collect($siswaBelumBayar);
+
+        // Setup pagination
+        $perPage = 10; // Jumlah item per halaman
+        $currentPage = $request->get('page', 1);
+        
+        // Buat pagination manually
+        $currentPageItems = $siswaBelumBayarCollection->slice(($currentPage - 1) * $perPage, $perPage)->all();
+        $paginatedItems = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentPageItems,
+            $siswaBelumBayarCollection->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => $request->url(),
+                'query' => $request->query()
+            ]
+        );
+
         $data = [
             'user' => User::find(auth()->user()->id),
             'kelas' => Kelas::orderBy('nama_kelas', 'ASC')->get(),
             'tahun' => $tahun,
             'bulan' => $bulanSekarang,
-            'siswa_belum_bayar' => $siswaBelumBayar,
-            'total_siswa' => count($siswaBelumBayar),
-            'total_tunggakan' => collect($siswaBelumBayar)->sum('total_tunggakan'),
+            'siswa_belum_bayar' => $currentPageItems,
+            'paginator' => $paginatedItems,
+            'total_siswa' => $siswaBelumBayarCollection->count(),
+            'total_tunggakan' => $siswaBelumBayarCollection->sum('total_tunggakan'),
             'bulan_dipilih' => $bulanDipilih,
             'filter_kelas' => $kelasId,
         ];
