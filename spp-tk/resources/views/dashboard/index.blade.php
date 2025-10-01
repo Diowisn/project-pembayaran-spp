@@ -244,77 +244,195 @@
         };
     </script>
 
+    <style>
+        /* Card and History Styling */
+        .history-section {
+            margin-bottom: 30px;
+        }
+
+        .history-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .history-tabs {
+            padding: 15px 15px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        .history-tab {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            color: #6c757d;
+            position: relative;
+        }
+
+        .history-tab.active {
+            color: #2196f3;
+            font-weight: 600;
+        }
+
+        .history-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #2196f3;
+        }
+
+        .history-content {
+            padding: 0 20px;
+        }
+
+        .comment-row {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            border-left: 4px solid #2196f3;
+        }
+
+        .comment-row:hover {
+            transform: translateX(5px);
+            background: #fff;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .list-group-item {
+            margin-bottom: 5px;
+            border-radius: 6px;
+            background: #f8f9fa;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .action-icons a {
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            color: #2196f3;
+        }
+
+        .action-icons a:hover {
+            background: #e3f2fd;
+            transform: scale(1.1);
+        }
+    </style>
+
     <!-- Payment History Sections -->
     <div class="row">
-        <!-- Histori Pembayaran SPP -->
-        <div class="col-md-6">
-            <div class="card">
+        <!-- Combined History Section -->
+        <div class="col-md-12">
+            <div class="card history-card">
+                <div class="history-tabs">
+                    <h4 class="card-title">Histori Pembayaran Terbaru</h4>
+                    <button class="history-tab active" onclick="showHistory('spp')">Histori SPP</button>
+                    <button class="history-tab" onclick="showHistory('infaq')">Histori Infaq</button>
+                    <button class="history-tab" onclick="showHistory('kegiatan')">Histori Kegiatan</button>
+                </div>
                 <div class="card-body">
-                    <div class="card-title">Histori Pembayaran SPP</div>
-                    <div class="comment-widgets scrollable" style="max-height: 600px; overflow-y: auto;">
+                    <!-- SPP History -->
+                    <div id="spp-history" class="history-content">
+                        <div class="comment-widgets scrollable" style="max-height: 600px; overflow-y: auto;">
 
-                        @foreach ($pembayaran as $history)
-                            <div class="d-flex flex-row comment-row">
-                                <i class="mdi mdi-account display-3"></i>
-                                <div class="comment-text active w-100">
-                                    <hr>
-                                    <span
-                                        class="badge badge-success badge-rounded float-right">{{ $history->created_at->diffforHumans() }}</span>
-                                    <h6 class="font-medium">{{ $history->siswa->nama }}</h6>
-                                    <span class="m-b-15 d-block">
-                                        <ul class="list-group list-group-flush">
-                                            <li class="list-group-item">Kelas {{ $history->siswa->kelas->nama_kelas }} ~
-                                                SPP
-                                                Bulan <b class="text-capitalize text-bold">{{ $history->bulan }}</b></li>
-                                            <li class="list-group-item">Nominal SPP Rp.
-                                                {{ $history->siswa->spp->nominal_spp ?? '-' }}</li>
-                                            <li class="list-group-item">Nominal Konsumsi
-                                                Rp. {{ $history->siswa->spp->nominal_konsumsi ?? '-' }}</li>
-                                            <li class="list-group-item">Nominal Fullday Rp.
-                                                {{ $history->siswa->spp->nominal_fullday ?? '-' }}</li>
-                                            <li class="list-group-item">Nominal Inklusi Rp.
-                                                {{ $history->siswa->spp->nominal_inklusi ?? '-' }}</li>
-                                            <li class="list-group-item">Jumlah Bayar: Rp
-                                                {{ number_format($history->jumlah_bayar, 0, ',', '.') }}</li>
-                                            <li class="list-group-item">Kembalian: Rp
-                                                {{ number_format($history->kembalian, 0, ',', '.') }}</li>
-                                            <li class="list-group-item font-weight-bold">
-                                                Penerimaan Bersih: Rp
-                                                {{ number_format($history->jumlah_bayar - $history->kembalian, 0, ',', '.') }}
-                                            </li>
-                                        </ul>
-                                    </span>
-                                    <div class="comment-footer">
+                            @foreach ($pembayaran as $history)
+                                <div class="d-flex flex-row comment-row">
+                                    <i class="mdi mdi-account display-3"></i>
+                                    <div class="comment-text active w-100">
+                                        <hr>
                                         <span
-                                            class="text-muted float-right">{{ $history->created_at->format('M d, Y') }}</span>
-                                        <span class="action-icons active">
-                                            <a href="{{ route('pembayaran.generate', $history->id) }}" class="mr-2"
-                                                title="Cetak Bukti">
-                                                <i class="mdi mdi-printer"></i>
-                                            </a>
-                                            <a href="{{ url('dashboard/pembayaran/' . $history->id . '/edit') }}"
-                                                title="Edit">
-                                                <i class="ti-pencil-alt"></i>
-                                            </a>
+                                            class="badge badge-success badge-rounded float-right">{{ $history->created_at->diffforHumans() }}</span>
+                                        <h6 class="font-medium">{{ $history->siswa->nama ?? 'N/A' }}</h6>
+                                        <span class="m-b-15 d-block">
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item">Kelas
+                                                    {{ $history->siswa->kelas->nama_kelas ?? 'N/A' }} ~
+                                                    SPP Bulan <b
+                                                        class="text-capitalize text-bold">{{ $history->bulan }}</b>
+                                                    {{ $history->tahun }}</li>
+
+                                                {{-- Ambil data langsung dari model Pembayaran --}}
+                                                @php
+                                                    $nominalSpp = $history->nominal_spp ?? 0;
+                                                    $nominalKonsumsi = $history->nominal_konsumsi ?? 0;
+                                                    $nominalFullday = $history->nominal_fullday ?? 0;
+                                                    $nominalInklusi = $history->nominal_inklusi ?? 0;
+                                                    $totalNominal =
+                                                        $nominalSpp +
+                                                        $nominalKonsumsi +
+                                                        $nominalFullday +
+                                                        $nominalInklusi;
+                                                @endphp
+
+                                                <li class="list-group-item">Nominal SPP: Rp
+                                                    {{ number_format($nominalSpp, 0, ',', '.') }}</li>
+                                                <li class="list-group-item">Nominal Konsumsi: Rp
+                                                    {{ number_format($nominalKonsumsi, 0, ',', '.') }}</li>
+                                                <li class="list-group-item">Nominal Fullday: Rp
+                                                    {{ number_format($nominalFullday, 0, ',', '.') }}</li>
+                                                <li class="list-group-item">Nominal Inklusi: Rp
+                                                    {{ number_format($nominalInklusi, 0, ',', '.') }}</li>
+                                                <li class="list-group-item font-weight-bold">Total Tagihan: Rp
+                                                    {{ number_format($totalNominal, 0, ',', '.') }}</li>
+                                                <li class="list-group-item">Jumlah Bayar: Rp
+                                                    {{ number_format($history->jumlah_bayar, 0, ',', '.') }}</li>
+                                                <li class="list-group-item">Kembalian: Rp
+                                                    {{ number_format($history->kembalian, 0, ',', '.') }}</li>
+                                                <li class="list-group-item font-weight-bold text-primary">
+                                                    Penerimaan Bersih: Rp
+                                                    {{ number_format($history->jumlah_bayar - $history->kembalian, 0, ',', '.') }}
+                                                </li>
+                                                <li class="list-group-item">
+                                                    Status:
+                                                    @if ($history->is_lunas)
+                                                        <span class="badge badge-success">LUNAS</span>
+                                                    @else
+                                                        <span class="badge badge-warning">BELUM LUNAS</span>
+                                                    @endif
+                                                </li>
+                                            </ul>
                                         </span>
+                                        <div class="comment-footer">
+                                            <span
+                                                class="text-muted float-right">{{ $history->created_at->format('M d, Y') }}</span>
+                                            <span class="action-icons active">
+                                                <a href="{{ route('pembayaran.generate', $history->id) }}" class="mr-2"
+                                                    title="Cetak Bukti">
+                                                    <i class="mdi mdi-printer"></i>
+                                                </a>
+                                                <a href="{{ url('dashboard/pembayaran/' . $history->id . '/edit') }}"
+                                                    title="Edit">
+                                                    <i class="ti-pencil-alt"></i>
+                                                </a>
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
 
-                        @if (count($pembayaran) == 0)
-                            <div class="text-center"> Tidak ada histori pembayaran SPP!</div>
-                        @endif
+                            @if (count($pembayaran) == 0)
+                                <div class="text-center"> Tidak ada histori pembayaran SPP!</div>
+                            @endif
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Histori Pembayaran Infaq Gedung -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="card-title">Histori Pembayaran Infaq Gedung</div>
+                <!-- Infaq History -->
+                <div id="infaq-history" class="history-content" style="display: none;">
                     <div class="comment-widgets scrollable" style="max-height: 600px; overflow-y: auto;">
 
                         @foreach ($infaqHistori as $history)
@@ -367,9 +485,95 @@
                         @endif
                     </div>
                 </div>
+                <!-- Kegiatan History -->
+                <div id="kegiatan-history" class="history-content" style="display: none;">
+                    <div class="comment-widgets scrollable" style="max-height: 600px; overflow-y: auto;">
+
+                        @foreach ($kegiatanHistori as $history)
+                            <div class="d-flex flex-row comment-row">
+                                <i class="mdi mdi-calendar-check display-3"></i>
+                                <div class="comment-text active w-100">
+                                    <hr>
+                                    <span
+                                        class="badge badge-info badge-rounded float-right">{{ $history->created_at->diffforHumans() }}</span>
+                                    <h6 class="font-medium">{{ $history->siswa->nama }}</h6>
+                                    <span class="m-b-15 d-block">
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item">Kelas {{ $history->siswa->kelas->nama_kelas }} ~
+                                                <b
+                                                    class="text-capitalize">{{ $history->kegiatan->nama_kegiatan ?? '-' }}</b>
+                                            </li>
+                                            <li class="list-group-item">Total Kegiatan: Rp
+                                                {{ number_format($history->kegiatan->nominal ?? 0, 0, ',', '.') }}</li>
+                                            <li class="list-group-item">Angsuran Ke-{{ $history->angsuran_ke }}</li>
+                                            <li class="list-group-item">Jumlah Bayar: Rp
+                                                {{ number_format($history->jumlah_bayar, 0, ',', '.') }}</li>
+                                            <li class="list-group-item">Kembalian: Rp
+                                                {{ number_format($history->kembalian, 0, ',', '.') }}</li>
+                                            <li class="list-group-item">
+                                                Status:
+                                                @if ($history->is_lunas)
+                                                    <span class="badge badge-success">LUNAS</span>
+                                                @else
+                                                    <span class="badge badge-warning">BELUM LUNAS</span>
+                                                @endif
+                                            </li>
+                                            <li class="list-group-item font-weight-bold">
+                                                Penerimaan Bersih: Rp
+                                                {{ number_format($history->jumlah_bayar - $history->kembalian, 0, ',', '.') }}
+                                            </li>
+                                        </ul>
+                                    </span>
+                                    <div class="comment-footer">
+                                        <span
+                                            class="text-muted float-right">{{ $history->created_at->format('M d, Y') }}</span>
+                                        <span class="action-icons active">
+                                            <!-- Sesuaikan route berikut dengan route yang ada di aplikasi Anda -->
+                                            <a href="{{ route('entri-kegiatan.generate-pdf', $history->id) }}"
+                                                class="mr-2" title="Cetak Bukti">
+                                                <i class="mdi mdi-printer"></i>
+                                            </a>
+                                            <a href="{{ route('entri-kegiatan.edit', $history->id) }}" title="Edit">
+                                                <i class="ti-pencil-alt"></i>
+                                            </a>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+
+                        @if (count($kegiatanHistori) == 0)
+                            <div class="text-center"> Tidak ada histori pembayaran kegiatan!</div>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+    </div>
+
+    <script>
+        function showHistory(type) {
+            // Hide all history sections
+            document.getElementById('spp-history').style.display = 'none';
+            document.getElementById('infaq-history').style.display = 'none';
+            document.getElementById('kegiatan-history').style.display = 'none';
+
+            // Show selected history section
+            document.getElementById(type + '-history').style.display = 'block';
+
+            // Update tab active states
+            document.querySelectorAll('.history-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Initialize with SPP history shown
+        document.addEventListener('DOMContentLoaded', function() {
+            showHistory('spp');
+        });
+    </script>
 
     <!-- Unpaid Students Modals -->
     @foreach ($pemasukanSPPPerKelas as $kelas => $data)

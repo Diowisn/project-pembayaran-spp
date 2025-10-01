@@ -9,6 +9,7 @@ use App\Models\Pembayaran;
 use App\Models\Kelas;
 use App\Models\AngsuranInfaq;
 use App\Models\Siswa;
+use App\Models\SiswaKegiatan;
 use Illuminate\Support\Str;
 
 class HomeController extends Controller
@@ -112,7 +113,7 @@ class HomeController extends Controller
                 'target_spp' => $targetSPP,
                 'target_konsumsi' => $targetKonsumsi,
                 'target_fullday' => $targetFullday,
-                'target_inklusi' => $targetInklusi, // Tambahkan ini
+                'target_inklusi' => $targetInklusi,
                 'unpaid_count' => $unpaid->count(),
                 'unpaid_students' => $unpaid,
                 'total_students' => $kelas->siswa->count(),
@@ -128,6 +129,11 @@ class HomeController extends Controller
                             ->limit(5)
                             ->get(),
             'infaqHistori' => AngsuranInfaq::with(['siswa.kelas', 'infaqGedung'])
+                            ->orderBy('created_at', 'desc')
+                            ->limit(5)
+                            ->get(),
+            'kegiatanHistori' => SiswaKegiatan::with(['siswa.kelas', 'kegiatan', 'petugas'])
+                            ->where('partisipasi', 'ikut')
                             ->orderBy('created_at', 'desc')
                             ->limit(5)
                             ->get(),
