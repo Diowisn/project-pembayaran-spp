@@ -315,7 +315,7 @@
             <div style="float: right; text-align: center;">
                 <p>{{ \Carbon\Carbon::parse($tanggal_surat)->locale('id')->isoFormat('dddd, D MMMM Y') }}</p>
                 <br><br>
-                <p><strong>{{ $nama_petugas }}</strong></p>
+                <p>({{ Auth::check() ? Auth::user()->name : $item->petugas->name ?? 'Administrator' }})</p>
             </div>
             <div style="clear: both;"></div>
         </div>

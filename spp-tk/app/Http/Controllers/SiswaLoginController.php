@@ -13,11 +13,12 @@ use App\Models\InfaqGedung;
 use App\Models\Spp;
 use App\Models\Tabungan;
 use App\Models\UangTahunan;
+use App\Models\Kegiatan;
+use App\Models\SiswaKegiatan;
 use Illuminate\Support\Facades\Hash;
 
 class SiswaLoginController extends Controller
 {
-    // Method untuk halaman login
     public function siswaLogin()
     {
         if (session('nisn') != null) {  
@@ -27,7 +28,6 @@ class SiswaLoginController extends Controller
         return view('auth.siswa-login');
     }
     
-    // Method proses login
     public function login(Request $request)
     {
         $request->validate([
@@ -57,14 +57,12 @@ class SiswaLoginController extends Controller
         }
     }
     
-    // Method logout
     public function logout()
     {
         Session::flush();
         return redirect('login/siswa');
     }
     
-    // Method halaman histori pembayaran
     public function index()
     {
         if (session('nisn') == null) {  
@@ -74,7 +72,10 @@ class SiswaLoginController extends Controller
         $siswa = Siswa::with('kelas')->find(Session::get('id'));
         
         $data = [
-            'pembayaran' => Pembayaran::where('id_siswa', Session::get('id'))->paginate(10),
+            'pembayaran' => Pembayaran::where('id_siswa', Session::get('id'))
+                ->where('id_siswa', $siswa->id)
+                ->orderBy('created_at', 'DESC')
+                ->paginate(10),
             'siswa' => $siswa,
             'kelas' => Kelas::all(),
             'infaqGedung' => InfaqGedung::all(),
@@ -84,7 +85,6 @@ class SiswaLoginController extends Controller
         return view('dashboard.siswa.index', $data);
     }
 
-    // Method halaman infaq
     public function infaq()
     {
         if (session('nisn') == null) {  
@@ -127,7 +127,6 @@ class SiswaLoginController extends Controller
         return view('dashboard.siswa.uang-tahunan', $data);
     }
 
-    // Method untuk mendapatkan data siswa (AJAX)
     public function getData()
     {
         if (!session('id')) {
@@ -142,7 +141,6 @@ class SiswaLoginController extends Controller
         ]);
     }
 
-    // Method untuk update profil
     public function updateProfile(Request $request)
     {
         if (session('nisn') == null) {  
@@ -182,7 +180,6 @@ class SiswaLoginController extends Controller
             
             $siswa->update($data);
             
-            // Update session data
             Session::put('nama', $request->nama);
             Session::put('id_kelas', $request->id_kelas);
             Session::put('nomor_telp', $request->nomor_telp);
@@ -219,6 +216,27 @@ class SiswaLoginController extends Controller
         return view('dashboard.siswa.tabungan', $data);
     }
 
+    public function kegiatan()
+    {
+        if (session('nisn') == null) {  
+            return redirect('login/siswa');
+        }
+        
+        $siswa = Siswa::find(Session::get('id'));
+        
+        $data = [
+            'kegiatanHistori' => \App\Models\SiswaKegiatan::with(['siswa.kelas', 'kegiatan', 'petugas'])
+                                ->where('id_siswa', $siswa->id)
+                                ->orderBy('created_at', 'DESC')
+                                ->paginate(10),
+            'siswa' => $siswa,
+            'totalDibayar' => \App\Models\SiswaKegiatan::where('id_siswa', $siswa->id)
+                                ->sum('jumlah_bayar')
+        ];
+        
+        return view('dashboard.siswa.kegiatan', $data);
+    }
+
     public function dashboard()
     {
         if (session('nisn') == null) {  
@@ -244,47 +262,55 @@ class SiswaLoginController extends Controller
         
         $currentMonthName = $bulanIndo[now()->format('F')];
         $currentYear = now()->format('Y');
-        
-        // Data pembayaran terakhir siswa
+         
         $pembayaranTerakhir = Pembayaran::where('id_siswa', $siswa->id)
             ->orderBy('created_at', 'desc')
             ->limit(3)
             ->get();
-        
-        // Data infaq terakhir siswa
+         
         $infaqTerakhir = AngsuranInfaq::where('id_siswa', $siswa->id)
             ->orderBy('created_at', 'desc')
             ->limit(3)
+            ->get(); 
+
+        $kegiatanTerakhir = \App\Models\SiswaKegiatan::with('kegiatan')
+            ->where('id_siswa', $siswa->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(3)
             ->get();
-        
-        // Status pembayaran bulan ini
+         
         $statusPembayaran = Pembayaran::where('id_siswa', $siswa->id)
             ->where('bulan', strtolower($currentMonthName))
             ->where('tahun', $currentYear)
             ->first();
         
-        // Total yang sudah dibayarkan untuk SPP
         $totalDibayarkan = Pembayaran::where('id_siswa', $siswa->id)
             ->whereYear('created_at', $currentYear)
             ->sum('jumlah_bayar');
         
-        // Data tabungan siswa
         $tabungan = $siswa->tabungan()->orderBy('created_at', 'desc')->limit(3)->get();
         $saldoTabungan = $siswa->tabungan()->sum('debit') - $siswa->tabungan()->sum('kredit');
         $totalSetoran = $siswa->tabungan()->sum('debit');
         $totalPenarikan = $siswa->tabungan()->sum('kredit');
         
-        // Data infaq gedung
         $totalDibayarInfaq = $siswa->angsuranInfaq->sum('jumlah_bayar');
         $totalTagihanInfaq = $siswa->infaqGedung->nominal ?? 0;
         $sisaPembayaranInfaq = max($totalTagihanInfaq - $totalDibayarInfaq, 0);
         $persentaseInfaq = $totalTagihanInfaq > 0 ? ($totalDibayarInfaq / $totalTagihanInfaq) * 100 : 0;
+        
+        $totalDibayarKegiatan = \App\Models\SiswaKegiatan::where('id_siswa', $siswa->id)->sum('jumlah_bayar');
+        $kegiatanLunas = \App\Models\SiswaKegiatan::where('id_siswa', $siswa->id)
+                            ->where('is_lunas', true)
+                            ->count();
+        $totalKegiatan = \App\Models\SiswaKegiatan::where('id_siswa', $siswa->id)->count();
+        
         $nominal_inklusi = $siswa->spp->nominal_inklusi ?? 0;
         
         return view('dashboard.siswa.dashboard', [
             'siswa' => $siswa,
             'pembayaranTerakhir' => $pembayaranTerakhir,
             'infaqTerakhir' => $infaqTerakhir,
+            'kegiatanTerakhir' => $kegiatanTerakhir,
             'statusPembayaran' => $statusPembayaran,
             'currentMonthName' => $currentMonthName,
             'currentYear' => $currentYear,
@@ -298,6 +324,9 @@ class SiswaLoginController extends Controller
             'totalTagihanInfaq' => $totalTagihanInfaq,
             'sisaPembayaranInfaq' => $sisaPembayaranInfaq,
             'persentaseInfaq' => $persentaseInfaq,
+            'totalDibayarKegiatan' => $totalDibayarKegiatan,
+            'kegiatanLunas' => $kegiatanLunas,
+            'totalKegiatan' => $totalKegiatan,
             'nominal_inklusi' => $nominal_inklusi
         ]);
     }

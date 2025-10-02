@@ -195,10 +195,16 @@ Route::get('/dashboard/siswa/histori', [SiswaLoginController::class, 'index']);
 Route::get('/dashboard/siswa/infaq', [SiswaLoginController::class, 'infaq']);
 Route::get('/dashboard/siswa/tabungan', [SiswaLoginController::class, 'tabungan'])->name('siswa.tabungan');
 Route::get('dashboard/siswa/uang-tahunan', [SiswaLoginController::class, 'uangTahunan'])->name('siswa.uang-tahunan');
+Route::get('/dashboard/siswa/kegiatan', [SiswaLoginController::class, 'kegiatan'])->name('siswa.kegiatan');
 
 Route::get('/siswa/pembayaran/{id}/cetak', [SiswaInfaqController::class, 'generateSpp'])->name('siswa.pembayaran.cetak');
+Route::get('/siswa/pembayaran/cetak', [SiswaInfaqController::class, 'generateRekapSpp'])->name('siswa.spp.rekap.cetak');
 Route::get('/siswa/infaq/{id}/cetak', [SiswaInfaqController::class, 'generateInfaq'])->name('siswa.infaq.cetak');
+Route::get('/siswa/infaq-rekap/cetak', [SiswaInfaqController::class, 'generateRekapInfaq'])->name('siswa.infaq.rekap.cetak');
 Route::get('/siswa/tabungan/cetak', [SiswaInfaqController::class, 'generateTabungan'])->name('siswa.tabungan.cetak');
+Route::get('/siswa/tabungan/{id}/cetak', [SiswaInfaqController::class, 'generateTabunganSingle'])->name('siswa.tabungan.single.cetak');
+Route::get('/siswa/kegiatan/{id}/cetak', [SiswaInfaqController::class, 'generateKegiatan'])->name('siswa.kegiatan.cetak');
+Route::get('/siswa/kegiatan-rekap/cetak', [SiswaInfaqController::class, 'generateRekapKegiatan'])->name('siswa.kegiatan.rekap.cetak');
 Route::get('/siswa/uang-tahunan/cetak', [SiswaInfaqController::class, 'generateUangTahunan'])->name('siswa.uang-tahunan.cetak');
 
 Route::put('/profile/update', [SiswaLoginController::class, 'updateProfile'])->name('siswa.profile.update');
@@ -226,19 +232,5 @@ Route::post('/dashboard/uang-tahunan/tarik/{id}', [UangTahunanController::class,
 Route::get('/dashboard/uang-tahunan/report/{id}/{tahun}', [UangTahunanController::class, 'generateReport'])->name('uang-tahunan.report');
 Route::delete('/dashboard/uang-tahunan/{id}', [UangTahunanController::class, 'destroy'])->name('uang-tahunan.destroy');
 Route::get('/dashboard/uang-tahunan/cari', [UangTahunanController::class, 'cariSiswa'])->name('uang-tahunan.cari-siswa');
-
-// Di routes/web.php tambahkan sementara:
-// Route::get('/test-tabungan', function() {
-//     $tabungan = Tabungan::create([
-//         'id_siswa' => 1, // Ganti dengan ID siswa yang ada
-//         'id_petugas' => 1, // Ganti dengan ID petugas yang ada
-//         'debit' => 100000,
-//         'kredit' => 0,
-//         'saldo' => 100000,
-//         'keterangan' => 'Data testing manual'
-//     ]);
-    
-//     return 'Tabungan test created: '.$tabungan->id;
-// });
 
 ?>

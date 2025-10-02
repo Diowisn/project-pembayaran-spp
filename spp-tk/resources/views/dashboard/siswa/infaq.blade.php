@@ -8,101 +8,200 @@
 @section('content')
     <div class="row">
         <div class="col-md-12">
-            <div style="background: #fff; border-radius: 10px; box-shadow: 0 2px 15px rgba(0,0,0,0.1);">
-                <div style="padding: 25px;">
-                    <h4 style="color: #333; font-size: 24px; margin-bottom: 25px; font-weight: 600;">Histori Pembayaran Infaq Gedung</h4>
+            <div style="background: #fff; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.05); margin-bottom: 30px;">
+                <div
+                    style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); padding: 25px; border-radius: 15px 15px 0 0; color: white;">
+                    <h4 style="margin: 0; font-size: 20px; font-weight: 600;">
+                        <i class="fas fa-mosque"></i>
+                        Histori Pembayaran Infaq Gedung
+                    </h4>
 
-                    @foreach ($infaqHistori as $history)
-                        <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 5px solid #28a745; transition: transform 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                            <div style="display: flex; align-items: center; margin-bottom: 20px;">
-                                <div style="background: #28a745; border-radius: 50%; padding: 15px; margin-right: 15px;">
-                                    <i class="mdi mdi-home" style="color: white; font-size: 24px;"></i>
-                                </div>
-                                <div>
-                                    <h5 style="margin: 0; color: #2c3e50; font-size: 18px; font-weight: 600;">{{ $history->siswa->nama }}</h5>
-                                    <span style="background: #4e73df; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; display: inline-block; margin-top: 5px;">
-                                        {{ $history->created_at->diffforHumans() }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                <div style="padding: 15px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
-                                        <span style="color: #555;">Kelas</span>
-                                        <span style="font-weight: 600;">{{ $history->siswa->kelas->nama_kelas }}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
-                                        <span style="color: #555;">Paket Infaq</span>
-                                        <span style="font-weight: 600; text-transform: uppercase;">{{ $history->infaqGedung->paket ?? '-' }}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
-                                        <span style="color: #555;">Total Infaq</span>
-                                        <span style="font-weight: 600;">Rp. {{ number_format($history->infaqGedung->nominal ?? 0, 0, ',', '.') }}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
-                                        <span style="color: #555;">Angsuran Ke-</span>
-                                        <span style="font-weight: 600; color: #4e73df;">{{ $history->angsuran_ke }}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
-                                        <span style="color: #555;">Jumlah Bayar</span>
-                                        <span style="font-weight: 600; color: #28a745;">Rp. {{ number_format($history->jumlah_bayar, 0, ',', '.') }}</span>
-                                    </div>
-                                    @php
-                                        $totalDibayar = $history->siswa->angsuranInfaq->sum('jumlah_bayar');
-                                        $sisaPembayaran = $history->infaqGedung->nominal - $totalDibayar;
-                                    @endphp
-                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
-                                        <span style="color: #555;">Total Dibayar</span>
-                                        <span style="font-weight: 600; color: #17a2b8;">Rp. {{ number_format($totalDibayar, 0, ',', '.') }}</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
-                                        <span style="color: #555;">Sisa Pembayaran</span>
-                                        <span style="font-weight: 600; color: #dc3545;">Rp. {{ number_format($sisaPembayaran, 0, ',', '.') }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                                <span style="color: #6c757d;">{{ $history->created_at->format('M d, Y') }}</span>
-                                <a href="{{ route('siswa.infaq.cetak', $history->id) }}" 
-                                   style="background: #28a745; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; display: inline-flex; align-items: center; transition: background 0.3s;">
-                                    <i class="mdi mdi-printer" style="margin-right: 8px;"></i>
-                                    Cetak Bukti Pembayaran
-                                </a>
-                            </div>
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <a href="{{ route('siswa.infaq.rekap.cetak') }}"
+                            style="background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 8px; color: white; text-decoration: none; display: inline-flex; align-items: center; transition: all 0.3s ease;"
+                            target="_blank" onmouseover="this.style.background='rgba(255,255,255,0.2)'"
+                            onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                            <i class="fas fa-file-pdf mr-2"></i>
+                            Cetak Rekap Infaq
+                        </a>
+                    </div>
+                </div>
+                <div class="history-container">
+
+                    @if (count($infaqHistori) > 0)
+                        @php
+                            $totalDibayarSemua = $siswa->angsuranInfaq->sum('jumlah_bayar');
+                            $totalTagihan = $siswa->infaqGedung->nominal ?? 0;
+                            $sisaPembayaranSemua = max(0, $totalTagihan - $totalDibayarSemua);
+                        @endphp
+
+                        <!-- Tabel untuk tampilan desktop -->
+                        <div class="table-responsive d-none d-md-block">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">No</th>
+                                        <th>Tanggal</th>
+                                        <th>Paket</th>
+                                        <th>Total Infaq</th>
+                                        <th>Angsuran Ke-</th>
+                                        <th>Jumlah Bayar</th>
+                                        <th>Total Dibayar</th>
+                                        <th>Sisa Pembayaran</th>
+                                        <th class="text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($infaqHistori as $history)
+                                        @php
+                                            // Hitung total dibayar sampai transaksi ini
+                                            $totalDibayarSampaiIni = $siswa->angsuranInfaq
+                                                ->where('created_at', '<=', $history->created_at)
+                                                ->sum('jumlah_bayar');
+                                            $sisaPembayaranSampaiIni = max(0, $totalTagihan - $totalDibayarSampaiIni);
+                                        @endphp
+                                        <tr>
+                                            <td class="text-center">{{ $infaqHistori->firstItem() + $loop->index }}</td>
+                                            <td>
+                                                <div>{{ $history->created_at->format('d M Y') }}</div>
+                                            </td>
+                                            <td>
+                                                <span class="status-badge status-success text-uppercase">
+                                                    {{ $history->infaqGedung->paket ?? '-' }}
+                                                </span>
+                                            </td>
+                                            <td class="amount-text">
+                                                Rp {{ number_format($totalTagihan, 0, ',', '.') }}
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="status-badge status-info">
+                                                    {{ $history->angsuran_ke }}
+                                                </span>
+                                            </td>
+                                            <td class="amount-text success-amount">
+                                                Rp {{ number_format($history->jumlah_bayar, 0, ',', '.') }}
+                                            </td>
+                                            <td class="amount-text info-amount">
+                                                Rp {{ number_format($totalDibayarSampaiIni, 0, ',', '.') }}
+                                            </td>
+                                            <td
+                                                class="amount-text {{ $sisaPembayaranSampaiIni > 0 ? 'text-danger' : 'text-success' }}">
+                                                Rp {{ number_format($sisaPembayaranSampaiIni, 0, ',', '.') }}
+                                                @if ($sisaPembayaranSampaiIni == 0 && $history->is_lunas)
+                                                    <br><small class="text-success">LUNAS</small>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="{{ route('siswa.infaq.cetak', $history->id) }}"
+                                                    class="btn-print btn-success">
+                                                    <i class="fas fa-print"></i>
+                                                    Cetak
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-                    @endforeach
 
-                    <!-- Pagination -->
-                    @if ($infaqHistori->lastPage() != 1)
-                        <div style="display: flex; justify-content: center; margin-top: 30px;">
-                            <div style="display: inline-flex; background: white; border-radius: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 5px;">
-                                <a href="{{ $infaqHistori->previousPageUrl() }}" 
-                                   style="color: {{ $infaqHistori->onFirstPage() ? '#ccc' : '#28a745' }}; padding: 8px 16px; text-decoration: none; {{ $infaqHistori->onFirstPage() ? 'pointer-events: none;' : '' }}">
-                                    <i class="mdi mdi-chevron-left"></i>
-                                </a>
-                                @for ($i = 1; $i <= $infaqHistori->lastPage(); $i++)
-                                    <a href="{{ $infaqHistori->url($i) }}" 
-                                       style="color: {{ $i == $infaqHistori->currentPage() ? 'white' : '#28a745' }}; 
-                                              background: {{ $i == $infaqHistori->currentPage() ? '#28a745' : 'transparent' }}; 
-                                              padding: 8px 16px; 
-                                              text-decoration: none;
-                                              border-radius: 20px;
-                                              margin: 0 2px;">
-                                        {{ $i }}
+                        <!-- Card untuk tampilan mobile -->
+                        <div class="d-block d-md-none">
+                            @foreach ($infaqHistori as $history)
+                                @php
+                                    $totalDibayarSampaiIni = $siswa->angsuranInfaq
+                                        ->where('created_at', '<=', $history->created_at)
+                                        ->sum('jumlah_bayar');
+                                    $sisaPembayaranSampaiIni = max(0, $totalTagihan - $totalDibayarSampaiIni);
+                                @endphp
+                                <div
+                                    style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                                    <div style="padding: 15px;">
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+                                            <span style="color: #555;">Kelas</span>
+                                            <span style="font-weight: 600;">{{ $history->siswa->kelas->nama_kelas }}</span>
+                                        </div>
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+                                            <span style="color: #555;">Paket Infaq</span>
+                                            <span
+                                                style="font-weight: 600; text-transform: uppercase;">{{ $history->infaqGedung->paket ?? '-' }}</span>
+                                        </div>
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+                                            <span style="color: #555;">Total Infaq</span>
+                                            <span style="font-weight: 600;">Rp.
+                                                {{ number_format($totalTagihan, 0, ',', '.') }}</span>
+                                        </div>
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+                                            <span style="color: #555;">Angsuran Ke-</span>
+                                            <span
+                                                style="font-weight: 600; color: #4e73df;">{{ $history->angsuran_ke }}</span>
+                                        </div>
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+                                            <span style="color: #555;">Jumlah Bayar</span>
+                                            <span style="font-weight: 600; color: #28a745;">Rp.
+                                                {{ number_format($history->jumlah_bayar, 0, ',', '.') }}</span>
+                                        </div>
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+                                            <span style="color: #555;">Total Dibayar</span>
+                                            <span style="font-weight: 600; color: #17a2b8;">Rp.
+                                                {{ number_format($totalDibayarSampaiIni, 0, ',', '.') }}</span>
+                                        </div>
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+                                            <span style="color: #555;">Sisa Pembayaran</span>
+                                            <span
+                                                style="font-weight: 600; color: {{ $sisaPembayaranSampaiIni > 0 ? '#dc3545' : '#28a745' }};">Rp.
+                                                {{ number_format($sisaPembayaranSampaiIni, 0, ',', '.') }}</span>
+                                            @if ($sisaPembayaranSampaiIni == 0 && $history->is_lunas)
+                                                <br><small class="text-success">LUNAS</small>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border-top: 1px solid #eee;">
+                                        <span style="color: #6c757d;">{{ $history->created_at->format('M d, Y') }}</span>
+                                        <a href="{{ route('siswa.infaq.cetak', $history->id) }}"
+                                            style="background: #28a745; color: white; padding: 8px 16px; border-radius: 5px; text-decoration: none; display: inline-flex; align-items: center; transition: background 0.3s;">
+                                            <i class="mdi mdi-printer" style="margin-right: 8px;"></i>
+                                            Cetak
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Pagination -->
+                        @if ($infaqHistori->lastPage() != 1)
+                            <div class="pagination-container">
+                                <div class="pagination-wrapper">
+                                    <a href="{{ $infaqHistori->previousPageUrl() }}"
+                                        class="pagination-item {{ $infaqHistori->onFirstPage() ? 'disabled' : '' }}">
+                                        <i class="fas fa-chevron-left"></i>
                                     </a>
-                                @endfor
-                                <a href="{{ $infaqHistori->nextPageUrl() }}" 
-                                   style="color: {{ !$infaqHistori->hasMorePages() ? '#ccc' : '#28a745' }}; padding: 8px 16px; text-decoration: none; {{ !$infaqHistori->hasMorePages() ? 'pointer-events: none;' : '' }}">
-                                    <i class="mdi mdi-chevron-right"></i>
-                                </a>
-                            </div>
-                        </div>
-                    @endif
 
-                    @if (count($infaqHistori) == 0)
-                        <div style="background-color: #cce5ff; border: 1px solid #b8daff; color: #004085; padding: 20px; border-radius: 8px; text-align: center; margin-top: 20px;">
-                            <i class="mdi mdi-information-outline" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
-                            <p style="margin: 0; font-size: 16px;">Belum ada histori pembayaran infaq gedung</p>
+                                    @for ($i = 1; $i <= $infaqHistori->lastPage(); $i++)
+                                        <a href="{{ $infaqHistori->url($i) }}"
+                                            class="pagination-item {{ $i == $infaqHistori->currentPage() ? 'active' : '' }}">
+                                            {{ $i }}
+                                        </a>
+                                    @endfor
+
+                                    <a href="{{ $infaqHistori->nextPageUrl() }}"
+                                        class="pagination-item {{ !$infaqHistori->hasMorePages() ? 'disabled' : '' }}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+                    @else
+                        <div class="empty-state">
+                            <i class="fas fa-mosque"></i>
+                            <p>Belum ada histori pembayaran infaq gedung</p>
                         </div>
                     @endif
                 </div>

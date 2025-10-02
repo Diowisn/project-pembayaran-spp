@@ -288,7 +288,7 @@
             @else
             <div style="width: 80px; height: 40px; background: #f0f0f0; text-align: center; line-height: 40px;">BARCODE</div>
             @endif
-            <p>({{ Auth::check() ? Auth::user()->name : 'Administrator' }})</p>
+            <p>({{ Auth::check() ? Auth::user()->name : $infaq->petugas->name ?? 'Administrator' }})</p>
         </div>
     </div>
 

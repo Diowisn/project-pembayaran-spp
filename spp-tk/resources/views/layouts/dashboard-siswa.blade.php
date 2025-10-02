@@ -15,6 +15,8 @@
     {{-- <link href="{{ asset('assets/libs/chartist/dist/chartist.min.css') }}" rel="stylesheet"> --}}
     <!-- Custom CSS -->
     <link href="{{ asset('dist/css/style.min.css') }}" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ asset('css/history.css') }}">
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -153,22 +155,27 @@
                         </li>
                         <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
                                 href="{{ url('dashboard/siswa/histori') }}" aria-expanded="false"><i
-                                    class="mdi mdi-note-multiple"></i><span class="hide-menu">Histori Pembayaran
-                                    Siswa</span></a>
+                                    class="mdi mdi-note-multiple"></i><span class="hide-menu">Histori
+                                    SPP</span></a>
                         </li>
                         <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
                                 href="{{ url('dashboard/siswa/infaq') }}" aria-expanded="false"><i
-                                    class="mdi mdi-note-multiple"></i><span class="hide-menu">Histori Pembayaran
-                                    Infaq</span></a>
+                                    class="mdi mdi-note-multiple"></i><span class="hide-menu">Histori
+                                    Infaq Gedung</span></a>
                         </li>
                         <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
                                 href="{{ url('dashboard/siswa/tabungan') }}" aria-expanded="false"><i
-                                    class="mdi mdi-note-multiple"></i><span class="hide-menu">Histori Tabungan
+                                    class="mdi mdi-note-multiple"></i><span class="hide-menu">Tabungan
                                         </span></a>
                         </li>
-                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                        {{-- <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
                                 href="{{ url('dashboard/siswa/uang-tahunan') }}" aria-expanded="false"><i
                                     class="mdi mdi-note-multiple"></i><span class="hide-menu">Histori Uang Kegiatan Tahunan
+                                        </span></a>
+                        </li> --}}
+                        <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
+                                href="{{ url('dashboard/siswa/kegiatan') }}" aria-expanded="false"><i
+                                    class="mdi mdi-note-multiple"></i><span class="hide-menu">Histori Kegiatan Tahunan
                                         </span></a>
                         </li>
                     </ul>

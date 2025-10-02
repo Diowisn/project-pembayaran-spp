@@ -380,7 +380,7 @@
         <div class="right">
             <p>{{ \Carbon\Carbon::now()->locale('id')->isoFormat('dddd, D MMMM Y') }}</p>
             <img src="data:image/png;base64,{{ $barcodeData }}" style="width: 100px; height: auto; display: block; margin-bottom: 5px;" alt="Barcode">
-            <p>({{ $user->name }})</p>
+            <p>({{ Auth::check() ? Auth::user()->name : $item->petugas->name ?? 'Administrator' }})</p>
         </div>
     </div>
 

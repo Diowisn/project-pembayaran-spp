@@ -6,28 +6,6 @@
 
 @section('content')
     <div class="row">
-        <!-- Info Siswa -->
-        {{-- <div class="col-md-12">
-        <div class="card">
-            <div class="card-body">
-                <div class="card-title">Informasi Siswa</div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <p><strong>Nama:</strong> {{ $siswa->nama }}</p>
-                    </div>
-                    <div class="col-md-3">
-                        <p><strong>NISN:</strong> {{ $siswa->nisn }}</p>
-                    </div>
-                    <div class="col-md-3">
-                        <p><strong>Kelas:</strong> {{ $siswa->kelas->nama_kelas }}</p>
-                    </div>
-                    <div class="col-md-3">
-                        <p><strong>Tahun Ajaran:</strong> {{ $siswa->spp->tahun ?? '-' }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div> --}}
 
         <!-- Kartu Rekening Virtual dan Tabungan -->
         <div class="col-md-12">
@@ -55,15 +33,12 @@
                                     </small>
                                 </div>
                             </div>
-                            {{-- <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 50%;">
-                                <i class="mdi mdi-credit-card-multiple" style="font-size: 40px; color: rgba(255,255,255,0.9);"></i>
-                            </div> --}}
                         </div>
                     </div>
 
                     <div class="row">
                         <!-- Saldo Tagihan -->
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             @php
                                 $nominal_spp = $siswa->spp->nominal_spp ?? 0;
                                 $nominal_konsumsi = $siswa->spp->nominal_konsumsi ?? 0;
@@ -75,7 +50,6 @@
                                 style="background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); border-radius: 12px; padding: 20px; color: white; height: 100%; box-shadow: 0 5px 15px rgba(46,204,113,0.2);">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
                                     <h5 style="font-size: 18px; margin: 0;">Saldo Tagihan</h5>
-                                    <i class="mdi mdi-currency-usd" style="font-size: 24px;"></i>
                                 </div>
                                 <div
                                     style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
@@ -105,12 +79,11 @@
                         </div>
 
                         <!-- Infaq Gedung -->
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div
                                 style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); border-radius: 12px; padding: 20px; color: white; height: 100%; box-shadow: 0 5px 15px rgba(155,89,182,0.2);">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
                                     <h5 style="font-size: 18px; margin: 0;">Infaq Gedung</h5>
-                                    <i class="mdi mdi-mosque" style="font-size: 24px;"></i>
                                 </div>
                                 <div style="margin-bottom: 20px;">
                                     <div
@@ -139,12 +112,11 @@
                         </div>
 
                         <!-- Tabungan Siswa -->
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div
                                 style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); border-radius: 12px; padding: 20px; color: white; height: 100%; box-shadow: 0 5px 15px rgba(52,152,219,0.2);">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
                                     <h5 style="font-size: 18px; margin: 0;">Tabungan Siswa</h5>
-                                    <i class="mdi mdi-wallet" style="font-size: 24px;"></i>
                                 </div>
                                 <div
                                     style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
@@ -164,13 +136,39 @@
                                 </div> --}}
                             </div>
                         </div>
+
+                        <!-- Ringkasan Kegiatan Siswa -->
+                        <div class="col-md-3">
+                            <div
+                                style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); border-radius: 12px; padding: 20px; color: white; height: 100%; box-shadow: 0 5px 15px rgba(243,156,18,0.2);">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                                    <h5 style="font-size: 18px; margin: 0;">Kegiatan Siswa</h5>
+                                </div>
+                                <div
+                                    style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                    <small>Total Pembayaran</small>
+                                    <h4 style="margin: 5px 0 0 0; font-size: 24px;">Rp
+                                        {{ number_format($totalDibayarKegiatan, 0, ',', '.') }}</h4>
+                                </div>
+                                <div style="font-size: 14px;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                        <span>Total Kegiatan</span>
+                                        <span>{{ $totalKegiatan }}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between;">
+                                        <span>Kegiatan Lunas</span>
+                                        <span>{{ $kegiatanLunas }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Status Pembayaran dan Tabungan -->
-        <div class="col-md-6">
+        <div class="col-md-12">
             <div style="background: #fff; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.05); margin-bottom: 30px;">
                 <div
                     style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); padding: 20px; border-radius: 15px 15px 0 0; color: white;">
@@ -242,8 +240,7 @@
 
                     <!-- Rincian Tagihan Card -->
                     <div style="background: #f8f9fc; border-radius: 12px; padding: 20px;">
-                        <h6 style="margin: 0 0 15px 0; color: #4e73df; font-weight: 600;">
-                            <i class="fas fa-receipt mr-2"></i>Rincian Tagihan
+                        <h6 style="margin: 0 0 15px 0; color: #4e73df; font-weight: 600;">Rincian Tagihan
                         </h6>
                         <div style="display: grid; gap: 12px;">
                             <div
@@ -281,8 +278,9 @@
         </div>
 
         <!-- Informasi Tabungan -->
-        <div class="col-md-6">
-            <div style="background: #fff; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.05); margin-bottom: 30px;">
+        {{-- <div class="col-md-6">
+            <div
+                style="background: #fff; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.05); margin-bottom: 30px;">
                 <div
                     style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); padding: 20px; border-radius: 15px 15px 0 0; color: white;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -373,29 +371,33 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Riwayat Pembayaran Terakhir -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow-sm border-left-success">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-left-success h-100">
                 <div class="card-header bg-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-success">
-                            <i class="fas fa-history mr-2"></i>Riwayat Pembayaran Terakhir
+                        <h6 class="m-0 font-weight-bold text-success">Riwayat Pembayaran Terakhir
                         </h6>
                         <a href="{{ url('dashboard/siswa/histori') }}" class="btn btn-sm btn-success">
                             <i class="fas fa-list mr-1"></i>Lihat Semua
                         </a>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="height: 400px; overflow-y: auto;">
                     @if ($pembayaranTerakhir->count() > 0)
                         @foreach ($pembayaranTerakhir as $pembayaran)
                             <div class="border-left-success pl-3 mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 class="font-weight-bold text-success mb-0">
-                                        <i class="fas fa-receipt mr-2"></i>Pembayaran SPP
-                                    </h6>
+                                    <div>
+                                        <h6 class="font-weight-bold text-success mb-0">Pembayaran SPP
+                                            <span class="badge badge-success ml-1">
+                                                {{ ucfirst($pembayaran->bulan) }}
+                                            </span>
+                                        </h6>
+                                        <small class="text-muted">Tahun {{ $pembayaran->tahun }}</small>
+                                    </div>
                                     <span class="badge badge-success px-3 py-2">
                                         {{ $pembayaran->created_at->diffforHumans() }}
                                     </span>
@@ -404,20 +406,26 @@
                                     <div class="card-body py-2">
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <p class="mb-1"><i
-                                                        class="fas fa-calendar-alt mr-2"></i>{{ ucfirst($pembayaran->bulan) }}
-                                                    {{ $pembayaran->tahun }}</p>
+                                                <p class="mb-1">Pembayaran SPP</p>
                                                 <h5 class="text-success mb-0">Rp
                                                     {{ number_format($pembayaran->jumlah_bayar, 0, ',', '.') }}</h5>
                                             </div>
-                                            <div class="col-md-6 text-right">
-                                                <small
-                                                    class="text-muted d-block mb-2">{{ $pembayaran->created_at->format('d M Y') }}</small>
-                                                <a href="{{ route('siswa.pembayaran.cetak', $pembayaran->id) }}"
-                                                    class="btn btn-sm btn-outline-success">
-                                                    <i class="fas fa-print mr-1"></i>Cetak Bukti
-                                                </a>
+                                            <div class="col-md-6 border-left">
+                                                <div class="text-right">
+                                                    <p class="mb-1 small">Status</p>
+                                                    <span class="badge badge-success px-3 py-2">
+                                                        <i class="fas fa-check mr-1"></i>Lunas
+                                                    </span>
+                                                </div>
                                             </div>
+                                        </div>
+                                        <hr class="my-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">{{ $pembayaran->created_at->format('d M Y') }}</small>
+                                            <a href="{{ route('siswa.pembayaran.cetak', $pembayaran->id) }}"
+                                                class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-print mr-1"></i>Cetak Bukti
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -425,7 +433,6 @@
                         @endforeach
                     @else
                         <div class="text-center py-5">
-                            <i class="fas fa-receipt fa-3x text-gray-300 mb-3"></i>
                             <p class="text-gray-500 mb-0">Belum ada riwayat pembayaran</p>
                         </div>
                     @endif
@@ -434,26 +441,24 @@
         </div>
 
         <!-- Riwayat Infaq Terakhir -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow-sm border-left-purple">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-left-purple h-100">
                 <div class="card-header bg-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-purple">
-                            <i class="fas fa-mosque mr-2"></i>Riwayat Infaq Terakhir
+                        <h6 class="m-0 font-weight-bold text-purple">Riwayat Infaq Terakhir
                         </h6>
                         <a href="{{ url('dashboard/siswa/infaq') }}" class="btn btn-sm btn-purple">
                             <i class="fas fa-list mr-1"></i>Lihat Semua
                         </a>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="height: 400px; overflow-y: auto;">
                     @if ($infaqTerakhir->count() > 0)
                         @foreach ($infaqTerakhir as $infaq)
                             <div class="border-left-purple pl-3 mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div>
-                                        <h6 class="font-weight-bold text-purple mb-0">
-                                            <i class="fas fa-hand-holding-heart mr-2"></i>Paket
+                                        <h6 class="font-weight-bold text-purple mb-0">Paket
                                             <span class="badge badge-purple ml-1">
                                                 {{ strtoupper($infaq->infaqGedung->paket ?? '-') }}
                                             </span>
@@ -503,8 +508,77 @@
                         @endforeach
                     @else
                         <div class="text-center py-5">
-                            <i class="fas fa-hand-holding-heart fa-3x text-gray-300 mb-3"></i>
                             <p class="text-gray-500 mb-0">Belum ada riwayat infaq</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Riwayat Kegiatan Terakhir -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-left-warning h-100">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-warning">Riwayat Kegiatan Terakhir
+                        </h6>
+                        <a href="{{ route('siswa.kegiatan') }}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-list mr-1"></i>Lihat Semua
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body" style="height: 400px; overflow-y: auto;">
+                    @if ($kegiatanTerakhir->count() > 0)
+                        @foreach ($kegiatanTerakhir as $kegiatan)
+                            <div class="border-left-warning pl-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <h6 class="font-weight-bold text-warning mb-0">
+                                            {{ $kegiatan->kegiatan->nama_kegiatan ?? 'Kegiatan' }}
+                                        </h6>
+                                        <small class="text-muted">Angsuran Ke-{{ $kegiatan->angsuran_ke }}</small>
+                                    </div>
+                                    <span class="badge badge-warning px-3 py-2">
+                                        {{ $kegiatan->created_at->diffForHumans() }}
+                                    </span>
+                                </div>
+                                <div class="card bg-light">
+                                    <div class="card-body py-2">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p class="mb-1">Jumlah Bayar</p>
+                                                <h5 class="text-warning mb-0">Rp
+                                                    {{ number_format($kegiatan->jumlah_bayar, 0, ',', '.') }}</h5>
+                                            </div>
+                                            <div class="col-md-6 border-left">
+                                                <div class="text-right">
+                                                    <p class="mb-1 small">Status</p>
+                                                    @if ($kegiatan->is_lunas)
+                                                        <span class="badge badge-success px-3 py-2">
+                                                            <i class="fas fa-check mr-1"></i>Lunas
+                                                        </span>
+                                                    @else
+                                                        <span class="badge badge-secondary px-3 py-2">
+                                                            <i class="fas fa-clock mr-1"></i>Belum Lunas
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr class="my-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">{{ $kegiatan->created_at->format('d M Y') }}</small>
+                                            <span class="badge badge-light">
+                                                <i class="fas fa-user mr-1"></i>{{ $kegiatan->petugas->name ?? 'System' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="text-center py-5">
+                            <p class="text-gray-500 mb-0">Belum ada riwayat kegiatan</p>
                         </div>
                     @endif
                 </div>
@@ -516,8 +590,7 @@
             <div class="card shadow-sm border-left-info">
                 <div class="card-header bg-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-info">
-                            <i class="fas fa-history mr-2"></i>Riwayat Tabungan Terakhir
+                        <h6 class="m-0 font-weight-bold text-info">Riwayat Tabungan Terakhir
                         </h6>
                     </div>
                 </div>
@@ -541,14 +614,9 @@
                                             <td class="text-center">
                                                 <span
                                                     class="font-weight-bold">{{ $transaksi->created_at->format('d M Y') }}</span>
-                                                <br>
-                                                <small
-                                                    class="text-muted">{{ $transaksi->created_at->format('H:i') }}</small>
                                             </td>
                                             <td>
                                                 <span class="d-block">{{ $transaksi->keterangan }}</span>
-                                                <small class="text-muted">ID:
-                                                    #{{ str_pad($transaksi->id, 5, '0', STR_PAD_LEFT) }}</small>
                                             </td>
                                             <td class="text-center">
                                                 @if ($transaksi->debit > 0)
@@ -591,7 +659,6 @@
                         </div>
                     @else
                         <div class="text-center py-5">
-                            <i class="fas fa-piggy-bank fa-3x text-gray-300 mb-3"></i>
                             <p class="text-gray-500 mb-0">Belum ada riwayat tabungan</p>
                         </div>
                     @endif

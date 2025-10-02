@@ -176,7 +176,7 @@
         </div>
         <div class="right">
             <img src="data:image/png;base64,{{ $barcodeData }}" style="width: 100px; height: auto; display: block; margin-bottom: 5px;" alt="Barcode">
-            <p>({{ $user->name ?? 'Administrator' }})</p>
+            <p>({{ Auth::check() ? Auth::user()->name : $angsuran->petugas->name ?? 'Administrator' }})</p>
         </div>
     </div>
 
